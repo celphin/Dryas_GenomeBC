@@ -3,7 +3,7 @@
  
  ## Methylation
   nf-core Methylseq for WGBS mapping and calling methylated C's \
-  Metilene for detecting differentially methylated regions \
+  Metilene for detecting differentially methylated regions 
  
  ## RNAseq - mRNA
   RSEM for mapping to transcriptome 
