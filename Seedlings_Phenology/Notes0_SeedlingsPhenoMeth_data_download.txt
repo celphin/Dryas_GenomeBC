@@ -1,0 +1,33 @@
+################################
+# Dryas seedling and phenology WGBS data download
+################################
+
+#July26 2022
+#Dryas seedling/mature flower data sftp copy to Cedar
+#https://docs.oracle.com/cd/E26502_01/html/E29001/remotehowtoaccess-14.html
+
+sftp BIOAPPS-17023@sftp.bcgsc.ca
+#Add psswd
+
+sftp> lpwd
+#Local working directory: /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data
+
+sftp> ls -la
+drwxr-sr-x    5 0        609          4096 Jul 21 18:00 .
+drwxr-sr-x    5 0        609          4096 Jul 21 18:00 ..
+dr-xrwsr-x    2 52525    609          4096 Jul 21 17:59 downloads
+drwxr-sr-x    4 0        609          4096 Jul 18 16:34 gsc-1098
+d-----S---    2 52525    609          4096 Jul 21 17:59 incoming
+
+sftp> cd /gsc-1098/downloads
+
+sftp> ls
+F112555  F112556  F112557  F112558  F112559  F112560  F112561  F112563  F112564  F112565  F112566  F112567  F112568  F112569  F112570  F112571  F112572 F112573  F112574  F112575  F112576  F112577  F112578  F112579  F112580  F112581  F112583  F112584
+
+sftp> get -r ./F112*
+Fetching /gsc-1098/downloads/./F112555/ to F112555
+Retrieving /gsc-1098/downloads/F112555
+Retrieving /gsc-1098/downloads/F112555/150bp
+/gsc-1098/downloads/F112555/150bp/GSC-2131_F112555_gsc_library.tsv                                                        100%  624   209.7KB/s   00:00
+/gsc-1098/downloads/F112555/150bp/GSC-2131_F112555_gsc_library.summary                                                    100%  624    27.5KB/s   00:00
+/gsc-1098/downloads/F112555/150bp/md5sum_results.txt                                                                      100%  379   116.4KB/s   00:00

@@ -1,0 +1,903 @@
+#DMRs
+#June 2022
+
+#Metilene
+# https://www.bioinf.uni-leipzig.de/Software/metilene/Manual/#12_parameters
+# https://www.bioinf.uni-leipzig.de/Software/metilene/Manual/#5_dmr_de-novo_annotation
+
+##########################################
+# check space
+
+#quota
+
+                             Description                Space           # of files
+                    /home (user celphin)              12G/50G            145k/500k
+                 /scratch (user celphin)            3494G/20T            40k/1000k
+                /project (group celphin)            31k/2048k               1/1025
+             /project (group def-henryg)            6527G/10T            256k/500k
+        /project (group rrg-rieseber-ac)          6177G/2048k            552k/1025
+              /project (group def-cronk)            1265G/10T             33k/500k
+           /project (group def-rieseber)            7407G/10T            367k/500k
+           /project (group rpp-rieseber)            198T/200T            422k/500k
+--
+On some clusters, a break down per user may be available by adding the option '--per_user'.
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs
+
+# replace
+/scratch/celphin/Dryas/Nov2020_Metilene_DMR/
+# with
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/
+
+##########################################
+# copy metilene program and make
+
+tar -xvzf metilene_v02-8.tar.gz
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/
+
+make
+
+###################################
+# copy bedGraph files over
+cd /scratch/celphin/Dryas/Nov2020_Metilene_DMR/data/
+mkdir /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+cp -v C*.bedGraph /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+cp -v W*.bedGraph /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+# upzip all the bedgraph files
+# gunzip -v /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/*.gz
+
+######################################
+tmux new-session -s DMR
+tmux attach-session -t DMR
+
+salloc -c1 --time 3:00:00 --mem 120000m --account def-rieseber
+
+module load StdEnv/2020
+module load bedtools/2.30.0 
+
+# make sorted bedgraph files
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+#find . -name "*.bedGraph" -print > file_list.txt
+
+while read name
+do
+bedtools sort -i ${name} >  ${name}_sorted.bedGraph
+sort -c -k1,1 -k2,2n ${name}_sorted.bedGraph
+cat ${name}_sorted.bedGraph | tr ' ' '\t' > ${name}_sorted_tab.bedGraph
+done < file_list.txt
+
+#-------------------------------
+#get list of files
+find . -name "W*_sorted_tab.bedGraph" -print > W_list.txt
+find . -name "C*_sorted_tab.bedGraph" -print > C_list.txt
+
+# replace ./ in file names
+sed -i 's/\.\///g' W_list.txt
+sed -i 's/\.\///g' C_list.txt
+
+# make csv and space delimited files
+tr '\t' ',' < "./W_list.txt" > "./W_list_csv.csv"
+tr '\t' ',' < "./C_list.txt" > "./C_list_csv.csv"
+
+tr '\t' ' ' < "./W_list.txt" > "./W_list_sp_.txt"
+tr '\t' ' ' < "./C_list.txt" > "./C_list_sp_.txt"
+
+# NOTE: one short in Warming list
+
+#---------------------------
+#make bed file
+
+tmux new-session -s DMR
+tmux attach-session -t DMR
+
+salloc -c1 --time 3:00:00 --mem 120000m --account def-rieseber
+
+module load StdEnv/2020
+module load bedtools/2.30.0 
+
+# make sorted bedgraph files
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+NA="NA"
+h1='W'
+h2='C'
+out_metilene="metilene_"$h1"_"$h2".input"
+
+Wfiles=$(sed ':a;N;$!ba;s/\n/ /g' W_list.txt)
+Cfiles=$(sed ':a;N;$!ba;s/\n/ /g' C_list.txt)
+
+Wname=$(tr ',' ' ' < "./W_list_csv.csv")
+Cname=$(tr ',' ' ' < "./C_list_csv.csv")
+
+bedtools unionbedg -header -names $Wname $Cname -filler $NA -i $Wfiles $Cfiles | cut -f1,3- | sed 's/end/pos/' > $out_metilene
+
+
+############################
+head -5 metilene_W_C.input > subset.txt
+
+grep '^c.*' subset.txt | wc -w
+grep '^Q.*' subset.txt | wc -w
+grep '^Q.*' subset.txt | wc -l
+
+#103 values per line
+
+#header should be:
+#chrom pos ${Wname} ${Cname}
+# but the Cnames are one new line
+W_ALAS0W_8_265
+	C_ALAS_00C_227
+
+#edit to remove extra enter
+nano metilene_W_C.input
+
+# check header again
+head -5 metilene_W_C.input > subset2.txt
+
+grep '^c.*' subset2.txt | wc -w
+103
+grep '^Q.*' subset2.txt | wc -w
+412
+grep '^Q.*' subset2.txt | wc -l
+4
+-------------------------------
+salloc -c10 --time 3:00:00 --mem 120000m --account def-rieseber
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/
+
+module load StdEnv/2020
+module load bedtools/2.30.0 
+
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_W_C.input --maxdist 100 --mincpgs 20 --minMethDiff 0.2 --mode 1 --threads 10 -a W -b C -v 0.2 > metilene_output_June2022_maxd100_minC20_mindiff20.txt
+
+segmenting Do1_a00047-[146885,147093], 16 CpGs
+segmenting Do1_a00047-[147217,148270], 103 CpGs
+segmenting Do1_a00047-[148449,148480], 3 CpGs
+Number of Tests: 849862
+
+
+# maxdist (allowed nt distance between two CpGs within a DMR)
+# mincpgs (minimum # of CpGs in a DMR)
+# minMethDiff (minimum mean methylation difference for calling DMRs)
+
+# should try default values
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_W_C.input --mode 1 --threads 10 -a W -b C > metilene_output_June2022_default.txt
+
+
+Number of Tests: 899946
+
+# header of output
+chr	start	end	q-value	mean_methyl	#CpGs	p-value_MWU	p-value_2D-KS	mean_g1	mean_g2
+
+#####################################
+# want to elect only low p-values?
+#perl filterOutput.pl -q <string>[-o <string>] [-p <n>] [-c <n>] [-d <n>] [-l <n>] [-a <string>] [-b <string>]
+
+#q-value is the Bonferroni adjusted p-value
+
+# need R installed with ggplot2
+
+module load nixpkgs/16.09
+module load gcc/7.3.0
+module load r/3.6.0
+module load gdal
+module load udunits
+module load python
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/3.6/
+
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_output_June2022_default.txt -p 0.001
+
+[INFO]  Mon Jun 20, 19:37:43, 2022      Checking flags
+[INFO]  Mon Jun 20, 19:37:43, 2022      Filter DMRs.
+[INFO]  Mon Jun 20, 19:37:44, 2022      Wrote 638 DMRs with adj. p-value<0.001, a minimum absolute difference>=0.1, a minimum length [CpG]>=10 and a minimum length [nt]>=0
+[INFO]  Mon Jun 20, 19:37:44, 2022      Bedgraph file containing DMR difference: /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_qval.0.001.bedgraph
+[INFO]  Mon Jun 20, 19:37:44, 2022      Plot DMR statistics.
+Warning messages:
+1: Removed 630 rows containing non-finite values (stat_bin).
+2: Removed 2 rows containing missing values (geom_bar).
+null device
+          1
+
+#####################################
+#make into loop to run through list of DMRs and make into bedGraph
+
+#test
+chrom=QANW01012871.1	
+start=644636
+end=645586
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+grep "^${chrom}" metilene_W_C.input | awk '^"${chrom}"[ \t].*[ \t]' "${start}<=$1 && $1>=${end}" {print} > "${chrom}_${start}_${end}.txt"
+
+#https://www.geeksforgeeks.org/awk-command-unixlinux-examples/
+#awk
+
+grep "^${chrom}" metilene_W_C.input | awk '${start}<=$1 && $1>=${end} > 2 {print $0}' > "${chrom}_${start}_${end}.txt"
+
+
+############################################
+#old Dec 2020 DMR results
+chr	         start	end	q-value	        meanmethyl	CpG	meanW	meanC    Percent
+*Ak QANW01001165.1	34598	35359	0.0056529	2.899366	104	3.065	0.16565	0.945959543 cyclin-dependent protein kinase inhibitor SMR4 - Alaska only
+*Ak QANW01004277.1	644636	645586	3.26E-18	4.838051	114	5.1676	0.32958	0.936227843 putative chromatin regulator PHD family - https://www.uniprot.org/uniprot/A0A072TQ60 - Alaska only
+NA QANW01002342.1	298671	298912	0.024042	10.633866	13	12.095	1.4614	0.879195205 TMV resistance protein N, elongator complex protein 4 - none other than total - probably fake
+*Ak QANW01008327.1	543268	543873	0.023383	5.277628	49	6.4392	1.1616	0.819609268 pentatricopeptide repeat-containing protein At5g48910 - Alaska only
+*Sw QANW01002303.1	215969	216301	0.0010245	5.694042	42	7.3993	1.7052	0.769537929 galactolipase DONGLE, chloroplastic - Sweden only
+*Sw QANW01008096.1	333154	333396	0.046508	10.00304	15	13.484	3.481	0.74184515 putative disease resistance RPP13
+**Sv/Sw QANW01009682.1	1662061	1662274	3.77E-05	6.55536	        14	9.008	2.4526	0.727726465 chloroplast related pseudomolecule
+*AF QANW01012871.1	2591349	2591541	0.027029	8.038265	18	11.445	3.407	0.702338576 K(+) efflux antiporter 5 -Up-regulated by osmotic stress -  https://www.uniprot.org/uniprot/Q8VYR9
+*AF QANW01002384.1	329	1788	3.68E-51	3.631189	120	5.8418	2.2106   mitochondrion genome, cytochrome c oxidase subunit 3, ATP synthase subunit a
+***Sw,A,A QANW01009069.1	972927	973718	9.82E-50	8.268598	76	27.016	18.747  could not find exact but 955684-957433 A-genome sucrose synthase SusA1
+** A,A QANW01001771.1	3355408	3356600	3.43E-42	12.50787	50	73.021	60.513  TMV resistance protein N - not in Sweden and Svalbard
+**Sw/AF QANW01009069.1	1003118	1004558	2.95E-38	-17.019465	69	30.346	47.366  could not find see above
+**Sw,AK QANW01006396.1	18396	20173	4.48E-38	-10.368359	87	26.352	36.72   NUCLEAR FUSION DEFECTIVE 4 , microsatellite sequence , pentatricopeptide repeat-containing protein At5g27110 https://ppr.plantenergy.uwa.edu.au/
+***Sw,A,A QANW01009069.1	364471	364974	1.23E-36	16.588691	58	39.662	23.073 could not find for exact but 361760-363509 is a transcription factor, transcription factor bHLH128 https://www.uniprot.org/uniprot/Q8H102.html
+***Sw,A,A QANW01009069.1	364053	364462	7.19E-36	17.741908	49	45.558	27.816 could not find see above
+**A,A QANW01001876.1	1016243	1016970	2.20E-34	10.093475	72	66.654	56.561  TilSSR_18905 microsatellite
+**AF,Sw QANW01009334.1	910318	911316	1.40E-31	6.608318	166	30.858	24.25   uncharacterized, ORF-1 in a tandem repeat (ORF=open reading frame), open reading frame maps to senescence leaf regulator 
+***Sw,A,A QANW01009069.1	972719	972858	3.52E-31	15.537374	34	29.917	14.38  could not find see above
+***Sw,A,A QANW01004277.1	751202	751791	6.60E-31	13.671452	82	39.089	25.417 polygalacturonase At1g48100 - cell wall expression
+***A,A,Sw QANW01003660.1	100234	101048	1.07E-29	6.306462	72	42.946	36.639 universal stress protein PHOS32 https://www.uniprot.org/uniprot/Q8VYN9 https://www.frontiersin.org/articles/10.3389/fpls.2019.00750/full - all but Svalbard
+*Sw QANW01012686.1	147090	148250	3.55E-28	-7.449562	85	22.231	29.681
+**A,A QANW01000494.1	427026	427981	3.31E-27	-4.726499	68	8.9658	13.692 3-Hydroxyisobutyrate Dehydrogenase - amino acid catabolism in the dark or stress -  https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5580760/
+****QANW01004202.1	170500	170654	2.39E-25	19.302325	26	70.968	51.666 amidase At4g34880 -related to nitrogen fixation with bacteria - Rose   NC_037093 REGION: 646156..650321, mRNA from 391-462 maps to Rose mRNA, DMR is 154 base pairs past this exactly matching where first exon ends - where methylation starts is where mapping stops to Rose but the base pair range is still correct to perfectly match the exon length - more nitrogen allows for leaf growth -  makes auxin https://europepmc.org/article/med/23844031 - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4844348/
+*AF QANW01008704.1	433897	434367	1.12E-24	-15.71436	59	47.2	62.915
+*Sw QANW01010875.1	2206907	2207516	1.37E-24	-10.642345	52	32.101	42.743 pentatricopeptide repeat-containing protein At1g79490, mitochondrial https://www.uniprot.org/uniprot/Q9SAK0 https://ppr.plantenergy.uwa.edu.au/
+*Sw QANW01005326.1	1650781	1651338	8.62E-24	-6.832467	108	9.728	16.56   LRR receptor-like serine/threonine-protein kinase GSO1 - Repressed by wounding -  https://www.uniprot.org/uniprot/C0LGQ5
+*Sw,AK QANW01013335.1	378322	378988	1.22E-23	-6.418297	58	4.1588	10.577
+*Ak QANW01001850.1	116944	117186	1.22E-23	-4.527219	40	4.0742	8.6015  
+***Sw,AK,AF QANW01008701.1	793587	793886	1.92E-23	14.870605	40	32.069	17.199  natterin 3-like protein mRNA, partial cds 
+*Ak QANW01004277.1	644636	645586	3.26E-18	4.838051	114	5.1676	0.32958
+*Sw,Ak QANW01002312.1	109062	109423	4.55E-15	18.131615	24	69.684	51.553 serine/threonine-protein kinase At5g01020
+*Ak QANW01001165.1	34598	35359	0.0056529	2.899366	104	3.065	0.16565 cyclin-dependent protein kinase inhibitor - stops cell cycle - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5351735/
+**Ak,Sv QANW01007298.1	176455	177430	3.6506e-31	28.762947	141	28.977	0.21411  tRNA:m(4)X modification enzyme TRM13 https://www.uniprot.org/uniprot/Q10B19 - plant silencing TRM13 display decreased stress tolerance - warming plants silence this? - Induced by salt stress and abscisic acid treatment. https://en.wikipedia.org/wiki/Abscisic_acid
+*Sv QANW01009150.1	254308	254728	3.5885e-13	18.498824	45	18.696	0.19749
+
+############################################
+# Papers
+
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4728377/
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4588864/ 
+
+####################################### 
+# try for each site
+
+# July 8th 2022
+
+# make W_list_transpose.csv by transposing W_list.txt in Excel and saving as a csv
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+Site="SVAL"
+Site="LAT"
+Site="ALAS"
+
+grep ".*${Site}.*" W_list.txt > "${Site}_W_list.txt"
+grep ".*${Site}.*" C_list.txt > "${Site}_C_list.txt"
+
+#grep ".*${Site}.*" W_list_transpose.csv > "${Site}_W_list_transpose.csv"
+#grep ".*${Site}.*" C_list_transpose.csv > "${Site}_C_list_transpose.csv"
+# currently this tranpose file is not used for anything... just repeat with the site specific files
+
+#--------------------------
+#for Alex
+
+Site="Alex"
+
+grep -E "CASS"\|"DRY"\|"MEAD"\|"WILL"\|"FERT" W_list.txt > "Alex_W_list.txt"
+grep -E "CASS"\|"DRY"\|"MEAD"\|"WILL"\|"FERT" C_list.txt > "Alex_C_list.txt"
+
+#grep -E "CASS"\|"DRY"\|"MEAD"\|"WILL"\|"FERT" W_list_transpose.csv > "Alex_W_list_transpose.csv"
+#grep -E "CASS"\|"DRY"\|"MEAD"\|"WILL"\|"FERT" C_list_transpose.csv > "Alex_C_list_transpose.csv"
+
+#--------------------
+
+Wfiles=$(sed ':a;N;$!ba;s/\n/ /g' "${Site}_W_list.txt")
+Cfiles=$(sed ':a;N;$!ba;s/\n/ /g' "${Site}_C_list.txt")
+
+#-----------------------------
+# need to format names here for each location
+# download and edit in Excel: {Site}_W/C_list.txt
+# files here: /~/Cassandra/PhD/GenomeBC_Dryas/Wild_Dryas_WGBS/June2022_DMRs/File_names/Site_specific/
+# - edit to clean names
+	- =MID(A1,FIND("_",A1)+1,256)
+	- =RIGHT(A1,(FIND(" ",B1,1)-1))
+	- Add W to the front = CONCATENATE("X",C1) 
+# retranspose into a row?
+# save as csv
+
+Wname=$(tr ',' ' ' < "${Site}_W_list_transpose.csv")
+Cname=$(tr ',' ' ' < "${Site}_C_list_transpose.csv")
+
+#--------------------------
+tmux new-session -s DMR 
+tmux attach-session -t DMR
+
+tmux new-session -s DMR2
+tmux attach-session -t DMR2
+
+salloc -c10 --time 3:00:00 --mem 120000m --account def-rieseber
+
+module load nixpkgs/16.09
+module load intel/2018.3
+module load bedtools/2.29.2
+
+# make sorted bedgraph files
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+NA="NA"
+h1='W'
+h2='C'
+
+Site="Alex" # DMR
+Site="SVAL" # DMR2
+Site="LAT"  # DMR3
+Site="ALAS"  # DMR4
+
+out_metilene=""${Site}"_metilene_"$h1"_"$h2".input"
+
+Wfiles=$(sed ':a;N;$!ba;s/\n/ /g' "${Site}_W_list.txt")
+Cfiles=$(sed ':a;N;$!ba;s/\n/ /g' "${Site}_C_list.txt")
+
+Wname=$(tr ',' ' ' < "${Site}_W_list_transpose.csv")
+Cname=$(tr ',' ' ' < "${Site}_C_list_transpose.csv")
+
+
+bedtools unionbedg -header -names $Wname $Cname -filler $NA -i $Wfiles $Cfiles | cut -f1,3- | sed 's/end/pos/' > $out_metilene
+
+# takes awhile ~ 30 min
+
+#------------------------------
+#header get rid of enter in first line
+
+#header should be:
+#chrom pos ${Wname} ${Cname}
+# but the Cnames are one new line
+W_ALAS0W_8_265
+	C_ALAS_00C_227
+
+#edit to remove extra enter
+nano $out_metilene
+
+#-----------------------------
+# check header
+head -5 $out_metilene > subset.txt
+
+grep '^c.*' subset.txt | wc -w
+Alex -52
+SV -14
+LAT -22
+ALAS -22
+
+# grep '^Do.*' $out_metilene | wc -l # too long
+Alex - 8506281
+SV - 8088914
+LAT - 8318294
+ALAS - 8315924
+
+#-----------------
+#run metilene
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+module load nixpkgs/16.09
+module load intel/2018.3
+module load bedtools/2.29.2
+
+Site="Alex"
+#Site="SVAL"
+#Site="LAT"
+#Site="ALAS"
+NA="NA"
+h1='W'
+h2='C'
+out_metilene=""${Site}"_metilene_"$h1"_"$h2".input"
+
+#-------------------
+nano $out_metilene
+# delete enter on second line
+
+head $out_metilene
+
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/${out_metilene} --mode 1 --threads 10 -a W -b C > ""$Site"_metilene_output_July2022.txt"
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/${out_metilene} --maxdist 100 --mincpgs 30 --minMethDiff 5 --mode 1 --threads 10 -a W -b C > ""$Site"_metilene_output_July2022_100-30-5.txt"
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/${out_metilene} --maxdist 300 --mincpgs 30 --minMethDiff 15 --mode 1 --threads 10 -a W -b C > ""$Site"_metilene_output_July2022_300-30-15.txt"
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/${out_metilene} --maxdist 300 --mincpgs 500 --minMethDiff 200 --mode 1 --threads 10 -a W -b C > ""$Site"_metilene_output_July2022_300-500-200.txt"
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/${out_metilene} --maxdist 100 --mincpgs 10 --minMethDiff 10 --mode 1 --threads 10 -a W -b C > ""$Site"_metilene_output_July2022_100-10-10.txt"
+
+*******************************
+#------------------------------
+#subset significant DMRs
+
+module load nixpkgs/16.09
+module load gcc/7.3.0
+module load r/3.6.0
+module load gdal
+module load udunits
+module load python
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/3.6/
+
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/"$Site"_metilene_output_July2022.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/"$Site"_DMRs" -p 0.05
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/"$Site"_metilene_output_July2022_100-30-5.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/"$Site"_DMRs_100-30-5" -p 0.05
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/"$Site"_metilene_output_July2022_300-30-15.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/"$Site"_DMRs_300-30-15" -p 0.05
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/"$Site"_metilene_output_July2022_300-500-200.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/"$Site"_DMRs_300-500-200" -p 0.05
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/"$Site"_metilene_output_July2022_100-10-10.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/"$Site"_DMRs_100-10-10" -p 0.05
+
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/"$Site"_metilene_output_July2022.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/"$Site"_DMRs" -p 1e-10
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/"$Site"_metilene_output_July2022_100-30-5.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/"$Site"_DMRs_100-30-5" -p 1e-10
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/"$Site"_metilene_output_July2022_300-30-15.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/"$Site"_DMRs_300-30-15" -p 1e-10
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/"$Site"_metilene_output_July2022_300-500-200.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/"$Site"_DMRs_300-500-200" -p 1e-10
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/"$Site"_metilene_output_July2022_100-10-10.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/"$Site"_DMRs_100-10-10" -p 1e-10
+
+grep '^Do.*' "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/"$Site"_DMRs_100-10-10_qval.1e-10.bedgraph" | wc -l 
+Sval - 80
+LAT - 603
+ALAS - 261
+Alex - 59
+
+#########################################
+#run for total file
+
+tmux new-session -s DMR5
+tmux attach-session -t DMR5
+
+salloc -c10 --time 3:00:00 --mem 120000m --account def-rieseber
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+module load nixpkgs/16.09
+module load intel/2018.3
+module load bedtools/2.29.2
+
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_W_C.input --maxdist 300 --mincpgs 15 --minMethDiff 10 --mode 1 --threads 10 -a W -b C > "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_output_July2022_300-15-10.txt"
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_W_C.input --maxdist 100 --mincpgs 10 --minMethDiff 10 --mode 1 --threads 10 -a W -b C > "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_output_July2022_100-10-10.txt"
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_W_C.input --maxdist 300 --mincpgs 500 --minMethDiff 200 --mode 1 --threads 10 -a W -b C > "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_output_July2022_300-500-200.txt"
+*/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_W_C.input --maxdist 300 --mincpgs 50 --minMethDiff 15 --mode 1 --threads 10 -a W -b C > "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_output_July2022_300-50-15.txt"
+
+#---------------------
+module load nixpkgs/16.09
+module load gcc/7.3.0
+module load r/3.6.0
+module load gdal
+module load udunits
+module load python
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/3.6/
+
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_output_July2022_300-15-10.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/Total_DMRs_300-15-10_July2022" -p 1e-20
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_output_July2022_100-10-10.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/Total_DMRs_100-10-10_July2022" -p 1e-20
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_output_July2022_300-500-200.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/Total_DMRs_300-500-200_July2022" -p 1e-20
+*perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_output_July2022_300-50-15.txt" -o "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/Total_DMRs_300-50-15_July2022" -p 1e-20
+
+grep '^Do.*' "/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/Total_DMRs_100-10-10_July2022_qval.1e-20.bedgraph" | wc -l 
+
+more /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/Total_DMRs_100-10-10_July2022_qval.1e-20.out
+
+# new
+
+Do1_01_a00004   4252688 	4253212 	1.1308e-25      -10.952967      60      58.017  68.97
+Do1_03_a00002   5353037 	5354212 	9.546e-42       -11.299114      126     29.726  41.025
+Do1_03_a00002   12037975        12038326        1.962e-26       -19.057195      31      30.102  49.16
+Do1_03_a00002   12806950        12807303        5.104e-21       -15.823461      20      25.756  41.579
+Do1_03_a00004   1829129 	1829473 	1.5031e-30      -13.568443      57      12.72   26.289
+Do1_05_a00001   17164475        17164996        5.7885e-32      -10.250966      87      69.97   80.221
+Do1_05_a00003   1152846 	1152987 	1.0569e-25      16.729108       24      63.045  46.316 Amidase?
+Do1_05_a00003   1480241 	1480901 	3.4393e-31      -17.662892      56      29.687  47.35
+Do1_05_a00004   324260  	324804  	1.089e-28       15.288720       44      47.188  31.899
+Do1_06_a00002   2718020 	2718459 	5.9126e-27      13.149616       80      38.86   25.71 - POLYGALACTURONASE INVOLVED IN EXPANSION3 - AT1G48100.1
+Do1_07_a00002   11005173        11005813        1.2637e-32      16.242843       72      74.506  58.263
+Do1_07_a00002   12442551        12443127        2.6466e-78      -16.334069      90      57.642  73.976
+Do1_07_a00004   2484955 	2485400 	3.4851e-36      -14.654374      50      44.5    59.155
+Do1_a00028      195651  	195795  	2.3956e-24      20.380830       24      48.109  27.728
+
+Do1_05_a00004:323760-325304 - syntaxin-71 
+Do1_06_a00002:2717520-2718959 - POLYGALACTURONASE INVOLVED IN EXPANSION3 - AT1G48100.1
+Do1_07_a00002:12442051-12443627 - NADH dehydrogenase subunit 4 gene, complete cds; mitochondrial
+
+
+#old
+QANW01001771.1	3355408	3356344	9.3589e-40	12.520851	48	72.877	60.356
+QANW01001876.1	1016389	1016639	4.3804e-28	10.042394	52	66.547	56.505
+****QANW01004202.1	170500	170654	2.7592e-25	19.302325	26	70.968	51.666  Amidase https://europepmc.org/article/med/23844031
+QANW01004277.1	751202	751641	1.3934e-30	13.760080	80	39.7	25.94   polygalacturonase At1g48100, cell wall, only clear methylation at Alex
+QANW01006396.1	18396	19197	2.8413e-29	-10.458315	58	21.374	31.832 pentatricopeptide repeat-containing protein At5g27110, RNA modification, methylated in controls
+QANW01008701.1	793218	793578	3.5523e-23	11.087057	50	28.246	17.159 natterin-3 - found in frog toxins?
+QANW01008701.1	793587	793886	2.2072e-23	14.870605	40	32.069	17.199
+QANW01008704.1	433897	434247	1.2568e-23	-15.704527	58	47.25	62.954
+**QANW01009069.1	364053	364462	8.286e-36	17.741908	49	45.558	27.816
+QANW01009069.1	364570	364789	1.8671e-25	18.058379	41	40.775	22.716
+QANW01009069.1	1004041	1004558	1.5669e-26	-17.268493	49	30.636	47.904
+QANW01009069.1	972719	972858	4.0593e-31	15.537374	34	29.917	14.38
+QANW01010875.1	2206907	2207393	4.4125e-23	-10.696057	50	32.065	42.761
+
+
+#######################################
+#need to find a way to get only the values that fall in the same general range +-1000bp 
+# https://bedtools.readthedocs.io/en/latest/content/tools/intersect.html
+
+module load nixpkgs/16.09  
+module load gcc/7.3.0
+module load bedtools/2.29.2
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/
+
+# All sites intersect
+bedtools intersect -u -a Total_DMRs_100-10-10_July2022_qval.1e-20.bedgraph -b SVAL_DMRs_100-10-10_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b Alex_DMRs_100-10-10_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b ALAS_DMRs_100-10-10_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b LAT_DMRs_100-10-10_qval.0.05.bedgraph > ALL_Sites_intersect_DMRs_100-10-10_qval.0.05.bedgraph
+bedtools intersect -u -a Total_DMRs_100-10-10_July2022_qval.1e-20.bedgraph -b SVAL_DMRs_100-10-10_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b Alex_DMRs_100-10-10_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b ALAS_DMRs_100-10-10_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b LAT_DMRs_100-10-10_qval.0.05.bedgraph > ALL_Sites_intersect_DMRs_100-10-10_qval.0.05.txt
+# new
+Do1_07_a00002   12442551        12443127        -16.334069
+
+bedtools intersect -u -a Total_DMRs_300-15-10_July2022_qval.1e-20.bedgraph -b SVAL_DMRs_300-30-15_qval.1e-10.bedgraph | bedtools intersect -u -a stdin -b Alex_DMRs_300-30-15_qval.1e-10.bedgraph | bedtools intersect -u -a stdin -b ALAS_DMRs_300-30-15_qval.1e-10.bedgraph | bedtools intersect -u -a stdin -b LAT_DMRs_100-10-10_qval.0.05.bedgraph > ALL_Sites_intersect_DMRs_300-30-15_qval.1e-10.bedgraph
+bedtools intersect -u -a Total_DMRs_300-15-10_July2022_qval.1e-20.bedgraph -b SVAL_DMRs_300-30-15_qval.1e-10.bedgraph | bedtools intersect -u -a stdin -b Alex_DMRs_300-30-15_qval.1e-10.bedgraph | bedtools intersect -u -a stdin -b ALAS_DMRs_300-30-15_qval.1e-10.bedgraph | bedtools intersect -u -a stdin -b LAT_DMRs_100-10-10_qval.0.05.bedgraph > ALL_Sites_intersect_DMRs_300-30-15_qval.1e-10.txt
+# new
+Do1_07_a00002   12442551        12443127        -16.334069
+
+# All sites intersect
+bedtools intersect -u -a Alex_DMRs_qval.0.05.bedgraph -b SVAL_DMRs_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b ALAS_DMRs_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b LAT_DMRs_qval.0.05.bedgraph > ALL_Sites_intersect_DMRs_qval.0.05.bedgraph
+bedtools intersect -u -a Alex_DMRs_qval.0.05.bedgraph -b SVAL_DMRs_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b ALAS_DMRs_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b LAT_DMRs_qval.0.05.bedgraph > ALL_Sites_intersect_DMRs_qval.0.05.txt
+# new
+Do1_01_a00004   10489852        10490314        -9.776923
+Do1_02_a00003   5845511 	5845794 	4.649067
+Do1_04_a00001   348437  	348594  	-3.712961
+Do1_04_a00001   18196491        18199661        -9.329603
+Do1_07_a00002   11718437        11718722        -12.338015
+Do1_07_a00002   12442599        12443071        -16.864050
+Do1_07_a00004   6444548 	6444686 	8.981807
+Do1_07_a00004   6444686 	6444873 	4.765740
+
+# old
+QANW01004202.1	170500	170654	19.302325
+
+#---------------------
+# All sites intersect but SVAL
+bedtools intersect -u -a Alex_DMRs_qval.0.05.bedgraph -b ALAS_DMRs_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b LAT_DMRs_qval.0.05.bedgraph > ALL_Sites_notSVAL_intersect_DMRs_qval.0.05.bedgraph
+bedtools intersect -u -a Alex_DMRs_qval.0.05.bedgraph -b ALAS_DMRs_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b LAT_DMRs_qval.0.05.bedgraph > ALL_Sites_notSVAL_intersect_DMRs_qval.0.05.txt
+
+#new
+Do1_01_a00001   12561356        12562161        -14.373344
+Do1_01_a00001   14998115        14998713        -5.342084
+Do1_01_a00004   9410118 9410345 13.326797
+Do1_01_a00004   10489852        10490314        -9.776923
+Do1_02_a00003   4668909 4668977 -13.138881
+Do1_02_a00003   5845511 5845794 4.649067
+Do1_02_a00004   2614923 2615910 12.935337
+Do1_02_a00004   2870503 2871054 -9.188182
+Do1_03_a00002   429039  429695  5.228883
+Do1_03_a00002   5374897 5375857 11.132014
+Do1_03_a00004   1829074 1829472 -11.157563
+Do1_04_a00001   348437  348594  -3.712961
+Do1_04_a00001   11637435        11638165        18.786320
+Do1_04_a00001   16669574        16670171        -12.125714
+Do1_04_a00001   18205838        18206171        8.351663
+Do1_04_a00001   18196491        18199661        -9.329603
+Do1_05_a00001   3771359 3771544 -2.972906
+Do1_05_a00001   6650073 6650955 9.211859
+Do1_05_a00001   17164316        17164938        -10.679501
+Do1_05_a00002   135131  135804  -11.523540
+Do1_05_a00002   2523208 2523547 22.113804
+Do1_05_a00003   1480721 1481089 -21.000175 Amidase related in Alex?
+Do1_06_a00002   2234705 2236035 11.861889
+Do1_06_a00002   2575966 2576071 -6.210634
+Do1_06_a00002   2576147 2576551 -7.538098
+Do1_06_a00002   2718020 2718273 15.256977
+Do1_06_a00002   2718287 2718459 15.545067
+Do1_07_a00002   11718437        11718722        -12.338015
+Do1_07_a00002   12442599        12443071        -16.864050
+Do1_07_a00002   13411252        13411534        7.798404
+Do1_07_a00004   2484955 2485598 -14.721486
+Do1_07_a00004   5844581 5844983 14.448108
+Do1_07_a00004   6444548 6444686 8.981807
+Do1_07_a00004   6444686 6444873 4.765740
+Do1_a00028      195161  195505  10.833325
+Do1_a00028      195529  195806  15.253211
+Do1_a00045      703690  704660  -10.066610
+Do1_a00045      1676794 1677049 14.302978
+
+
+#old
+QANW01001271.1	21175	21709	-9.464021
+QANW01001424.1	565374	565928	5.660922
+QANW01003660.1	100234	101048	6.306462 Universal stress protein
+QANW01003660.1	101058	101208	9.937087
+QANW01004202.1	170500	170654	19.302325 Amidase
+QANW01004277.1	878748	879274	-4.887961 importin alpha isoform4 maps to first exon, related to powdery mildew and senescnce 
+QANW01004277.1	879332	879442	-2.055605
+QANW01004277.1	879442	879517	-3.176011
+QANW01004277.1	751202	751791	13.671452 maps to last exon of polygalacturanse, glycoside hydrolase in Arabidopsis for cell growth dehydration stress affects this gene
+QANW01004346.1	9	326	6.421627
+QANW01004346.1	342	483	8.850667
+QANW01006695.1	52673	53571	-12.512968
+QANW01008701.1	793218	793578	11.087057
+QANW01008701.1	793587	793886	14.870605
+QANW01009069.1	364053	364462	17.741908
+QANW01009069.1	364471	364974	16.588691
+QANW01009069.1	972719	972858	15.537374
+QANW01009069.1	972927	973718	8.268598
+
+#------------------------
+# all but Alex
+bedtools intersect -u -a ALAS_DMRs_qval.0.05.bedgraph -b SVAL_DMRs_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b LAT_DMRs_qval.0.05.bedgraph > ALL_Sites_notAlex_intersect_DMRs_qval.0.05.bedgraph
+bedtools intersect -u -a ALAS_DMRs_qval.0.05.bedgraph -b SVAL_DMRs_qval.0.05.bedgraph | bedtools intersect -u -a stdin -b LAT_DMRs_qval.0.05.bedgraph > ALL_Sites_notAlex_intersect_DMRs_qval.0.05.txt
+
+#new
+Do1_00165       45010   45447   20.614259
+Do1_00210       22703   22872   1.334687
+Do1_01_a00001   74683   75505   -14.924635
+Do1_01_a00002   25100   25334   -23.438780
+Do1_01_a00002   25378   25871   -14.480702
+Do1_01_a00006   57708   58064   -15.056224
+Do1_02_a00001   974463  974572  -14.761781
+Do1_02_a00001   10953440        10954298        -10.839506
+Do1_02_a00003   5845511 5845794 13.437387
+Do1_02_a00003   8431538 8432990 19.161441
+Do1_02_a00003   8851851 8852027 32.439734
+Do1_03_a00001   6406868 6407443 -22.017375
+Do1_03_a00002   4879264 4879696 -15.440511
+Do1_03_a00003   2105487 2105948 -12.854765
+Do1_04_a00001   348499  348580  -5.731093
+Do1_04_a00001   13954876        13955023        -5.282578
+Do1_04_a00003   1930200 1932304 15.378439
+Do1_04_a00004   890470  891108  -13.377238
+Do1_05_a00003   1152846 1152986 27.562313 Amidase
+Do1_06_a00001   3045790 3046891 22.317409
+Do1_06_a00001   13468989        13469131        7.452173
+Do1_06_a00002   2073588 2073689 -18.683279
+Do1_06_a00002   7338536 7339360 20.021544
+Do1_07_a00001   3265590 3266056 -16.177699
+Do1_07_a00002   396850  397137  -19.528926
+Do1_07_a00002   11006078        11006820        -19.579109
+Do1_07_a00002   11718523        11718688        -24.994242
+Do1_07_a00002   12442455        12443488        -39.265793
+Do1_07_a00004   2914703 2915405 -7.662282
+Do1_07_a00004   6444512 6444873 14.225788
+
+
+#old
+QANW01003600.1	112444	113078	5.935392
+QANW01004202.1	170500	170654	19.302325
+QANW01009953.1	1036361	1036628	-7.104241
+QANW01010754.1	458436	458958	9.993508
+QANW01012165.1	847716	847993	17.556858
+
+
+###############################################
+###############################################
+# convert bedGraph files to bed files to fasta files
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/
+cat Total_DMRs_100-10-10_July2022_qval.1e-20.bedgraph | awk '{print $1 "\t" $2 "\t" $3}' > Total_DMRs_100-10-10_July2022_qval.1e-20.bed
+
+#----------------------------
+# add 500bp on each side of the DMR
+***************
+awk '{$3+=1000}1' Total_DMRs_100-10-10_July2022_qval.1e-20.bed > Total_DMRs_100-10-10_July2022_qval.1e-20_extended.bed
+awk '{$2-=1000}1' Total_DMRs_100-10-10_July2022_qval.1e-20_extended.bed > Total_DMRs_100-10-10_July2022_qval.1e-20_extended2.bed
+
+Do1_01_a00004 4252188 4253712
+Do1_03_a00002 5352537 5354712
+Do1_03_a00002 12037475 12038826
+Do1_03_a00002 12806450 12807803
+Do1_03_a00004 1828629 1829973
+Do1_05_a00001 17163975 17165496
+Do1_05_a00003 1152346 1153487
+Do1_05_a00003 1479741 1481401
+Do1_05_a00004 323760 325304
+Do1_06_a00002 2717520 2718959
+Do1_07_a00002 11004673 11006313
+Do1_07_a00002 12442051 12443627
+Do1_07_a00004 2484455 2485900
+Do1_a00028 195151 196295
+
+Do1_01_a00004   4251688 4254212
+Do1_03_a00002   5352037 5355212
+Do1_03_a00002   12036975        12039326
+Do1_03_a00002   12805950        12808303
+Do1_03_a00004   1828129 1830473
+Do1_05_a00001   17163475        17165996
+Do1_05_a00003   1151846 1153987
+Do1_05_a00003   1479241 1481901
+Do1_05_a00004   323260  325804
+Do1_06_a00002   2717020 2719459
+Do1_07_a00002   11004173        11006813
+Do1_07_a00004   2483955 2486400
+Do1_a00028      194651  196795
+
+
+
+#----------------------
+# https://bedtools.readthedocs.io/en/latest/content/tools/getfasta.html
+# bedtools getfasta [OPTIONS] -fi <input FASTA> -bed <BED/GFF/VCF>
+
+sed -e 's/ /\t/g' Total_DMRs_100-10-10_July2022_qval.1e-20_extended2.bed > Total_DMRs_100-10-10_July2022_qval.1e-20_extended2_tab.bed
+
+bedtools getfasta -fi /home/celphin/scratch/Dryas/Dryas_octopetala_reference/genomes/Dryas_octopetala_H1.supercontigs.fa -bed Total_DMRs_100-10-10_July2022_qval.1e-20_extended2_tab.bed > Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta
+
+more Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta
+
+# try the only blast
+>Do1_a00028:194651-196795
+GTATATGATAACATCAAAATCGAAGAGGTGAAGTGTGTACCAGAGTTGAAGTTAAAGGCGAGAGGAATGCTGATCCGAGAGACCTCCGGAGCAAACCAATTCCCTGTAATAAGAATTGGACGAGTCTTCCACTCTTTACAAAATGTAGGCTTGTTC
+CCAAAGAACACACAATGGTGTCGAGGCGTAATATGGTAATACCCAATCTCATTCCTGACAGTAGCACAACAATGATAAGCAAAGAAATCGATAAGTCCCAAGGAGACACCCCAACACAGGCCGAGCTCGAGAAAAGCAGAAATTGTAAGAAAACTA
+TTGGGGTTTACTTGCATTGGAGACAAGCCCAAGAAGCTGAAAACCAGATGGAATACGAGGTGTAAAGGAAACCTAACATGATCAAGATGATTAAAAGACAGAACTATAGAATTCCCAGGTAATCCTGCTCCAGTTCGAATGTTAGCATCACGAGGT
+AAGCCACGGAAAACTACATCATCTGGGGCTTTGCACTTTTGTCGGGCTATGGCAAGGTCTTGGTCAGTTTGGTTCCACAAAGTTGTGTTATTTTTATAATTCTTTGCCATAAAAATAAAATGCAGAAAGGCACTAACCTAAACTAAGAGAAGATAA
+GAGCTAATTTGAGAAGTGCCCAAGTTCTGCTAAACATCGCCGAACCCAAGTCTACTGAACCAAGGAAACGCCGCAGACCTCGCCGAAACCCAAGTCTGCTGAACCAGGGAAATGCCGCAAACCTTGCCGAACCCAAGTCTACTGAACCAAGGAAAC
+GTCGCAGACCCCATCGAAAGCCACCAGCTTCGCTGAACAGCTGAACGCACGCAGCAAGTCACACCGAACCGCCGAGCGCCCAGGCCTTACTGAACTGCCGAACCCAGCAACCTTGCTGAATCGTCGAACTGCCGAAACCAGAGTTGCTAGATCGCC
+AAGACTCGCCGAACAAGAAGACTCGAATTCTCGCAGCCGAAACGGCAAGCAAGTTGCATGTTGTCGTCACCGGACCTCAACTCTGGTGAGACGCGAAGAGGGTCGCGTTACTGAAATTCAGGAAACCCAAGCCTTGACAGCGTGTTTGGAGACCAA
+AGCCGACTTCGATGCCGAGAGCTACTAGCAAACTGCGAGACAAACAGATGCGATGATCGTGCGCAAGTCTGAGTGTGGTGCACAGTCGGTGGCGGCGAACGCGGCTGTGCAAGAATTCAATGGTGAGGCAGCCCAGATGAGTAATAGGGAGATATG
+GCACCGAGAAGGATAAGTGGTGAAATTTTATTCAAAACATGAAAGGAGTTCGCGCAGGTGATGATGTCTTCTCCTTAAAATTGCTTTTTAATGGTTTAAAGATGTTTATTTAATTTGAAAATTGGCTAATATTTATCCGGCCCAACTAGGTATGTG
+ATAAAGTCTATCATATTAATTTTATTTGAATTAGTGAAAAAATAGGAAATCCAGATGATGAAGGAAAATAATTGATTTTTCTTTAATAAAATCTATAGAGATTAAATTAAAGAAAAAGGGAGCATTATAGGGGAGATTATTTTCGTGAGCCCAAAT
+TTGAAGTTTGAAGCCTAGAATATCAAACAACATTTGGGTTGAACCCATAAGAATAATTTAACTGAGTTTGGGTTTGTGAAGCTATTATGTTGAAAAGTCCAGGATGTAGTTAAGTTTATCCTCGTGACTAAATTCAATTGAAAACGTGGGCGTGAA
+GTGCAAGTAACACCACGAAACATCGGAATGGAAGACGCATGGATGGAGAAACTTGCGCCTTACGTCGTAAACTTTATCCACAAGAAATTTTTGACTATATATATATATATATACATAATCATAGTCATTAGAGAAGGTACACAATCCAACCATTTG
+AGCATTTATTTGCATCAGACATAAAAATAACTTGAGCGTCGGAGTATCTTTTGTGGGTACCTCACCCGCCGTACAAAAACAAACTCAAATCAAAGTCATATATATAGCGAGCGTGATCTAGAGTTCAATTCCAAAGTCAACATCAACAACCTGCAG
+GCCAAGTTATCTTCTTTGAAGATTTTGGGTCCAATAGGCAGCCAGCAAATGGAGGTTCAGGGGCGCAGCAGAGCCAGTACTGAGCAGTTGGGAGAGGTTGTATCATGGTGATTTTC
+
+
+>Do1_05_a00003:1151846-1153987
+GTCTTTCCCACAAACGGAGCCAATTGTTGAACCCAAAATTTCTCGAAGATAAATTAAGTTAACAATAAAATTATTTGGAGCTTGAACGTTTGACGTGAAGCGGATTGAACGGCTTGGTTTCTCTGTCTGACTTGTCAAAGCTTCTTCTCCTCAAAG
+ATGGGTGAGGTTACCTGCAAAAAACCCTCTGATGCCTAAGTTAGCACAAGAAAACTCTCAAGTGTCTGTAAAATGATTTTCTACGTACCTTTCATTAATGACCTCCATGAGACTTTATAATAGTTTGATTCAACTAATTTCATGGGTTTTCTCCAC
+CTTTCTTGTCGTCTAAGATGGTGGACTTTGTTGGAGAAAATCATGGGAATTTCTCTAGGAGATTTTCAGTGGAGACTTGGTCTTCTATTGAAGAGATTTTTCCCACGTTGTCTCTGCATTTACTTCCTTATTTAATTCCTTCATTATCCTCTTAAT
+TCTCAAAAATCAAAGGTTAAGAAATAAATGTTAAATAATTATCATTAATTAATAACAATGAGTCTCAAATTGAATGGGAAACAAAGAGATTTTGACTGGGCTTGTATTCCACGTGAAAATTCTTCCCAATTGCCATAACTCCTATTTATCTCATTG
+TTAATAAATAAAATATTATTGAAATGTAATTATCATGAAATTGACTCCTTATCAAGATAGGTTATCAATAAATATTTATAAAATTTAAATGACACATCATCTTTGATTGAGTCATTGTTCTTCAAATGACAAATGGGAAATTGCCATGTGTCGCGG
+TAATTTTGCTCCAACATAGAATATTCTAGCTTTAATTTGTATGAGTTTTGAGGAAGTCTCTAGAATTTTGTAGTATTTTCCAATAATGTGTATTAATTTTCAACAAATGTGAACCCACCAAAACAACACTGCCTAAGCTTCATGGTATTCCTGTTT
+TACCCAAGGACAGTATAGCAGCCAAGGACAAGCTGAACACCACTGCTGGGTCTGGGAGAAAAGCCGCCAGTATGACTCTGGAAACCGCGTCTGTGTCGATGTAGACCATATGGACGGTCGACGTCGAGTGTCCTATATAGTCGACAAAGCCAATAT
+ATTATAGTTGACGTCGACCATATGGACAGTCAAAAATATATTATGGTCGACGTTTATACATCAGTTTGGCTTTGTAAACCAAATTTAGATTTCAAATCTGTAAGGGACTTGTTTACTTTAAAGGATCAATAAGGACTTGTCTGGAAATTTCTCTAT
+TTCCAGATATACCAGAAGGTCTGCAAATTTCTCAGTTTCTAGATATACCAGTAGACAAAGATGAACAATTATGTAGATTAGCAGCAAGCCAACTGTCCTAGTCTTAGATGCAGAAGGTTCCCAGGTAGACCAATAGCTTTCCACATTCTCCTGGCT
+CTACCTTGGATTTTTTCCAAATTGCCTGCATAAATAGCTCTATAAACTCTGGAATGAACCACATGCATTCCCAAATACTTACCCTTAGCTTTATAAACTTTGTTTATAAACTTGCTACATATGTTTAGAGAAGCTTTTGTTGGGACGCATCAGGGT
+AGAGTTAATTTCTTCCATGTTGCGTTTGGGTTTTTCTTTTGTTGGAGAGAGAGAGAGAGAAAGCAGAGATGAGTGAGAGGTTATGTGGGAAGATGAGAGAGAGGTTATGTGGGAAAATGAGAAAGCAGGTATATTCATTGATTTCAAAATAAGATG
+TCATGACAAAAGGTAATAACGAAAAAATGTAAGGGGTAATTGAGAGTTTTCCTGTCTACAAAGTGTCTTTTTCTGCAAAGATTAGTGATGGTTCTAAATTTGAAAGGGGGGGAGACTATTCAGACCACCCAAAACCACTTAGTTGACCACCCCATT
+AATTTTTTGCCCATTTTTTTTTTCCTATTTTGCCCCTGCATTAAAAAAAAACTCAGTTTTCCAATTTTGGCCGGCCACCCCTCCCCGCTACCGGCGCAACCCCACCCCCTCCCCACTGCCGGCGCGACCCCACCCCTCCTCTTCGCCGGTCGACCC
+CACGCCTCCCCATCGCCGGCGCGACCCACCCACCCCTCCCCTTCTCTCTCTCTCTCTCTTCCCTCTCTCTGCCATCTTCTCTCTCTCCCCTCTCTCTACCTCCCTCCCTCACC
+PREDICTED: Rosa chinensis probable amidase At4g34880 (LOC112173655), mRNA 
+
+###############################################
+# Blast bedGraph files to ncbi database  - see Ancient Cassiope BLAST
+
+# BLAST
+
+# run blast
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/
+
+module load StdEnv/2020
+module load gcc/9.3.0
+module load blast+/2.12.0
+
+# https://www.metagenomics.wiki/tools/blast/blastn-output-format-6
+
+blastn -db nt -query Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta -out blast_Total_DMRs_100-10-10_July2022_qval.1e-20_extended.out -remote -outfmt "6 qseqid stitle"
+
+more blast_Total_DMRs_100-10-10_July2022_qval.1e-20_extended.out
+
+Do1_05_a00004:323760-325304 - syntaxin-71 
+Do1_06_a00002:2717520-2718959 - POLYGALACTURONASE INVOLVED IN EXPANSION3 - AT1G48100.1
+Do1_07_a00002:12442051-12443627 - NADH dehydrogenase subunit 4 gene, complete cds; mitochondrial
+
+
+#------------------
+***********
+#Friday 
+# try blast online - works to find same genes as before
+
+
+# try more strict BLAST or less strict BLAST online
+blastn -help
+
+USAGE
+  blastn [-h] [-help] [-import_search_strategy filename]
+    [-export_search_strategy filename] [-task task_name] [-db database_name]
+    [-dbsize num_letters] [-gilist filename] [-seqidlist filename]
+    [-negative_gilist filename] [-negative_seqidlist filename]
+    [-taxids taxids] [-negative_taxids taxids] [-taxidlist filename]
+    [-negative_taxidlist filename] [-entrez_query entrez_query]
+    [-db_soft_mask filtering_algorithm] [-db_hard_mask filtering_algorithm]
+    [-subject subject_input_file] [-subject_loc range] [-query input_file]
+    [-out output_file] [-evalue evalue] [-word_size int_value]
+    [-gapopen open_penalty] [-gapextend extend_penalty]
+    [-perc_identity float_value] [-qcov_hsp_perc float_value]
+    [-max_hsps int_value] [-xdrop_ungap float_value] [-xdrop_gap float_value]
+    [-xdrop_gap_final float_value] [-searchsp int_value]
+    [-sum_stats bool_value] [-penalty penalty] [-reward reward] [-no_greedy]
+    [-min_raw_gapped_score int_value] [-template_type type]
+    [-template_length int_value] [-dust DUST_options]
+    [-filtering_db filtering_database]
+    [-window_masker_taxid window_masker_taxid]
+    [-window_masker_db window_masker_db] [-soft_masking soft_masking]
+    [-ungapped] [-culling_limit int_value] [-best_hit_overhang float_value]
+    [-best_hit_score_edge float_value] [-subject_besthit]
+    [-window_size int_value] [-off_diagonal_range int_value]
+    [-use_index boolean] [-index_name string] [-lcase_masking]
+    [-query_loc range] [-strand strand] [-parse_deflines] [-outfmt format]
+    [-show_gis] [-num_descriptions int_value] [-num_alignments int_value]
+    [-line_length line_length] [-html] [-sorthits sort_hits]
+    [-sorthsps sort_hsps] [-max_target_seqs num_sequences]
+    [-num_threads int_value] [-mt_mode int_value] [-remote] [-version]
+
+blastn -db nt -query Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta -out blast_Total_DMRs_100-10-10_July2022_qval.1e-20_extended.out -remote -outfmt "6 qseqid stitle" 
+-evalue 0.05
+-word_size 11
+-gapopen 5
+-gapextend 2
+-penalty -3
+-reward 2
+-max_target_seqs 6
+
+blastn -db nt -query Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta -out blast_Total_DMRs_100-10-10_July2022_qval.1e-20_extended_settings_test.out -remote -outfmt "6 qseqid stitle" -evalue 0.05 -word_size 11 -gapopen 5 -gapextend 2 -penalty -3 -reward 2 -max_target_seqs 6
+
+Error: [blastn] internal_error: (Severe Error) Blast search error: Details: search failed. # Informational Message: [blastsrv4.REAL]: Error: CPU usage limit was exceeded, resulting in SIGXCPU (24).
+
+more blast_Total_DMRs_100-10-10_July2022_qval.1e-20_extended_settings_test.out
+
+
+# finish Alex samples
+- running now
+
+# check for same Amidase gene
+yes is there
+
+# run sample/site overlaps and BLAST
+
+
+###############################################
+###############################################
+###############################################
+# Methyl Score
+# https://www.biorxiv.org/content/10.1101/2022.01.06.475031v1
+# https://github.com/Computomics/MethylScore
+
+tmux new-session -s Dryas
+tmux attach-session -t Dryas
+
+cd /home/celphin/scratch/Dryas/
+
+mkdir April_2022_MethylScore
+cd April_2022_MethylScore/
+
+#--------------------------------------------
+# installation
+
+module load singularity/3.7
+module load StdEnv/2020
+module load nextflow/20.10.0
+module load java/1.8.0_192
+
+
+#--------------------------------------------
+# inputs
+
+--SAMPLE_SHEET=/path/to/samplesheet.tsv 
+
+sampleID 	path
+S1 	/path/to/S1A.{bam,bedGraph}
+S2 	/path/to/S2A.{bam,bedGraph}
+S2 	/path/to/S2B.{bam,bedGraph}
+
+# how to include sample information in the DMRs
+
+--GENOME=/path/to/reference_genome.fa 
+
+
+#--------------------------------------------
+# try program
+#salloc -c1 --time 23:00:00 --mem 120000m --account def-henryg
+
+nextflow run Computomics/MethylScore --BEDGRAPH --SAMPLE_SHEET=/path/to/samplesheet.tsv --GENOME=/path/to/reference_genome.fa -profile docker
+
+
+
+####################################
+#other analysis
+https://academic.oup.com/bioinformatics/article/36/17/4535/5850399
+
+# look for trichome genes and check if difference
+https://www.arabidopsis.org/servlets/TairObject?name=AT1G79840&type=locus 
+
+
+
+
+
+
+
+

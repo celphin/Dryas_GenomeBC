@@ -1,0 +1,728 @@
+#########################################################
+# Dryas seedling and phenology DNA methylation calling
+# nf-core Methylseq
+# Mapping WGBS data to reference
+# Calling methylated sites
+#############################################################
+# rename files
+
+tmux new-session -s Seed
+tmux attach-session -t Seed
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112555/150bp
+
+drwxr-s--- 2 celphin rpp-rieseber       4096 Jul 26 19:17 .
+drwxr-s--- 3 celphin rpp-rieseber       4096 Jul 26 19:17 ..
+-rwxr-x--- 1 celphin rpp-rieseber 3657380549 Jul 26 19:17 F112555_1_150bp_4_lanes.merge_chastity_passed.fastq.gz
+-rwxr-x--- 1 celphin rpp-rieseber 3565261936 Jul 26 19:18 F112555_2_150bp_4_lanes.merge_chastity_passed.fastq.gz
+-rwxr-x--- 1 celphin rpp-rieseber        624 Jul 26 19:17 GSC-2131_F112555_gsc_library.summary
+-rwxr-x--- 1 celphin rpp-rieseber        624 Jul 26 19:17 GSC-2131_F112555_gsc_library.tsv
+-rwxr-x--- 1 celphin rpp-rieseber        379 Jul 26 19:17 md5sum_results.txt
+
+more GSC-2131_F112555_gsc_library.summary
+Information regarding the data in this directory:
+
+Number of merge entries: 1
+-------------------------
+PROJECT SOW     LIBRARY POOLS   INDEX   ANTIBODY        UPPER_PROTOCOL  PLATFORM        SEQ LENGTH      TAXONOMY_ID     SPECIES PATIENT_ID      EXTERNAL_ID  ORIGINAL_SOURCE  UMI_ENABLED
+Loren Rieseberg GSC-2131        F112555 IX10885 CTTTTG          Bisulfite 1.1   Illumina        150             Dryas           SE_A_C_L_170_5  LoR_1   False
+
+
+Information regarding the processing to UMI enabled libraries can be found on our website: https://www.bcgsc.ca/services/sequencing-services/duplex-umi
+If there are any questions or additional information is needed please contact us at data_support@bcgsc.ca
+
+#-------------------------------------------------
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112555/150bp  
+more GSC-2131_F112555_gsc_library.summary
+cp F112555_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_A_C_L_170_5_F112555_R1.fastq.gz
+cp F112555_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_A_C_L_170_5_F112555_R2.fastq.gz
+
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112556/150bp
+more GSC-2131_F112556_gsc_library.summary
+cp F112556_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_L_190_43_F112556_R1.fastq.gz
+cp F112556_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_L_190_43_F112556_R2.fastq.gz
+ 
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112557/150bp
+more GSC-2131_F112557_gsc_library.summary
+cp F112557_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_L_219_42_F112557_R1.fastq.gz
+cp F112557_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_L_219_42_F112557_R2.fastq.gz
+ 
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112558/150bp
+more GSC-2131_F112558_gsc_library.summary
+cp F112558_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_L_198_35_F112558_R1.fastq.gz
+cp F112558_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_L_198_35_F112558_R2.fastq.gz
+ 
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112559/150bp
+more GSC-2131_F112559_gsc_library.summary
+cp F112559_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_T_C_L_238_47_F112559_R1.fastq.gz
+cp F112559_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_T_C_L_238_47_F112559_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112560/150bp
+more GSC-2131_F112560_gsc_library.summary
+cp F112560_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_L_187_38_F112560_R1.fastq.gz
+cp F112560_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_L_187_38_F112560_R2.fastq.gz
+  
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112561/150bp
+more GSC-2131_F112561_gsc_library.summary
+cp F112561_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_A_C_L_125_11_F112561_R1.fastq.gz
+cp F112561_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_A_C_L_125_11_F112561_R2.fastq.gz
+ 
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112563/150bp
+more GSC-2131_F112563_gsc_library.summary
+cp F112563_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_L_198_34_F112563_R1.fastq.gz
+cp F112563_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_L_198_34_F112563_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112564/150bp
+more GSC-2131_F112564_gsc_library.summary
+cp F112564_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_H_219_105_F112564_R1.fastq.gz
+cp F112564_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_H_219_105_F112564_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112565/150bp
+more GSC-2131_F112565_gsc_library.summary
+cp F112565_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_187_98_F112565_R1.fastq.gz
+cp F112565_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_187_98_F112565_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112566/150bp
+more GSC-2131_F112566_gsc_library.summary
+cp F112566_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_194_92_F112566_R1.fastq.gz
+cp F112566_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_194_92_F112566_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112567/150bp
+more GSC-2131_F112567_gsc_library.summary
+cp F112567_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_H_219_104_F112567_R1.fastq.gz
+cp F112567_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_H_219_104_F112567_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112568/150bp
+more GSC-2131_F112568_gsc_library.summary
+cp F112568_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_191_102_F112568_R1.fastq.gz
+cp F112568_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_191_102_F112568_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112569/150bp
+more GSC-2131_F112569_gsc_library.summary
+cp F112569_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_191_100_F112569_R1.fastq.gz
+cp F112569_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_191_100_F112569_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112570/150bp
+more GSC-2131_F112570_gsc_library.summary
+cp F112570_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_T_W_H_228_95_F112570_R1.fastq.gz
+cp F112570_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_T_W_H_228_95_F112570_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112571/150bp
+more GSC-2131_F112571_gsc_library.summary
+cp F112571_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_H_219_105J_F112571_R1.fastq.gz
+cp F112571_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_H_219_105J_F112571_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112572/150bp
+more GSC-2131_F112572_gsc_library.summary
+cp F112572_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_194_92J_F112572_R1.fastq.gz
+cp F112572_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_194_92J_F112572_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112573/150bp
+more GSC-2131_F112573_gsc_library.summary
+cp F112573_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/Asian1_F112573_R1.fastq.gz
+cp F112573_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/Asian1_F112573_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112574/150bp
+more GSC-2131_F112574_gsc_library.summary
+cp F112574_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/Chilliwack1_F112574_R1.fastq.gz
+cp F112574_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/Chilliwack1_F112574_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112575/150bp
+more GSC-2131_F112575_gsc_library.summary
+cp F112575_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Will_3C_100_414_F112575_R1.fastq.gz
+cp F112575_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Will_3C_100_414_F112575_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112576/150bp
+more GSC-2131_F112576_gsc_library.summary
+cp F112576_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Will_4W_13_417_F112576_R1.fastq.gz
+cp F112576_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Will_4W_13_417_F112576_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112577/150bp
+more GSC-2131_F112577_gsc_library.summary
+cp F112577_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Mead_1C_33_446_F112577_R1.fastq.gz
+cp F112577_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Mead_1C_33_446_F112577_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112578/150bp
+more GSC-2131_F112578_gsc_library.summary
+cp F112578_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Mead_1W_116_444_F112578_R1.fastq.gz
+cp F112578_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Mead_1W_116_444_F112578_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112579/150bp
+more GSC-2131_F112579_gsc_library.summary
+cp F112579_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Cass_4C_4_524_F112579_R1.fastq.gz
+cp F112579_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Cass_4C_4_524_F112579_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112580/150bp
+more GSC-2131_F112580_gsc_library.summary
+cp F112580_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Cass_5W_130_525_F112580_R1.fastq.gz
+cp F112580_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Cass_5W_130_525_F112580_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112581/150bp
+more GSC-2131_F112581_gsc_library.summary
+cp F112581_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Cass_10W_60_544_F112581_R1.fastq.gz
+cp F112581_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Cass_10W_60_544_F112581_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112583/150bp
+more GSC-2131_F112583_gsc_library.summary
+cp F112583_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Fert_5C_97_1F_F112583_R1.fastq.gz
+cp F112583_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Fert_5C_97_1F_F112583_R2.fastq.gz
+
+cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112584/150bp
+more GSC-2131_F112584_gsc_library.summary
+cp F112584_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Fert_6W_110_3F_F112584_R1.fastq.gz
+cp F112584_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Fert_6W_110_3F_F112584_R2.fastq.gz
+
+
+cd /home/celphin/scratch/Dryas/Seedling_Methylseq/input/
+
+Asian1_F112573_R1.fastq.gz                 MatFl_Will_3C_100_414_F112575_R2.fastq.gz  SE_L_C_L_198_35_F112558_R1.fastq.gz
+Asian1_F112573_R2.fastq.gz                 MatFl_Will_4W_13_417_F112576_R1.fastq.gz   SE_L_C_L_198_35_F112558_R2.fastq.gz
+Chilliwack1_F112574_R1.fastq.gz            MatFl_Will_4W_13_417_F112576_R2.fastq.gz   SE_L_W_H_219_104_F112567_R1.fastq.gz
+Chilliwack1_F112574_R2.fastq.gz            SE_A_C_L_125_11_F112561_R1.fastq.gz        SE_L_W_H_219_104_F112567_R2.fastq.gz
+MatFl_Cass_10W_60_544_F112581_R1.fastq.gz  SE_A_C_L_125_11_F112561_R2.fastq.gz        SE_L_W_H_219_105_F112564_R1.fastq.gz
+MatFl_Cass_10W_60_544_F112581_R2.fastq.gz  SE_A_C_L_170_5_F112555_R1.fastq.gz         SE_L_W_H_219_105_F112564_R2.fastq.gz
+MatFl_Cass_4C_4_524_F112579_R1.fastq.gz    SE_A_C_L_170_5_F112555_R2.fastq.gz         SE_L_W_H_219_105J_F112571_R1.fastq.gz
+MatFl_Cass_4C_4_524_F112579_R2.fastq.gz    SE_L_C_H_187_98_F112565_R1.fastq.gz        SE_L_W_H_219_105J_F112571_R2.fastq.gz
+MatFl_Cass_5W_130_525_F112580_R1.fastq.gz  SE_L_C_H_187_98_F112565_R2.fastq.gz        SE_L_W_L_190_43_F112556_R1.fastq.gz
+MatFl_Cass_5W_130_525_F112580_R2.fastq.gz  SE_L_C_H_191_100_F112569_R1.fastq.gz       SE_L_W_L_190_43_F112556_R2.fastq.gz
+MatFl_Fert_5C_97_1F_F112583_R1.fastq.gz    SE_L_C_H_191_100_F112569_R2.fastq.gz       SE_L_W_L_198_34_F112563_R1.fastq.gz
+MatFl_Fert_5C_97_1F_F112583_R2.fastq.gz    SE_L_C_H_191_102_F112568_R1.fastq.gz       SE_L_W_L_198_34_F112563_R2.fastq.gz
+MatFl_Fert_6W_110_3F_F112584_R1.fastq.gz   SE_L_C_H_191_102_F112568_R2.fastq.gz       SE_L_W_L_219_42_F112557_R1.fastq.gz
+MatFl_Fert_6W_110_3F_F112584_R2.fastq.gz   SE_L_C_H_194_92_F112566_R1.fastq.gz        SE_L_W_L_219_42_F112557_R2.fastq.gz
+MatFl_Mead_1C_33_446_F112577_R1.fastq.gz   SE_L_C_H_194_92_F112566_R2.fastq.gz        SE_T_C_L_238_47_F112559_R1.fastq.gz
+MatFl_Mead_1C_33_446_F112577_R2.fastq.gz   SE_L_C_H_194_92J_F112572_R1.fastq.gz       SE_T_C_L_238_47_F112559_R2.fastq.gz
+MatFl_Mead_1W_116_444_F112578_R1.fastq.gz  SE_L_C_H_194_92J_F112572_R2.fastq.gz       SE_T_W_H_228_95_F112570_R1.fastq.gz
+MatFl_Mead_1W_116_444_F112578_R2.fastq.gz  SE_L_C_L_187_38_F112560_R1.fastq.gz        SE_T_W_H_228_95_F112570_R2.fastq.gz
+MatFl_Will_3C_100_414_F112575_R1.fastq.gz  SE_L_C_L_187_38_F112560_R2.fastq.gz
+
+# check all files transferred
+28 samples here
+
+###########################################################
+# run methylation calling
+
+cd /home/celphin/scratch/Dryas/May2021_Methylseq
+
+cp -vr /home/celphin/scratch/Dryas/May2021_Methylseq/* /home/celphin/scratch/Dryas/Seedling_Methylseq/
+# done
+
+# clean out previous run
+rm -r ./work/*
+rm -r ./output/*
+rm .nextflow.log*
+
+# make it run from Greg's account
+nano nextflow.config
+# process.clusterOptions = "--account def-henryg"
+
+
+#-------------------------------
+# edit config files
+
+more nextflow.config
+
+// Global default params, used in configs
+params {
+
+  // Workflow flags
+  genomes {
+    'Dryas_octo' {
+      fasta = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/' // Used if no index given
+    }
+    // Any number of additional genomes, key is used with --genome
+  }
+  input = '/home/celphin/scratch/Dryas/Seedling_Methylseq/input/*_R{1,2}.fastq.gz'
+  input_paths = null
+  fasta = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/Dryas_octopetala_H1.supercontigs.fa'
+  // bismark_index = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/BismarkIndex/'
+
+
+
+###############################
+
+tmux new-session -s Seed
+tmux attach-session -t Seed
+
+cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
+
+salloc -c1 --time 23:00:00 --mem 120000m --account def-henryg
+
+module load singularity/3.7
+module load StdEnv/2020
+module load nextflow/20.10.0
+module load java/1.8.0_192
+
+cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
+
+nextflow run nf-core/methylseq/ -profile singularity,cc 
+
+#------------------------------------
+
+Picked up JAVA_TOOL_OPTIONS: -Xmx2g
+N E X T F L O W  ~  version 20.10.0
+Launching `nf-core/methylseq` [distracted_albattani] - revision: 03972a686b [master]
+
+
+------------------------------------------------------
+ Only displaying parameters that differ from defaults.
+------------------------------------------------------
+WARN: Access to undefined parameter `bwa_meth_index` -- Initialise it to a default value eg. `params.bwa_meth_index = some_value`
+WARN: Access to undefined parameter `fasta_index` -- Initialise it to a default value eg. `params.fasta_index = some_value`
+[-        ] process > get_software_versions -
+[-        ] process > get_software_versions -
+[-        ] process > get_software_versions -
+[-        ] process > get_software_versions [  0%] 0 of 1
+[-        ] process > get_software_versions [  0%] 0 of 1
+[-        ] process > get_software_versions [  0%] 0 of 1
+[-        ] process > get_software_versions [  0%] 0 of 1
+[-        ] process > makeBismarkIndex      [  0%] 0 of 1
+[-        ] process > fastqc                [  0%] 0 of 28
+[-        ] process > trim_galore           [  0%] 0 of 28
+[-        ] process > bismark_align         -
+[-        ] process > bismark_deduplicate   -
+[-        ] process > bismark_methXtract    -
+[-        ] process > bismark_report        -
+[-        ] process > bismark_summary       -
+[-        ] process > qualimap              -
+[-        ] process > preseq                -
+[-        ] process > multiqc               -
+[-        ] process > output_documentation  [  0%] 0 of 1
+Pulling Singularity image docker://nfcore/methylseq:1.6.1 [cache /scratch/celphin/Dryas/Seedling_Methylseq/work/singularity/nfcore-methylseq-1.6.1.img]
+WARN: Singularity cache directory has not been defined -- Remote image will be stored in the path: /scratch/celphin/Dryas/Seedling_Methylseq/work/singularity -- Use env variable NXF_SINGULARITY_CACHEDIR to specify a different location
+
+
+
+------------------------------------------------------
+ Only displaying parameters that differ from defaults.
+------------------------------------------------------
+
+executor >  slurm (92)
+[c8/fc2c90] process > get_software_versions                          [100%] 1 of 1 ✔
+[fe/bbc415] process > makeBismarkIndex (1)                           [100%] 1 of 1 ✔
+[53/84ad17] process > fastqc (MatFl_Cass_5W_130_525_F112580)         [100%] 28 of 28 ✔
+[82/e492b5] process > trim_galore (Chilliwack1_F112574)              [100%] 28 of 28 ✔
+[60/2cbc09] process > bismark_align (SE_L_C_H_191_102_F112568)       [  4%] 1 of 28
+[32/9513a6] process > bismark_deduplicate (SE_L_C_H_191_102_F112568) [100%] 1 of 1
+[f3/17ec2a] process > bismark_methXtract (SE_L_C_H_191_102_F112568)  [100%] 1 of 1
+[20/458e78] process > bismark_report (SE_L_C_H_191_102_F112568)      [100%] 1 of 1
+[-        ] process > bismark_summary                                -
+[ae/d6a5aa] process > qualimap (SE_L_C_H_191_102_F112568)            [100%] 1 of 1
+[c7/5396f9] process > preseq (SE_L_C_H_191_102_F112568)              [100%] 1 of 1
+[-        ] process > multiqc                                        -
+[0d/555277] process > output_documentation                           [100%] 1 of 1 ✔
+
+
+squeue -u celphin
+          JOBID     USER      ACCOUNT           NAME  ST  TIME_LEFT NODES CPUS TRES_PER_N MIN_MEM NODELIST (REASON)
+       44241289  celphin def-henryg_c    interactive   R    8:56:41     1   30        N/A  12000M cdr1519 (None)
+       44249643  celphin def-henryg_c    interactive   R   13:03:54     1    1        N/A 120000M cdr811 (None)
+       44252278  celphin def-henryg_c nf-bismark_ali   R 7-18:14:25     1   12        N/A     64G cdr1069 (None)
+       44252285  celphin def-henryg_c nf-bismark_ali   R 7-21:42:31     1   12        N/A     64G cdr1755 (None)
+       44252301  celphin def-henryg_c nf-bismark_ali   R 7-22:03:20     1   12        N/A     64G cdr1715 (None)
+       44252340  celphin def-henryg_c nf-bismark_ali   R 7-22:12:51     1   12        N/A     64G cdr1033 (None)
+       44252380  celphin def-henryg_c nf-bismark_ali   R 7-22:21:37     1   12        N/A     64G cdr1051 (None)
+       44252401  celphin def-henryg_c nf-bismark_ali   R 7-22:30:50     1   12        N/A     64G cdr1071 (None)
+       44253398  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253400  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253410  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44252457  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44252655  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44252896  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44252922  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44252926  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44252950  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253053  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253060  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253081  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253118  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253154  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253157  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253171  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253187  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253191  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253263  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253270  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253391  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+
+#---------------------------------------
+#-------------------------
+# ran out of time - just restart
+
+salloc -c1 --time 23:00:00 --mem 120000m --account def-henryg
+
+module load singularity/3.7
+module load StdEnv/2020
+module load nextflow/20.10.0
+module load java/1.8.0_192
+
+cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
+
+nextflow run nf-core/methylseq/ -profile singularity,cc -resume
+
+
+executor >  slurm (21)
+[d5/2416ab] process > get_software_versions                         [100%] 1 of 1 ✔
+[fe/bbc415] process > makeBismarkIndex (1)                          [100%] 1 of 1, cached: 1 ✔
+[53/84ad17] process > fastqc (MatFl_Cass_5W_130_525_F112580)        [100%] 28 of 28, cached: 28 ✔
+[5d/944ecb] process > trim_galore (MatFl_Cass_5W_130_525_F112580)   [100%] 28 of 28, cached: 28 ✔
+[bc/6692aa] process > bismark_align (MatFl_Cass_5W_130_525_F112580) [ 43%] 12 of 28, cached: 12
+[40/0e5ff2] process > bismark_deduplicate (SE_L_W_L_219_42_F112557) [100%] 12 of 12, cached: 11
+[9a/9e66a6] process > bismark_methXtract (SE_L_W_L_219_42_F112557)  [ 92%] 11 of 12, cached: 11
+[14/a8942e] process > bismark_report (SE_L_W_L_190_43_F112556)      [100%] 11 of 11, cached: 11
+[-        ] process > bismark_summary                               -
+[bc/948b74] process > qualimap (SE_L_W_L_219_42_F112557)            [100%] 12 of 12, cached: 11
+[17/5762ac] process > preseq (SE_L_W_L_219_42_F112557)              [ 92%] 11 of 12, cached: 11
+[-        ] process > multiqc                                       -
+[0d/555277] process > output_documentation                          [100%] 1 of 1, cached: 1 ✔
+
+#-------------------------
+# maybe ran out of time - check - just restart
+
+salloc -c1 --time 23:00:00 --mem 120000m --account def-henryg
+
+module load singularity/3.7
+module load StdEnv/2020
+module load nextflow/20.10.0
+module load java/1.8.0_192
+
+cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
+
+nextflow run nf-core/methylseq/ -profile singularity,cc -resume
+
+executor >  slurm (11)
+[74/691046] process > get_software_versions                            [100%] 1 of 1 ✔
+[fe/bbc415] process > makeBismarkIndex (1)                             [100%] 1 of 1, cached: 1 ✔
+[b1/2e1530] process > fastqc (SE_L_C_H_191_100_F112569)                [100%] 28 of 28, cached: 28 ✔
+[5d/944ecb] process > trim_galore (MatFl_Cass_5W_130_525_F112580)      [100%] 28 of 28, cached: 28 ✔
+[f8/3eae9c] process > bismark_align (MatFl_Cass_5W_130_525_F112580)    [ 93%] 26 of 28, cached: 26
+[08/95601e] process > bismark_deduplicate (SE_L_C_H_191_100_F112569)   [100%] 26 of 26, cached: 26
+[09/3cbd50] process > bismark_methXtract (MatFl_Fert_5C_97_1F_F112583) [ 81%] 21 of 26, cached: 21
+[8a/9c07c0] process > bismark_report (SE_L_C_H_191_100_F112569)        [100%] 21 of 21, cached: 21
+[-        ] process > bismark_summary                                  -
+[29/ee93ae] process > qualimap (MatFl_Fert_5C_97_1F_F112583)           [ 96%] 25 of 26, cached: 25
+[8d/987e20] process > preseq (MatFl_Fert_5C_97_1F_F112583)             [ 92%] 24 of 26, cached: 24
+[-        ] process > multiqc                                          -
+[0d/555277] process > output_documentation                             [100%] 1 of 1, cached: 1 ✔
+
+
+executor >  slurm (16)
+[74/691046] process > get_software_versions                          [100%] 1 of 1 ✔
+[fe/bbc415] process > makeBismarkIndex (1)                           [100%] 1 of 1, cached: 1 ✔
+[b1/2e1530] process > fastqc (SE_L_C_H_191_100_F112569)              [100%] 28 of 28, cached: 28 ✔
+[5d/944ecb] process > trim_galore (MatFl_Cass_5W_130_525_F112580)    [100%] 28 of 28, cached: 28 ✔
+[f8/3eae9c] process > bismark_align (MatFl_Cass_5W_130_525_F112580)  [ 93%] 26 of 28, cached: 26
+[08/95601e] process > bismark_deduplicate (SE_L_C_H_191_100_F112569) [100%] 26 of 26, cached: 26
+[0b/91bc6d] process > bismark_methXtract (SE_L_C_L_187_38_F112560)   [100%] 26 of 26, cached: 21
+[ad/2e54d9] process > bismark_report (SE_L_C_L_187_38_F112560)       [100%] 26 of 26, cached: 21
+[-        ] process > bismark_summary                                -
+[29/ee93ae] process > qualimap (MatFl_Fert_5C_97_1F_F112583)         [100%] 26 of 26, cached: 25
+[d4/c64f1a] process > preseq (SE_L_C_L_187_38_F112560)               [100%] 26 of 26, cached: 24
+[-        ] process > multiqc                                        -
+[0d/555277] process > output_documentation                           [100%] 1 of 1, cached: 1 ✔
+salloc: Job 44609913 has exceeded its time limit and its allocation has been revoked.
+                                                                                     slurmstepd: error: *** STEP 44609913.interactive ON cdr1965 CANCELLED AT 2022-09-13T13:45:01 DUE TO TIME LIMIT ***
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: error: cdr1965: task 0: Killed
+srun: launch/slurm: _step_signal: Terminating StepId=44609913.interactive
+srun: error: Timed out waiting for job step to complete
+
+#-------------------------
+# ran out of time - restart
+
+salloc -c1 --time 23:00:00 --mem 120000m --account def-henryg
+
+module load singularity/3.7
+module load StdEnv/2020
+module load nextflow/20.10.0
+module load java/1.8.0_192
+
+cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
+
+nextflow run nf-core/methylseq/ -profile singularity,cc -resume
+
+
+WARN: Access to undefined parameter `bwa_meth_index` -- Initialise it to a default value eg. `params.bwa_meth_index = some_value`
+WARN: Access to undefined parameter `fasta_index` -- Initialise it to a default value eg. `params.fasta_index = some_value`
+executor >  slurm (15)
+[28/7ba12f] process > get_software_versions                              [100%] 1 of 1 ✔
+[fe/bbc415] process > makeBismarkIndex (1)                               [100%] 1 of 1, cached: 1 ✔
+[53/84ad17] process > fastqc (MatFl_Cass_5W_130_525_F112580)             [100%] 28 of 28, cached: 28 ✔
+[48/29b8a0] process > trim_galore (MatFl_Will_4W_13_417_F112576)         [100%] 28 of 28, cached: 28 ✔
+[92/5a1491] process > bismark_align (MatFl_Will_4W_13_417_F112576)       [100%] 28 of 28, cached: 26 ✔
+[40/b3f566] process > bismark_deduplicate (MatFl_Will_4W_13_417_F112576) [100%] 28 of 28, cached: 26 ✔
+[f4/9e358d] process > bismark_methXtract (MatFl_Will_4W_13_417_F112576)  [100%] 28 of 28, cached: 26 ✔
+[96/2885cd] process > bismark_report (MatFl_Will_4W_13_417_F112576)      [100%] 28 of 28, cached: 26 ✔
+[fe/d714d7] process > bismark_summary                                    [100%] 1 of 1 ✔
+[cb/f29b4d] process > qualimap (MatFl_Will_4W_13_417_F112576)            [100%] 28 of 28, cached: 26 ✔
+[35/7d1acc] process > preseq (MatFl_Will_4W_13_417_F112576)              [100%] 28 of 28, cached: 26 ✔
+[1a/abd87b] process > multiqc (1)                                        [100%] 1 of 1 ✔
+[0d/555277] process > output_documentation                               [100%] 1 of 1, cached: 1 ✔
+-[nf-core/methylseq] Pipeline completed successfully-
+Completed at: 14-Sep-2022 16:54:40
+Duration    : 16h 1m 5s
+CPU hours   : 3'992.7 (92.2% cached)
+Succeeded   : 15
+Cached      : 214
+
+
+
+
+###################################
+# save the bismark report to local computer
+cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
+
+cd /home/Owner/Desktop
+scp -v celphin@cedar.computecanada.ca:/home/celphin/scratch/Dryas/Seedling_Methylseq/output/MultiQC/multiqc_report.html .
+scp -v celphin@cedar.computecanada.ca:/home/celphin/scratch/Dryas/Seedling_Methylseq/output/bismark_methylation_calls/bedGraph/SE_*.bedGraph.gz ./Seedling_bedgraph
+scp -v celphin@cedar.computecanada.ca:/home/celphin/scratch/Dryas/Seedling_Methylseq/output/bismark_methylation_calls/bedGraph/MatFl_*.bedGraph.gz ./MatFlwr_bedgraph
+
+scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/*LAT*deduplicated.bedGraph ./Lat_bedGraph
+  
+
+# MultiQC
+# ~ 60% of reads mapped
+
+# Unzip bedgraphs
+cd /home/Owner/MyDocuments/Hackery\ Backup/gaiaa/Documents/Cassandra/PhD/GenomeBC_Dryas/Wild_Dryas_WGBS/June2022_DMRs/Seedling_bedgraph/
+
+gunzip SE_*.bedGraph.gz
+
+######################################
+# run metilene to find the DMRs in seedlings
+
+
+#--------------------------------------------
+# run metilene to find the DMRs in mature flower vs senecence 
+
+
+
+
+#-------------------------------------------------------------
+# find DMRs
+
+#DMRs
+#June 2022
+
+#Metilene
+# https://www.bioinf.uni-leipzig.de/Software/metilene/Manual/#12_parameters
+# https://www.bioinf.uni-leipzig.de/Software/metilene/Manual/#5_dmr_de-novo_annotation
+
+##########################################
+# check space
+
+#quota
+
+                             Description                Space           # of files
+                    /home (user celphin)              12G/50G            145k/500k
+                 /scratch (user celphin)            3494G/20T            40k/1000k
+                /project (group celphin)            31k/2048k               1/1025
+             /project (group def-henryg)            6527G/10T            256k/500k
+        /project (group rrg-rieseber-ac)          6177G/2048k            552k/1025
+              /project (group def-cronk)            1265G/10T             33k/500k
+           /project (group def-rieseber)            7407G/10T            367k/500k
+           /project (group rpp-rieseber)            198T/200T            422k/500k
+--
+On some clusters, a break down per user may be available by adding the option '--per_user'.
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs
+
+# replace
+/scratch/celphin/Dryas/Nov2020_Metilene_DMR/
+# with
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/
+
+##########################################
+# copy metilene program and make
+
+tar -xvzf metilene_v02-8.tar.gz
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/
+
+make
+
+###################################
+# copy bedGraph files over
+cd /scratch/celphin/Dryas/Nov2020_Metilene_DMR/data/
+mkdir /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+cp -v C*.bedGraph /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+cp -v W*.bedGraph /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+# upzip all the bedgraph files
+# gunzip -v /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/*.gz
+
+######################################
+tmux new-session -s DMR
+tmux attach-session -t DMR
+
+salloc -c1 --time 3:00:00 --mem 120000m --account def-rieseber
+
+module load StdEnv/2020
+module load bedtools/2.30.0 
+
+# make sorted bedgraph files
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+#find . -name "*.bedGraph" -print > file_list.txt
+
+while read name
+do
+bedtools sort -i ${name} >  ${name}_sorted.bedGraph
+sort -c -k1,1 -k2,2n ${name}_sorted.bedGraph
+cat ${name}_sorted.bedGraph | tr ' ' '\t' > ${name}_sorted_tab.bedGraph
+done < file_list.txt
+
+#-------------------------------
+#get list of files
+find . -name "W*_sorted_tab.bedGraph" -print > W_list.txt
+find . -name "C*_sorted_tab.bedGraph" -print > C_list.txt
+
+# replace ./ in file names
+sed -i 's/\.\///g' W_list.txt
+sed -i 's/\.\///g' C_list.txt
+
+# make csv and space delimited files
+tr '\t' ',' < "./W_list.txt" > "./W_list_csv.csv"
+tr '\t' ',' < "./C_list.txt" > "./C_list_csv.csv"
+
+tr '\t' ' ' < "./W_list.txt" > "./W_list_sp_.txt"
+tr '\t' ' ' < "./C_list.txt" > "./C_list_sp_.txt"
+
+# NOTE: one short in Warming list
+
+#---------------------------
+#make bed file
+
+tmux new-session -s DMR
+tmux attach-session -t DMR
+
+salloc -c1 --time 3:00:00 --mem 120000m --account def-rieseber
+
+module load StdEnv/2020
+module load bedtools/2.30.0 
+
+# make sorted bedgraph files
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+NA="NA"
+h1='W'
+h2='C'
+out_metilene="metilene_"$h1"_"$h2".input"
+
+Wfiles=$(sed ':a;N;$!ba;s/\n/ /g' W_list.txt)
+Cfiles=$(sed ':a;N;$!ba;s/\n/ /g' C_list.txt)
+
+Wname=$(tr ',' ' ' < "./W_list_csv.csv")
+Cname=$(tr ',' ' ' < "./C_list_csv.csv")
+
+bedtools unionbedg -header -names $Wname $Cname -filler $NA -i $Wfiles $Cfiles | cut -f1,3- | sed 's/end/pos/' > $out_metilene
+
+
+############################
+head -5 metilene_W_C.input > subset.txt
+
+grep '^c.*' subset.txt | wc -w
+grep '^Q.*' subset.txt | wc -w
+grep '^Q.*' subset.txt | wc -l
+
+#103 values per line
+
+#header should be:
+#chrom pos ${Wname} ${Cname}
+# but the Cnames are one new line
+W_ALAS0W_8_265
+	C_ALAS_00C_227
+
+#edit to remove extra enter
+nano metilene_W_C.input
+
+# check header again
+head -5 metilene_W_C.input > subset2.txt
+
+grep '^c.*' subset2.txt | wc -w
+103
+grep '^Q.*' subset2.txt | wc -w
+412
+grep '^Q.*' subset2.txt | wc -l
+4
+-------------------------------
+salloc -c10 --time 3:00:00 --mem 120000m --account def-rieseber
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/
+
+module load StdEnv/2020
+module load bedtools/2.30.0 
+
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_W_C.input --maxdist 100 --mincpgs 20 --minMethDiff 0.2 --mode 1 --threads 10 -a W -b C -v 0.2 > metilene_output_June2022_maxd100_minC20_mindiff20.txt
+
+segmenting Do1_a00047-[146885,147093], 16 CpGs
+segmenting Do1_a00047-[147217,148270], 103 CpGs
+segmenting Do1_a00047-[148449,148480], 3 CpGs
+Number of Tests: 849862
+
+
+# maxdist (allowed nt distance between two CpGs within a DMR)
+# mincpgs (minimum # of CpGs in a DMR)
+# minMethDiff (minimum mean methylation difference for calling DMRs)
+
+# should try default values
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_W_C.input --mode 1 --threads 10 -a W -b C > metilene_output_June2022_default.txt
+
+
+Number of Tests: 899946
+
+# header of output
+chr	start	end	q-value	mean_methyl	#CpGs	p-value_MWU	p-value_2D-KS	mean_g1	mean_g2
+
+#####################################
+# want to elect only low p-values?
+#perl filterOutput.pl -q <string>[-o <string>] [-p <n>] [-c <n>] [-d <n>] [-l <n>] [-a <string>] [-b <string>]
+
+#q-value is the Bonferroni adjusted p-value
+
+# need R installed with ggplot2
+
+module load nixpkgs/16.09
+module load gcc/7.3.0
+module load r/3.6.0
+module load gdal
+module load udunits
+module load python
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/3.6/
+
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_output_June2022_default.txt -p 0.001
+
+[INFO]  Mon Jun 20, 19:37:43, 2022      Checking flags
+[INFO]  Mon Jun 20, 19:37:43, 2022      Filter DMRs.
+[INFO]  Mon Jun 20, 19:37:44, 2022      Wrote 638 DMRs with adj. p-value<0.001, a minimum absolute difference>=0.1, a minimum length [CpG]>=10 and a minimum length [nt]>=0
+[INFO]  Mon Jun 20, 19:37:44, 2022      Bedgraph file containing DMR difference: /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_qval.0.001.bedgraph
+[INFO]  Mon Jun 20, 19:37:44, 2022      Plot DMR statistics.
+Warning messages:
+1: Removed 630 rows containing non-finite values (stat_bin).
+2: Removed 2 rows containing missing values (geom_bar).
+null device
+          1
+
+#####################################
+#make into loop to run through list of DMRs and make into bedGraph
+
+#test
+chrom=QANW01012871.1	
+start=644636
+end=645586
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+grep "^${chrom}" metilene_W_C.input | awk '^"${chrom}"[ \t].*[ \t]' "${start}<=$1 && $1>=${end}" {print} > "${chrom}_${start}_${end}.txt"
+
+#https://www.geeksforgeeks.org/awk-command-unixlinux-examples/
+#awk
+
+grep "^${chrom}" metilene_W_C.input | awk '${start}<=$1 && $1>=${end} > 2 {print $0}' > "${chrom}_${start}_${end}.txt"
+
+
+
