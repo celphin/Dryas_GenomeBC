@@ -5,7 +5,7 @@
 #####################################
 
 #################################
-# cleaning RNAseq data
+# check RNAseq data
 # https://www.frontiersin.org/articles/10.3389/fgene.2021.649619/full 
 # https://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0881-8/figures/1
 # https://hbctraining.github.io/Intro-to-rnaseq-hpc-O2/lessons/02_assessing_quality.html
@@ -29,16 +29,6 @@ cd /home/Owner/Desktop
 
 scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/input/fastq_files/fastqc/* .
 
-###################################
-# Trimmomatic
-# http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf 
-# maybe not needed for RSEM
-
-module load StdEnv/2020
-module load trimmomatic/0.39
-To execute Trimmomatic run: java -jar $EBROOTTRIMMOMATIC/trimmomatic-0.39.jar
-
-TrimmomaticPE -phred33 /NS.1889.003.NEBNext_dual_i7_E8---NEBNext_dual_i5_E8.L_C11_R1.fastq.gz /NS.1889.003.NEBNext_dual_i7_E8---NEBNext_dual_i5_E8.L_C11_R2.fastq.gz /L_C11_R1_pairedout /L_C11_R1_unpairedout /L_C11_R2_pairedout /L_C11_R2_unpairedout ILLUMINACLIP:/TruSeq3-PE.fa:2:30:10 LEADING:5 TRAILING:5 AVGQUAL:36
 
 ##############################################
 # data analysis
