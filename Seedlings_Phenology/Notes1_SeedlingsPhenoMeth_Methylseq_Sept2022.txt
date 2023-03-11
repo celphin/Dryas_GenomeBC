@@ -214,13 +214,19 @@ rm -r ./work/*
 rm -r ./output/*
 rm .nextflow.log*
 
+# from 
+# git clone https://github.com/nf-core/methylseq.git
+# Note: needed to copy the nf-core/methylseq/conf/base.config to the directory running the program
+# also need base.config  igenomes.config  modules.config  test.config  test_full.config
+
 # make it run from Greg's account
 nano nextflow.config
 # process.clusterOptions = "--account def-henryg"
 
+# had to run once to set up the singularity image
 
 #-------------------------------
-# edit config files
+# edit config files for this
 
 more nextflow.config
 
@@ -238,6 +244,7 @@ params {
   input_paths = null
   fasta = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/Dryas_octopetala_H1.supercontigs.fa'
   // bismark_index = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/BismarkIndex/'
+
 
 
 

@@ -1,7 +1,62 @@
 ﻿####################################################
-# Compare genes/regions that show wamring in RNAseq and DMRs
-
+# Compare genes/regions that show warming signal in RNAseq and DMRs
+# March 2023
 ###############################################
+
+# Compare regions between RNAseq and DMRs
+
+# Step 1: add 1000bp to each end of DMR
+# add 500bp on each side of the DMR
+awk '{$3+=1000}1' Total_DMRs_100-10-10_July2022_qval.1e-20.bed > Total_DMRs_100-10-10_July2022_qval.1e-20_extended.bed
+awk '{$2-=1000}1' Total_DMRs_100-10-10_July2022_qval.1e-20_extended.bed > Total_DMRs_100-10-10_July2022_qval.1e-20_extended2.bed
+
+# Step 2: get gene positions of each differntially expressed gene
+Do1_00107G00001V1.1 CDS=1-1578
+
+
+# Step 3: Union of DMRs and RNAseq regions
+# any overlap? - maybe add more/less to DMRs
+
+bedtools unionbedg -header -names ${Site1}_${h1}name ${Site1}_${h2}name -filler $NA -i ${Site1}_${h1}files ${Site1}_${h2}files | cut -f1,3- | sed 's/end/pos/' > "$Site1_$in_metilene"
+bedtools unionbedg -header -names ${Site2}_${h1}name ${Site2}_${h2}name -filler $NA -i ${Site2}_${h1}files ${Site2}_${h2}files | cut -f1,3- | sed 's/end/pos/' > "$Site2_$in_metilene"
+bedtools unionbedg -header -names ${Site3}_${h1}name ${Site3}_${h2}name -filler $NA -i ${Site3}_${h1}files ${Site3}_${h2}files | cut -f1,3- | sed 's/end/pos/' > "$Site3_$in_metilene"
+bedtools unionbedg -header -names ${Site4}_${h1}name ${Site4}_${h2}name -filler $NA -i ${Site4}_${h1}files ${Site4}_${h2}files | cut -f1,3- | sed 's/end/pos/' > "$Site4_$in_metilene"
+
+
+
+# Step4: BLAST genes that match 
+
+
+# Step 5: determine how to plot
+
+
+
+
+####################
+# Alternatively
+
+# Get fasta of DMRs
+sed -e 's/ /\t/g' Total_DMRs_100-10-10_July2022_qval.1e-20_extended2.bed > Total_DMRs_100-10-10_July2022_qval.1e-20_extended2_tab.bed
+bedtools getfasta -fi /home/celphin/scratch/Dryas/Dryas_octopetala_reference/genomes/Dryas_octopetala_H1.supercontigs.fa -bed Total_DMRs_100-10-10_July2022_qval.1e-20_extended2_tab.bed > Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta
+more Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta
+blastn -db nt -query Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta -out blast_Total_DMRs_100-10-10_July2022_qval.1e-20_extended.out -remote -outfmt "6 qseqid stitle" 
+-evalue 0.05
+-word_size 11
+-gapopen 5
+-gapextend 2
+-penalty -3
+-reward 2
+-max_target_seqs 6
+
+blastn -db nt -query Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta -out blast_Total_DMRs_100-10-10_July2022_qval.1e-20_extended_settings_test.out -remote -outfmt "6 qseqid stitle" -evalue 0.05 -word_size 11 -gapopen 5 -gapextend 2 -penalty -3 -reward 2 -max_target_seqs 6
+
+Error: [blastn] internal_error: (Severe Error) Blast search error: Details: search failed. # Informational Message: [blastsrv4.REAL]: Error: CPU usage limit was exceeded, resulting in SIGXCPU (24).
+
+more blast_Total_DMRs_100-10-10_July2022_qval.1e-20_extended_settings_test.out
+
+# take blast results and compare to RNAseq results
+
+#################################3
 # convert bedGraph files to bed files to fasta files
 
 cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/
@@ -177,8 +232,6 @@ yes is there
 ################################
 # Compare blast results with RNAseq data - any overlap?
 
-
-
 # find matches between studies - e.g. the overlap/union between the warming and phenology or seedling and parents DMRs
 
 # https://stackoverflow.com/questions/13272717/inner-join-on-two-text-files
@@ -188,103 +241,10 @@ yes is there
 awk 'NR==FNR {a[$1]; next} $1 in a {print $0, a[$2]}' OFS='\t' LAT_DMRs_qval.0.05.out metilene_qval.0.05.out > LAT_Total.txt
 # returns all that match for the 'chrom'
 
-
-
-#################################################
-# only need to run once per folder before site specific data will run
-
-grep ".*${Site1}.*" "${h1}_list.txt" > "${Site1}_${h1}_list.txt"
-grep ".*${Site1}.*" "${h2}_list.txt" > "${Site1}_${h2}_list.txt"
-
-grep -E "CASS"\|"DRY"\|"MEAD"\|"WILL"\|"FERT" "${h1}_list.txt" > "${Site2}_${h1}_list.txt"
-grep -E "CASS"\|"DRY"\|"MEAD"\|"WILL"\|"FERT" "${h2}_list.txt" > "${Site2}_${h2}_list.txt"
-
-grep ".*${Site3}.*" "${h1}_list.txt" > "${Site3}_${h1}_list.txt"
-grep ".*${Site3}.*" "${h2}_list.txt" > "${Site3}_${h2}_list.txt"
-
-grep ".*${Site4}.*" "${h1}_list.txt" > "${Site4}_${h1}_list.txt"
-grep ".*${Site4}.*" "${h2}_list.txt" > "${Site4}_${h2}_list.txt"
-#--------------------
-
-${Site1}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site1}_${h1}_list.txt")
-${Site1}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site1}_${h2}_list.txt")
-
-${Site2}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site2}_${h1}_list.txt")
-${Site2}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site2}_${h2}_list.txt")
-
-${Site3}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site3}_${h1}_list.txt")
-${Site3}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site3}_${h2}_list.txt")
-
-${Site4}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site4}_${h1}_list.txt")
-${Site4}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site4}_${h2}_list.txt")
-
-#-----------------------------
-# need to format names here for each location
-# download and edit in Excel: {Site}_W/C_list.txt
-# files here: /~/Cassandra/PhD/GenomeBC_Dryas/Wild_Dryas_WGBS/June2022_DMRs/File_names/Site_specific/
-# - edit to clean names
-	- =MID(A1,FIND("_",A1)+1,256)
-	- =RIGHT(A1,(FIND(" ",B1,1)-1))
-	- Add W/C to the front = CONCATENATE("X",C1) 
-
-# retranspose into a row?
-# save as csv
-
-${Site1}_${h1}name=$(tr ',' ' ' < "${Site1}_${h1}_list_transpose.csv")
-${Site1}_${h2}name=$(tr ',' ' ' < "${Site1}_${h2}_list_transpose.csv")
-
-${Site2}_${h1}name=$(tr ',' ' ' < "${Site2}_${h1}_list_transpose.csv")
-${Site2}_${h2}name=$(tr ',' ' ' < "${Site2}_${h2}_list_transpose.csv")
-
-${Site3}_${h1}name=$(tr ',' ' ' < "${Site3}_${h1}_list_transpose.csv")
-${Site3}_${h2}name=$(tr ',' ' ' < "${Site3}_${h2}_list_transpose.csv")
-
-${Site4}_${h1}name=$(tr ',' ' ' < "${Site4}_${h1}_list_transpose.csv")
-${Site4}_${h2}name=$(tr ',' ' ' < "${Site4}_${h2}_list_transpose.csv")
-
-#--------------------------
-tmux new-session -s DMR 
-tmux attach-session -t DMR
-
-salloc -c10 --time 3:00:00 --mem 120000m --account def-rieseber
-
-module load nixpkgs/16.09
-module load intel/2018.3
-module load bedtools/2.29.2
-
-# make sorted bedgraph files
-cd "${directory}/data/"
-${Site1}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site1}_${h1}_list.txt")
-${Site1}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site1}_${h2}_list.txt")
-
-${Site2}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site2}_${h1}_list.txt")
-${Site2}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site2}_${h2}_list.txt")
-
-${Site3}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site3}_${h1}_list.txt")
-${Site3}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site3}_${h2}_list.txt")
-
-${Site4}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site4}_${h1}_list.txt")
-${Site4}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site4}_${h2}_list.txt")
-
-
-${Site1}_${h1}name=$(tr ',' ' ' < "${Site1}_${h1}_list_transpose.csv")
-${Site1}_${h2}name=$(tr ',' ' ' < "${Site1}_${h2}_list_transpose.csv")
-
-${Site2}_${h1}name=$(tr ',' ' ' < "${Site2}_${h1}_list_transpose.csv")
-${Site2}_${h2}name=$(tr ',' ' ' < "${Site2}_${h2}_list_transpose.csv")
-
-${Site3}_${h1}name=$(tr ',' ' ' < "${Site3}_${h1}_list_transpose.csv")
-${Site3}_${h2}name=$(tr ',' ' ' < "${Site3}_${h2}_list_transpose.csv")
-
-${Site4}_${h1}name=$(tr ',' ' ' < "${Site4}_${h1}_list_transpose.csv")
-${Site4}_${h2}name=$(tr ',' ' ' < "${Site4}_${h2}_list_transpose.csv")
-
 bedtools unionbedg -header -names ${Site1}_${h1}name ${Site1}_${h2}name -filler $NA -i ${Site1}_${h1}files ${Site1}_${h2}files | cut -f1,3- | sed 's/end/pos/' > "$Site1_$in_metilene"
 bedtools unionbedg -header -names ${Site2}_${h1}name ${Site2}_${h2}name -filler $NA -i ${Site2}_${h1}files ${Site2}_${h2}files | cut -f1,3- | sed 's/end/pos/' > "$Site2_$in_metilene"
 bedtools unionbedg -header -names ${Site3}_${h1}name ${Site3}_${h2}name -filler $NA -i ${Site3}_${h1}files ${Site3}_${h2}files | cut -f1,3- | sed 's/end/pos/' > "$Site3_$in_metilene"
 bedtools unionbedg -header -names ${Site4}_${h1}name ${Site4}_${h2}name -filler $NA -i ${Site4}_${h1}files ${Site4}_${h2}files | cut -f1,3- | sed 's/end/pos/' > "$Site4_$in_metilene"
-
-# takes awhile ~ 30 min per site - already done
 
 #------------------------------
 #header get rid of enter in first line

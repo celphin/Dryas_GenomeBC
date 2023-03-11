@@ -1,9 +1,13 @@
-﻿# DMRs
-#Metilene
-# https://www.bioinf.uni-leipzig.de/Software/metilene/Manual/#12_parameters
-# https://www.bioinf.uni-leipzig.de/Software/metilene/Manual/#5_dmr_de-novo_annotation
+﻿###########################
+# Plotting all the Dryas DMRs at each site - and overall?
+# March 2023
+############################
 
-# --------------------------------------
+# Goals:
+# One heat map per site of all the DMRs
+# One total heat map of DMRs
+
+#########################
 cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
 
 # upzip all the bedgraph files
@@ -29,8 +33,6 @@ end=$DMRcolumn3
 grep "^${chrom}" metilene_W_C.input | awk '^"${chrom}"[ \t].*[ \t]' "${start}<=$1 && $1>=${end}" {print} > "${chrom}_${start}_${end}.txt"
 
 done
-
-
 
 #########################
 # test loop above
@@ -164,6 +166,8 @@ df_summary <-
 
 
 ##########################
+# EdgeR
+# DMR plotting
 
 #install the package edgeR
 # if (!require("BiocManager", quietly = TRUE))
@@ -303,49 +307,3 @@ jpeg("./plots/W_C_RNA_heatmap_legend.jpg", width = 1000, height = 800)
 heatmap.2 (heatmap2, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap2), labRow = rownames(heatmap2), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
 
-####################################################
-
-# Compare genes between RNAseq and DMRs
-
-# Step 1: add 1000bp to each end of DMR
-# add 500bp on each side of the DMR
-awk '{$3+=1000}1' Total_DMRs_100-10-10_July2022_qval.1e-20.bed > Total_DMRs_100-10-10_July2022_qval.1e-20_extended.bed
-awk '{$2-=1000}1' Total_DMRs_100-10-10_July2022_qval.1e-20_extended.bed > Total_DMRs_100-10-10_July2022_qval.1e-20_extended2.bed
-
-# Step 2: get gene positions of each differntially expressed gene
-Do1_00107G00001V1.1 CDS=1-1578
-
-
-# Step 3: Union of DMRs and RNAseq regions
-# any overlap? - maybe add more/less to DMRs
-
-# Step4: BLAST genes that match 
-
-
-####################
-# Aleternatively
-
-# Get fasta of DMRs
-sed -e 's/ /\t/g' Total_DMRs_100-10-10_July2022_qval.1e-20_extended2.bed > Total_DMRs_100-10-10_July2022_qval.1e-20_extended2_tab.bed
-bedtools getfasta -fi /home/celphin/scratch/Dryas/Dryas_octopetala_reference/genomes/Dryas_octopetala_H1.supercontigs.fa -bed Total_DMRs_100-10-10_July2022_qval.1e-20_extended2_tab.bed > Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta
-more Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta
-blastn -db nt -query Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta -out blast_Total_DMRs_100-10-10_July2022_qval.1e-20_extended.out -remote -outfmt "6 qseqid stitle" 
--evalue 0.05
--word_size 11
--gapopen 5
--gapextend 2
--penalty -3
--reward 2
--max_target_seqs 6
-
-blastn -db nt -query Total_DMRs_100-10-10_July2022_qval.1e-20_extended.fasta -out blast_Total_DMRs_100-10-10_July2022_qval.1e-20_extended_settings_test.out -remote -outfmt "6 qseqid stitle" -evalue 0.05 -word_size 11 -gapopen 5 -gapextend 2 -penalty -3 -reward 2 -max_target_seqs 6
-
-Error: [blastn] internal_error: (Severe Error) Blast search error: Details: search failed. # Informational Message: [blastsrv4.REAL]: Error: CPU usage limit was exceeded, resulting in SIGXCPU (24).
-
-more blast_Total_DMRs_100-10-10_July2022_qval.1e-20_extended_settings_test.out
-
-# take blast results and compare to RNAseq results
-
-
-#######################
-# try RNAseq analysis with not reference transcriptome for long non-coding RNA to match too

@@ -4,41 +4,65 @@
 # Mapping  and calling methylated C's with Methylseq in nextflow
 # Jan 2022
 ################################
+# Nextflow setup
 
-# Jan 6 2022
+# https://nf-co.re/methylseq
+# https://docs.alliancecan.ca/wiki/Singularity
 
-# try Dryas pipeline again from start
-# clear scratch
+# Usage
+# nextflow run nf-core/methylseq -profile test, YOURPROFILE --outdir <OUTDIR>
 
-find /home/celphin/scratch/Cassiope -empty -type f -delete
-find /home/celphin/scratch/Cassiope -empty -type d -delete
+module load singularity/3.7
+module load StdEnv/2020
+module load nextflow/20.10.0
+module load java/1.8.0_192
 
-find /home/celphin/scratch/Dryas -empty -type f -delete
-find /home/celphin/scratch/Dryas -empty -type d -delete
+# had to run once to set up the singularity image
+nextflow run nf-core/methylseq/ -profile singularity,cc 
 
------
+#------------
+# Pulling Singularity image docker://nfcore/methylseq:1.4 [cache /scratch/celphin/Dryas/Nov2020_Methylseq/work/singularity/nfcore-methylseq-1.4.img]
+# WARN: Singularity cache directory has not been defined -- Remote image will be stored in the path: /scratch/celphin/Dryas/Nov2020_Methylseq/work/singularity
+#------------
+
+# installed here 
+cd /home/celphin/.nextflow/assets/nf-core/methylseq
+
+# Note: need to copy the nf-core/methylseq/conf/base.config to the directory running the program
+cp nextflow.config /home/celphin/scratch/Dryas/May2021_Methylseq/
+cp ./conf /home/celphin/scratch/Dryas/May2021_Methylseq/
+
 cd /home/celphin/scratch/Dryas/May2021_Methylseq
 
-rm -r ./work/*
-rm -r ./output/*
-rm .nextflow.log*
+#-------------------------------
+# edit config files
+
+more nextflow.config
+...
+
+// Global default params, used in configs
+params {
+
+  // Workflow flags
+  genomes {
+    'Dryas_octo' {
+      fasta = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/' // Used if no index given
+    }
+    // Any number of additional genomes, key is used with --genome
+  }
+  input = '/scratch/celphin/Dryas/Dryas_total_data/*_R{1,2}.fastq.gz'
+  input_paths = null
+  fasta = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/Dryas_octopetala_H1.supercontigs.fa'
+  // bismark_index = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/BismarkIndex/'
+
+...
+
+outdir = '/scratch/celphin/Dryas/May2021_Methylseq/output'
+
+....
 
 # make it run from Greg's account
-nano nextflow.config
-# process.clusterOptions = "--account def-henryg"
-
-####################################
-
-quota
-
-                             Description                Space           # of files
-                    /home (user celphin)            9434M/50G             91k/500k
-                 /scratch (user celphin)             972G/40T           1164/1000k
-                /project (group celphin)            14G/2048k            1755/1025
-             /project (group def-henryg)            1445G/10T            500k/500k
-        /project (group rrg-rieseber-ac)          6177G/2048k            552k/1025
-           /project (group def-rieseber)            8249G/10T            368k/500k
-           /project (group rpp-rieseber)            196T/200T            396k/500k
+process.clusterOptions = "--account def-henryg"
 
 
 ###############################
