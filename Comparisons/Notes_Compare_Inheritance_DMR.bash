@@ -1,6 +1,5 @@
 ﻿####################################################
-
-# Compare genes between RNAseq and DMRs
+# Compare genes/regions that show wamring in RNAseq and DMRs
 
 ###############################################
 # convert bedGraph files to bed files to fasta files
@@ -177,5 +176,162 @@ yes is there
 
 ################################
 # Compare blast results with RNAseq data - any overlap?
+
+
+
+# find matches between studies - e.g. the overlap/union between the warming and phenology or seedling and parents DMRs
+
+# https://stackoverflow.com/questions/13272717/inner-join-on-two-text-files
+#https://itectec.com/ubuntu/ubuntu-awk-compare-2-files-and-print-columns-from-both-files/ 
+
+# this returns all rows from second file that match the first column of first file
+awk 'NR==FNR {a[$1]; next} $1 in a {print $0, a[$2]}' OFS='\t' LAT_DMRs_qval.0.05.out metilene_qval.0.05.out > LAT_Total.txt
+# returns all that match for the 'chrom'
+
+
+
+#################################################
+# only need to run once per folder before site specific data will run
+
+grep ".*${Site1}.*" "${h1}_list.txt" > "${Site1}_${h1}_list.txt"
+grep ".*${Site1}.*" "${h2}_list.txt" > "${Site1}_${h2}_list.txt"
+
+grep -E "CASS"\|"DRY"\|"MEAD"\|"WILL"\|"FERT" "${h1}_list.txt" > "${Site2}_${h1}_list.txt"
+grep -E "CASS"\|"DRY"\|"MEAD"\|"WILL"\|"FERT" "${h2}_list.txt" > "${Site2}_${h2}_list.txt"
+
+grep ".*${Site3}.*" "${h1}_list.txt" > "${Site3}_${h1}_list.txt"
+grep ".*${Site3}.*" "${h2}_list.txt" > "${Site3}_${h2}_list.txt"
+
+grep ".*${Site4}.*" "${h1}_list.txt" > "${Site4}_${h1}_list.txt"
+grep ".*${Site4}.*" "${h2}_list.txt" > "${Site4}_${h2}_list.txt"
+#--------------------
+
+${Site1}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site1}_${h1}_list.txt")
+${Site1}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site1}_${h2}_list.txt")
+
+${Site2}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site2}_${h1}_list.txt")
+${Site2}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site2}_${h2}_list.txt")
+
+${Site3}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site3}_${h1}_list.txt")
+${Site3}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site3}_${h2}_list.txt")
+
+${Site4}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site4}_${h1}_list.txt")
+${Site4}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site4}_${h2}_list.txt")
+
+#-----------------------------
+# need to format names here for each location
+# download and edit in Excel: {Site}_W/C_list.txt
+# files here: /~/Cassandra/PhD/GenomeBC_Dryas/Wild_Dryas_WGBS/June2022_DMRs/File_names/Site_specific/
+# - edit to clean names
+	- =MID(A1,FIND("_",A1)+1,256)
+	- =RIGHT(A1,(FIND(" ",B1,1)-1))
+	- Add W/C to the front = CONCATENATE("X",C1) 
+
+# retranspose into a row?
+# save as csv
+
+${Site1}_${h1}name=$(tr ',' ' ' < "${Site1}_${h1}_list_transpose.csv")
+${Site1}_${h2}name=$(tr ',' ' ' < "${Site1}_${h2}_list_transpose.csv")
+
+${Site2}_${h1}name=$(tr ',' ' ' < "${Site2}_${h1}_list_transpose.csv")
+${Site2}_${h2}name=$(tr ',' ' ' < "${Site2}_${h2}_list_transpose.csv")
+
+${Site3}_${h1}name=$(tr ',' ' ' < "${Site3}_${h1}_list_transpose.csv")
+${Site3}_${h2}name=$(tr ',' ' ' < "${Site3}_${h2}_list_transpose.csv")
+
+${Site4}_${h1}name=$(tr ',' ' ' < "${Site4}_${h1}_list_transpose.csv")
+${Site4}_${h2}name=$(tr ',' ' ' < "${Site4}_${h2}_list_transpose.csv")
+
+#--------------------------
+tmux new-session -s DMR 
+tmux attach-session -t DMR
+
+salloc -c10 --time 3:00:00 --mem 120000m --account def-rieseber
+
+module load nixpkgs/16.09
+module load intel/2018.3
+module load bedtools/2.29.2
+
+# make sorted bedgraph files
+cd "${directory}/data/"
+${Site1}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site1}_${h1}_list.txt")
+${Site1}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site1}_${h2}_list.txt")
+
+${Site2}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site2}_${h1}_list.txt")
+${Site2}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site2}_${h2}_list.txt")
+
+${Site3}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site3}_${h1}_list.txt")
+${Site3}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site3}_${h2}_list.txt")
+
+${Site4}_${h1}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site4}_${h1}_list.txt")
+${Site4}_${h2}files=$(sed ':a;N;$!ba;s/\n/ /g' "${Site4}_${h2}_list.txt")
+
+
+${Site1}_${h1}name=$(tr ',' ' ' < "${Site1}_${h1}_list_transpose.csv")
+${Site1}_${h2}name=$(tr ',' ' ' < "${Site1}_${h2}_list_transpose.csv")
+
+${Site2}_${h1}name=$(tr ',' ' ' < "${Site2}_${h1}_list_transpose.csv")
+${Site2}_${h2}name=$(tr ',' ' ' < "${Site2}_${h2}_list_transpose.csv")
+
+${Site3}_${h1}name=$(tr ',' ' ' < "${Site3}_${h1}_list_transpose.csv")
+${Site3}_${h2}name=$(tr ',' ' ' < "${Site3}_${h2}_list_transpose.csv")
+
+${Site4}_${h1}name=$(tr ',' ' ' < "${Site4}_${h1}_list_transpose.csv")
+${Site4}_${h2}name=$(tr ',' ' ' < "${Site4}_${h2}_list_transpose.csv")
+
+bedtools unionbedg -header -names ${Site1}_${h1}name ${Site1}_${h2}name -filler $NA -i ${Site1}_${h1}files ${Site1}_${h2}files | cut -f1,3- | sed 's/end/pos/' > "$Site1_$in_metilene"
+bedtools unionbedg -header -names ${Site2}_${h1}name ${Site2}_${h2}name -filler $NA -i ${Site2}_${h1}files ${Site2}_${h2}files | cut -f1,3- | sed 's/end/pos/' > "$Site2_$in_metilene"
+bedtools unionbedg -header -names ${Site3}_${h1}name ${Site3}_${h2}name -filler $NA -i ${Site3}_${h1}files ${Site3}_${h2}files | cut -f1,3- | sed 's/end/pos/' > "$Site3_$in_metilene"
+bedtools unionbedg -header -names ${Site4}_${h1}name ${Site4}_${h2}name -filler $NA -i ${Site4}_${h1}files ${Site4}_${h2}files | cut -f1,3- | sed 's/end/pos/' > "$Site4_$in_metilene"
+
+# takes awhile ~ 30 min per site - already done
+
+#------------------------------
+#header get rid of enter in first line
+
+#header should be:
+#chrom pos ${Wname} ${Cname}
+# but the Cnames are one new line
+W_ALAS0W_8_265
+	C_ALAS_00C_227
+
+#edit to remove extra enter
+nano "$Site1_$in_metilene"
+nano "$Site2_$in_metilene"
+nano "$Site3_$in_metilene"
+nano "$Site4_$in_metilene"
+
+#-----------------------------
+# check header
+head -5 "$Site1_$in_metilene" > subset1.txt
+head -5 "$Site2_$in_metilene" > subset2.txt
+head -5 "$Site3_$in_metilene" > subset3.txt
+head -5 "$Site4_$in_metilene" > subset4.txt
+
+grep '^c.*' subset1.txt | wc -w
+grep '^c.*' subset2.txt | wc -w
+grep '^c.*' subset3.txt | wc -w
+grep '^c.*' subset4.txt | wc -w
+Alex -52
+SV -14
+LAT -22
+ALAS -22
+
+# grep '^Do.*' "$Site1_$in_metilene" | wc -l # too long
+Alex - 8506281
+SV - 8088914
+LAT - 8318294
+ALAS - 8315924
+
+nano "$Site1_$in_metilene"
+nano "$Site2_$in_metilene"
+nano "$Site3_$in_metilene"
+nano "$Site4_$in_metilene"
+# delete enter on second line if still there
+
+
+
+########################################################################
+########################################################################
 
 

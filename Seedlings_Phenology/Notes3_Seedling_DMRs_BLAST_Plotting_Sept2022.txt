@@ -1,0 +1,412 @@
+#############################
+# Plotting/BLAST seedling DMRs 
+# Sept 2022
+#############################
+
+# Started:
+# convert to gene names to compare with RNAseq (BLAST)
+# Specific gene plots
+
+# Need to:
+# Plot differential methylation accross all with heat map
+
+#######################################
+
+#######################################
+# Blast
+# convert bedGraph files to bed files to fasta files for Blast
+
+cd "${directory}"
+mkdir blast
+cd "${directory}"/blast
+
+blastname="No_total_intersect_DMRs_${outputname}_${minmeandiff}_qval.${qval}"
+
+cat "${directory}/${blastname}.bedGraph" | awk '{print $1 "\t" $2 "\t" $3}' > "${blastname}.bed"
+
+
+#----------------------------
+# add 500bp on each side of the DMR
+
+awk '{$3+=1000}1' "${blastname}.bed" > "${blastname}_extended.bed"
+awk '{$2-=1000}1' "${blastname}_extended.bed" > "${blastname}_extended2.bed"
+
+#----------------------
+# https://bedtools.readthedocs.io/en/latest/content/tools/getfasta.html
+# bedtools getfasta [OPTIONS] -fi <input FASTA> -bed <BED/GFF/VCF>
+
+sed -e 's/ /\t/g' "${blastname}_extended2.bed" > "${blastname}_extended2_tab.bed"
+
+bedtools getfasta -fi /home/celphin/scratch/Dryas/Dryas_octopetala_reference/genomes/Dryas_octopetala_H1.supercontigs.fa \
+-bed "${blastname}_extended2_tab.bed" \
+> "${blastname}_extended.fasta"
+
+more "${blastname}_extended.fasta"
+
+#--------------------------------------
+# run blast
+
+cd "${directory}/blast/"
+
+module load StdEnv/2020
+module load gcc/9.3.0
+module load blast+/2.12.0
+
+# https://www.metagenomics.wiki/tools/blast/blastn-output-format-6
+
+# blast to ncbi database
+blastn -db nt -query "${blastname}_extended.fasta" -out "blast_${blastname}_extended.out" -remote -outfmt "6 qseqid stitle"
+
+# blast to gff3 Dryas genome
+blastn -query "${blastname}_extended.fasta" -subject /home/celphin/projects/rpp-rieseber/celphin/Dryas/Reference_genomes/fasta/Dryas_octopetala_H1.transcript.fa -outfmt 6 -out "Dryas_blast_${blastname}_extended.out"
+
+################################################
+# choose a DMR and get all differential methylation for that region - subset input file
+
+# Do1_05_a00003   1152846 	1152987 # amidase
+# Do1_07_a00002   11718523        11718688  
+# Do1_07_a00002   12442455        12443488 
+# Do1_01_a00004   10490278        10490516 
+
+
+#RNAseq
+Do1_01_a00001:1,762,189-1,762,507 # look at these for seedling methylation
+Do1_01_a00001:1,758,636-1,758,795
+
+################################################
+#https://www.geeksforgeeks.org/awk-command-unixlinux-examples/
+# https://www.tim-dennis.com/data/tech/2016/08/09/using-awk-filter-rows.html
+#grep "^${chrom}" metilene_W_C.input > "${chrom}.txt"
+#awk -F "\t" '{print $1}' "${chrom}.txt"
+#awk -F "\t" '{print $2}' "${chrom}.txt"
+#awk -F "\t" '{print $0}' "${chrom}.txt"
+#awk -F "\t" '{ if(($2 >= $start) && ($2 <= $end)) { print } }' "${chrom}.txt" > "${chrom}_${start}_${end}_2.txt"
+
+directory="/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings"
+
+chrom="Do1_05_a00003"
+start=1152846
+end=1152987
+
+cd "${directory}/data/"
+grep "^${chrom}" metilene_W_C.input > "${chrom}.txt"
+awk -F "\t" '{ if(($2 >= 1152846) && ($2 <= 1152987)) { print } }' "${chrom}.txt"  > "${chrom}_${start}_${end}.txt"
+
+#----------------------------------
+# check name order - parents
+
+sed 's/^W..........._/"W_/g' ./data/W_list.txt | \
+sed 's/^W.........._/"W_/g' | \
+sed 's/^W........_/"W_/g' | \
+sed 's/^W......._/"_/g' | \
+sed 's/_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph/", /g' | \
+sed ':a;N;$!ba;s/\n/ /g'
+
+"W_CASS_04W_519",  "W_WILL7W_448_107",  "W_FERT14W_6F_126",  "_LATJ_04W_188",  "W_LATC1W_12_219",  "W_ALAS0W_14_249",  "W_LATC9W_11_216",  "W_DRY6W_31_147",  "W_SVAL6W_6_274",  "W_SVAL18W_18_271",  "W_LATD4W_8_211",  "W_MEAD2W_450_70",  "_ALAS_00W_228",  "W_DRY9W_50_185",  "W_LATD2W_5_206",  "W_ALAS0W_8_265",  "W_WILL5W_421_154",  "W_LATJ_02W_193",  "W_ALAS0W_7_263",  "W_MEAD6W_466_163",  "W_WILL4W_417_13",  "W_MEAD1W_444_116",  "W_MEAD_08W_4R0",  "W_LATC3W_16_220",  "W_LATD2W_4_212",  "W_WILL1W_403_67",  "W_SVAL16W_16_277",  "W_DRY1W_3_39",  "W_DRY3W_15_69",  "W_CASS9W_539_128",  "W_ALAS0W_18_248",  "W_SVAL_0W_267",  "W_FERT22W_12F_111",  "W_CASS17W_574_137",  "W_CASS10W_544_60",  "W_ALAS0W_15_242",  "W_ALAS0W_16_239",  "W_FERT30W_14F_40",  "W_LATD4W_9_207",  "W_MEAD7W_470_173",  "W_ALAS0W_17_235",  "W_SVAL_0W_270",  "W_CASS7W_600_19",  "W_SVAL8W_8_272",  "_ALAS_00W_232",  "W_DRY8W_45_155",  "W_FERT6W_3F_110",  "W_LATC5W_18_190",  "W_CASS5W_525_130",  "W_ALAS0W_3_236",  "W_WILL10W_437_84", 
+
+sed 's/^C..........._/"C_/g' ./data/C_list.txt | \
+sed 's/^C.........._/"C_/g' | \
+sed 's/^C........_/"C_/g' | \
+sed 's/^C......._/"C_/g' | \
+sed 's/_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph/", /g' | \
+sed ':a;N;$!ba;s/\n/ /g'
+
+"C_WILL5C_422_31",  "C_CASS10C_548_144",  "C_CASS4C_524_4",  "C_FERT39C_20F_71",  "C_FERT5C_1F_97",  "C_ALAS_00C_227",  "C_SVAL16C_16_276",  "C_CASS8C_535_54",  "C_ALAS0C_10_246",  "C_DRY9C_53_149",  "C_CASS_09C_541",  "C_MEAD7C_473_95",  "C_MEAD_03C_1R0",  "C_MEAD2C_451_76",  "C_ALAS0C_13_254",  "C_LATD5C_2_201",  "C_LATD2C_7_209",  "C_WILL7C_445_125",  "C_LATJ_00C_187",  "C_MEAD1C_446_33",  "C_ALAS0C_18_229",  "C_DRY5C_28_92",  "C_DRY2C_10_52",  "C_LATD2C_6_198",  "C_LATD1C_4_223",  "C_SVAL_0C_268",  "C_SVAL_0C_269",  "C_WILL10C_440_16",  "C_LATD2C_1_203",  "C_LATD5C_5_191",  "C_SVAL12C_12_273",  "C_FERT13C_7F_112",  "C_LATJ_02C_194",  "C_ALAS0C_19_261",  "C_CASS17C_576_175",  "C_DRY10C_60_41",  "C_MEAD6C_468_22",  "C_WILL3C_414_100",  "C_SVAL49C_49_278",  "C_FERT31C_15F_170",  "C_ALAS_00C_231",  "C_SVAL8C_8_275",  "C_ALAS0C_5_238",  "C_ALAS0C_12_256",  "C_LATD4C_3_196",  "C_ALAS0C_4_240",  "C_CASS5C_529_159",  "C_DRY4C_23_82",  "C_LATD5C_20_199",  "C_WILL1C_406_152",  "C_ALAS0C_3_258"
+
+#---------------------------------------
+# seedlings
+
+sed 's/^SE_/"W_/g' ./data/W_list.txt | \
+sed 's/_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph/", /g' | \
+sed ':a;N;$!ba;s/\n/ /g'
+
+"W_L_W_H_219_104_F112567",  "W_L_W_L_198_34_F112563",  "W_L_W_L_219_42_F112557",  "W_L_W_L_190_43_F112556",  "W_L_W_H_219_105J_F112571",  "W_L_W_H_219_105_F112564",  "W_T_W_H_228_95_F112570",
+
+sed 's/^SE_/"C_/g' ./data/C_list.txt | \
+sed 's/_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph/", /g' | \
+sed ':a;N;$!ba;s/\n/ /g'
+
+"C_L_C_H_191_100_F112569",  "C_L_C_H_187_98_F112565",  "C_L_C_L_187_38_F112560",  "C_T_C_L_238_47_F112559",  "C_A_C_L_125_11_F112561",  "C_L_C_L_198_35_F112558",  "C_A_C_L_170_5_F112555",  "C_L_C_H_194_92_F112566",  "C_L_C_H_191_102_F112568",  "C_L_C_H_194_92J_F112572"
+
+#----------------------------------
+# run in R
+
+module load StdEnv/2020
+module load r/4.2.1
+module load gdal
+module load udunits
+module load python
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.2.1/
+
+R
+
+directory="/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings"
+#directory="/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs"
+h1='W'
+h2='C'
+maxdist=50
+mincpgs=5
+mindiff=0.7
+threads=32
+qval=0.001
+chrom="Do1_05_a00003"
+start=1152846
+end=1152987
+
+
+#outputname=metilene_$h1_$h2_Sept2022_${maxdist}_${mincpgs}_${mindiff}
+#in_metilene="metilene_$h1_$h2.input"
+
+setwd (directory)
+
+#install.packages('ggplot2')
+#install.packages('ggpubr')
+
+library(ggplot2)
+library(ggpubr)
+
+#import data
+data <- read.table(paste0(directory,"/data/",chrom,"_",start,"_",end,".txt"), header = FALSE)
+
+# parents
+#colnames(data) <- c("chrom", "pos", "W_CASS_04W_519",  "W_WILL7W_448_107",  "W_FERT14W_6F_126",  "W_LATJ_04W_188",  "W_LATC1W_12_219",  "W_ALAS0W_14_249",  "W_LATC9W_11_216",  "W_DRY6W_31_147",  "W_SVAL6W_6_274",  "W_SVAL18W_18_271",  "W_LATD4W_8_211",  "W_MEAD2W_450_70",  "W_ALAS_00W_228",  "W_DRY9W_50_185",  "W_LATD2W_5_206",  "W_ALAS0W_8_265",  "W_WILL5W_421_154",  "W_LATJ_02W_193",  "W_ALAS0W_7_263",  "W_MEAD6W_466_163",  "W_WILL4W_417_13",  "W_MEAD1W_444_116",  "W_MEAD_08W_4R0",  "W_LATC3W_16_220",  "W_LATD2W_4_212",  "W_WILL1W_403_67",  "W_SVAL16W_16_277",  "W_DRY1W_3_39",  "W_DRY3W_15_69",  "W_CASS9W_539_128",  "W_ALAS0W_18_248",  "W_SVAL_0W_267",  "W_FERT22W_12F_111",  "W_CASS17W_574_137",  "W_CASS10W_544_60",  "W_ALAS0W_15_242",  "W_ALAS0W_16_239",  "W_FERT30W_14F_40",  "W_LATD4W_9_207",  "W_MEAD7W_470_173",  "W_ALAS0W_17_235",  "W_SVAL_0W_270",  "W_CASS7W_600_19",  "W_SVAL8W_8_272",  "W_ALAS_00W_232",  "W_DRY8W_45_155",  "W_FERT6W_3F_110",  "W_LATC5W_18_190",  "W_CASS5W_525_130",  "W_ALAS0W_3_236",  "W_WILL10W_437_84", "C_WILL5C_422_31",  "C_CASS10C_548_144",  "C_CASS4C_524_4",  "C_FERT39C_20F_71",  "C_FERT5C_1F_97",  "C_ALAS_00C_227",  "C_SVAL16C_16_276",  "C_CASS8C_535_54",  "C_ALAS0C_10_246",  "C_DRY9C_53_149",  "C_CASS_09C_541",  "C_MEAD7C_473_95",  "C_MEAD_03C_1R0",  "C_MEAD2C_451_76",  "C_ALAS0C_13_254",  "C_LATD5C_2_201",  "C_LATD2C_7_209",  "C_WILL7C_445_125",  "C_LATJ_00C_187",  "C_MEAD1C_446_33",  "C_ALAS0C_18_229",  "C_DRY5C_28_92",  "C_DRY2C_10_52",  "C_LATD2C_6_198",  "C_LATD1C_4_223",  "C_SVAL_0C_268",  "C_SVAL_0C_269",  "C_WILL10C_440_16",  "C_LATD2C_1_203",  "C_LATD5C_5_191",  "C_SVAL12C_12_273",  "C_FERT13C_7F_112",  "C_LATJ_02C_194",  "C_ALAS0C_19_261",  "C_CASS17C_576_175",  "C_DRY10C_60_41",  "C_MEAD6C_468_22",  "C_WILL3C_414_100",  "C_SVAL49C_49_278",  "C_FERT31C_15F_170",  "C_ALAS_00C_231",  "C_SVAL8C_8_275",  "C_ALAS0C_5_238",  "C_ALAS0C_12_256",  "C_LATD4C_3_196",  "C_ALAS0C_4_240",  "C_CASS5C_529_159",  "C_DRY4C_23_82",  "C_LATD5C_20_199",  "C_WILL1C_406_152",  "C_ALAS0C_3_258")
+
+# seedlings
+colnames(data) <- c("chrom", "pos", "W_L_W_H_219_104_F112567",  "W_L_W_L_198_34_F112563",  "W_L_W_L_219_42_F112557",  "W_L_W_L_190_43_F112556",  "W_L_W_H_219_105J_F112571",  "W_L_W_H_219_105_F112564",  "W_T_W_H_228_95_F112570", "C_L_C_H_191_100_F112569",  "C_L_C_H_187_98_F112565",  "C_L_C_L_187_38_F112560",  "C_T_C_L_238_47_F112559",  "C_A_C_L_125_11_F112561",  "C_L_C_L_198_35_F112558",  "C_A_C_L_170_5_F112555",  "C_L_C_H_194_92_F112566",  "C_L_C_H_191_102_F112568",  "C_L_C_H_194_92J_F112572")
+
+datat <-  as.data.frame(t(as.matrix(data)))
+
+# parents
+#datat$ID <- c("chrom", "pos", "W_CASS_04W_519",  "W_WILL7W_448_107",  "W_FERT14W_6F_126",  "W_LATJ_04W_188",  "W_LATC1W_12_219",  "W_ALAS0W_14_249",  "W_LATC9W_11_216",  "W_DRY6W_31_147",  "W_SVAL6W_6_274",  "W_SVAL18W_18_271",  "W_LATD4W_8_211",  "W_MEAD2W_450_70",  "W_ALAS_00W_228",  "W_DRY9W_50_185",  "W_LATD2W_5_206",  "W_ALAS0W_8_265",  "W_WILL5W_421_154",  "W_LATJ_02W_193",  "W_ALAS0W_7_263",  "W_MEAD6W_466_163",  "W_WILL4W_417_13",  "W_MEAD1W_444_116",  "W_MEAD_08W_4R0",  "W_LATC3W_16_220",  "W_LATD2W_4_212",  "W_WILL1W_403_67",  "W_SVAL16W_16_277",  "W_DRY1W_3_39",  "W_DRY3W_15_69",  "W_CASS9W_539_128",  "W_ALAS0W_18_248",  "W_SVAL_0W_267",  "W_FERT22W_12F_111",  "W_CASS17W_574_137",  "W_CASS10W_544_60",  "W_ALAS0W_15_242",  "W_ALAS0W_16_239",  "W_FERT30W_14F_40",  "W_LATD4W_9_207",  "W_MEAD7W_470_173",  "W_ALAS0W_17_235",  "W_SVAL_0W_270",  "W_CASS7W_600_19",  "W_SVAL8W_8_272",  "W_ALAS_00W_232",  "W_DRY8W_45_155",  "W_FERT6W_3F_110",  "W_LATC5W_18_190",  "W_CASS5W_525_130",  "W_ALAS0W_3_236",  "W_WILL10W_437_84", "C_WILL5C_422_31",  "C_CASS10C_548_144",  "C_CASS4C_524_4",  "C_FERT39C_20F_71",  "C_FERT5C_1F_97",  "C_ALAS_00C_227",  "C_SVAL16C_16_276",  "C_CASS8C_535_54",  "C_ALAS0C_10_246",  "C_DRY9C_53_149",  "C_CASS_09C_541",  "C_MEAD7C_473_95",  "C_MEAD_03C_1R0",  "C_MEAD2C_451_76",  "C_ALAS0C_13_254",  "C_LATD5C_2_201",  "C_LATD2C_7_209",  "C_WILL7C_445_125",  "C_LATJ_00C_187",  "C_MEAD1C_446_33",  "C_ALAS0C_18_229",  "C_DRY5C_28_92",  "C_DRY2C_10_52",  "C_LATD2C_6_198",  "C_LATD1C_4_223",  "C_SVAL_0C_268",  "C_SVAL_0C_269",  "C_WILL10C_440_16",  "C_LATD2C_1_203",  "C_LATD5C_5_191",  "C_SVAL12C_12_273",  "C_FERT13C_7F_112",  "C_LATJ_02C_194",  "C_ALAS0C_19_261",  "C_CASS17C_576_175",  "C_DRY10C_60_41",  "C_MEAD6C_468_22",  "C_WILL3C_414_100",  "C_SVAL49C_49_278",  "C_FERT31C_15F_170",  "C_ALAS_00C_231",  "C_SVAL8C_8_275",  "C_ALAS0C_5_238",  "C_ALAS0C_12_256",  "C_LATD4C_3_196",  "C_ALAS0C_4_240",  "C_CASS5C_529_159",  "C_DRY4C_23_82",  "C_LATD5C_20_199",  "C_WILL1C_406_152",  "C_ALAS0C_3_258")
+
+# seedlings
+datat$ID < c("chrom", "pos", "W_L_W_H_219_104_F112567",  "W_L_W_L_198_34_F112563",  "W_L_W_L_219_42_F112557",  "W_L_W_L_190_43_F112556",  "W_L_W_H_219_105J_F112571",  "W_L_W_H_219_105_F112564",  "W_T_W_H_228_95_F112570", "C_L_C_H_191_100_F112569",  "C_L_C_H_187_98_F112565",  "C_L_C_L_187_38_F112560",  "C_T_C_L_238_47_F112559",  "C_A_C_L_125_11_F112561",  "C_L_C_L_198_35_F112558",  "C_A_C_L_170_5_F112555",  "C_L_C_H_194_92_F112566",  "C_L_C_H_191_102_F112568",  "C_L_C_H_194_92J_F112572")
+
+datat <- datat[-c(1,2),]
+
+#factors to numeric
+X <- length(datat)
+factorToNumeric <- function(f) as.numeric(as.character(f))
+datat[1:X] <- lapply(datat[1:X], factorToNumeric)
+
+# sum rows
+datat$total <- rowSums(datat[1:X], na.rm=TRUE)
+datat$ID <- rownames(datat)
+
+mydata <- as.data.frame(cbind(datat$ID ,datat$total))
+
+colnames(mydata) <- c("ID", "TotalMeth")
+
+# split ID
+
+q <- as.data.frame(t(as.matrix(as.data.frame((strsplit(as.character(mydata$ID), "_"))))))
+mydata <- cbind(mydata, q)
+
+# parents
+colnames(mydata) <- c("ID", "TotalMeth","Treat", "SitePlot", "Plot", "Plant")
+
+# seedlings
+colnames(mydata) <- c("ID", "TotalMeth","Treat", "Site", "Treat2", "Chamber", "Mother", "Pot")
+
+#makes sites - parents
+unique(mydata$SitePlot) # parent
+
+mydata$Site <- sub('ALAS.*', "ALASKA", mydata$SitePlot, ignore.case = FALSE)
+mydata$Site <- sub('LAT.*', "SWEDEN", mydata$Site, ignore.case = FALSE)
+mydata$Site <- sub('SVAL.*', "SVALBARD", mydata$Site, ignore.case = FALSE)
+
+mydata$Site <- sub('CASS.*', "NUNAVUT", mydata$Site, ignore.case = FALSE)
+mydata$Site <- sub('MEAD.*', "NUNAVUT", mydata$Site, ignore.case = FALSE)
+mydata$Site <- sub('DRY.*', "NUNAVUT", mydata$Site, ignore.case = FALSE)
+mydata$Site <- sub('FERT.*', "NUNAVUT", mydata$Site, ignore.case = FALSE)
+mydata$Site <- sub('WILL.*', "NUNAVUT", mydata$Site, ignore.case = FALSE)
+
+
+mydata$sSite <- sub('ALAS.*', "ALASKA", mydata$SitePlot, ignore.case = FALSE)
+mydata$sSite <- sub('LAT.*', "SWEDEN", mydata$Site, ignore.case = FALSE)
+mydata$sSite <- sub('SVAL.*', "SVALBARD", mydata$Site, ignore.case = FALSE)
+
+mydata$sSite <- sub('CASS.*', "CASS", mydata$Site, ignore.case = FALSE)
+mydata$sSite <- sub('MEAD.*', "MEAD", mydata$Site, ignore.case = FALSE)
+mydata$sSite <- sub('DRY.*', "DRY", mydata$Site, ignore.case = FALSE)
+mydata$sSite <- sub('FERT.*', "FERT", mydata$Site, ignore.case = FALSE)
+mydata$sSite <- sub('WILL.*', "WILL", mydata$Site, ignore.case = FALSE)
+
+# seedlings
+mydata$Site <- sub('^A', "NUNAVUT", mydata$Site, ignore.case = FALSE)
+mydata$Site <- sub('^T', "ALASKA", mydata$Site, ignore.case = FALSE)
+mydata$Site <- sub('^L', "SWEDEN", mydata$Site, ignore.case = FALSE)
+
+
+unique(mydata$Site)
+
+# plots
+mydata$TotalMeth <- as.numeric(as.character(mydata$TotalMeth))
+
+jpeg(paste0(directory,"/SE_Gene_specific_",chrom,"_",start,"_",end,".jpg"), width = 700, height = 500)
+ggboxplot(mydata, x = "Site", y = "TotalMeth",  color = "Treat", add = "jitter", shape = "Treat")
+dev.off()
+
+############################################
+# these are the best plots below
+
+#make Plot unique to Site
+mydata[(ncol(mydata)+1)] <- paste(mydata$Site,mydata$Treat, sep=".")
+names(mydata)[(ncol(mydata))] <- "MixPlot"
+unique(mydata$MixPlot)
+length(unique(mydata$MixPlot))
+
+#make Plot unique to Region
+mydata[(ncol(mydata)+1)] <- paste(mydata$Region,mydata$Treat, sep=".")
+names(mydata)[(ncol(mydata))] <- "RegPlot"
+unique(mydata$RegPlot)
+length(unique(mydata$RegPlot))
+
+mydata$MixPlot <- as.factor(mydata$MixPlot)
+mydata$RegPlot <- as.factor(mydata$RegPlot)
+mydata$Treat <- as.factor(mydata$Treat)
+
+#colour
+#colour <- c("blue", "red","blue", "red","blue", "red","blue", "red","blue", "red","blue", "red","blue", "red","blue", "red")
+colour_reg <- c("blue", "red","blue", "red","blue", "red","blue", "red")
+
+colour <- c("blue", "red", "blue","blue", "red") # seedlings
+
+#     par(mar = c(bottom, left, top, right))
+# default: par(mar = c(5.1, 4.1, 4.1, 2.1))
+
+jpeg(paste0(directory,"/SE_Gene_specific_stripchart6_",chrom,"_",start,"_",end,".jpg"), width = 1700, height = 1500)
+par(mgp=c(3,3,0))
+par(mar = c(35, 20, 4.1, 2.1))
+plot(TotalMeth~MixPlot, data = mydata, cex=1.5, ylim =c(min(mydata$TotalMeth, na.rm=TRUE),max(mydata$TotalMeth, na.rm=TRUE)), xlab = "", ylab="", col=colour, las=2, cex.lab=5, cex.axis=5)
+stripchart(TotalMeth~MixPlot, vertical = TRUE, method = "jitter", pch = 16, cex = 3,
+           col = "black", data = mydata, add=TRUE)
+mtext(side=1, text="", line=30, cex=5)
+mtext(side=2, text=paste0("Amidase Gene"," DNA Methylation"), line=15, cex=5)
+dev.off()
+
+jpeg(paste0(directory,"/SE_Gene_specific_stripchart7_",chrom,"_",start,"_",end,".jpg"), width = 1700, height = 1500)
+par(mgp=c(3,3,0))
+par(mar = c(15, 20, 4.1, 2.1))
+plot(TotalMeth~RegPlot, data = mydata, cex=1.5, ylim =c(min(mydata$TotalMeth, na.rm=TRUE),max(mydata$TotalMeth, na.rm=TRUE)), xlab = "", ylab="", col=colour_reg, las=2, cex.lab=5, cex.axis=5)
+stripchart(TotalMeth~RegPlot, vertical = TRUE, method = "jitter", pch = 16, cex = 3,
+           col = "black", data = mydata, add=TRUE)
+mtext(side=1, text="Site", line=10, cex=5)
+mtext(side=2, text=paste0(chrom," DNA Methylation"), line=15, cex=5)
+dev.off()
+
+jpeg(paste0(directory,"/SE_Gene_specific_stripchart8_",chrom,"_",start,"_",end,".jpg"), width = 1700, height = 1500)
+par(mgp=c(3,3,0))
+par(mar = c(15, 20, 4.1, 2.1))
+plot(TotalMeth~Treat, data = mydata, cex=1.5, ylim =c(min(mydata$TotalMeth, na.rm=TRUE),max(mydata$TotalMeth, na.rm=TRUE)), xlab = "", ylab="", col=colour_reg, las=2, cex.lab=5, cex.axis=5)
+stripchart(TotalMeth~Treat, vertical = TRUE, method = "jitter", pch = 16, cex = 3,
+           col = "black", data = mydata, add=TRUE)
+mtext(side=1, text="Warming Treatment", line=10, cex=5)
+mtext(side=2, text=paste0("Amidase Gene"," DNA Methylation"), line=15, cex=5)
+dev.off()
+
+###################################################
+#linear mixed effect models (lme)
+
+#install.packages('nlme')
+#install.packages('lme4')
+#install.packages('lmerTest')
+#install.packages('visreg')
+
+library(nlme) #lme
+library(lme4) #lmer
+library(lmerTest) 
+library(visreg)
+
+#Variables for assignment
+unique(mydata$Site) #random factor - Site name
+unique(mydata$Treat) #fixed effect - warming chamber(OTC) or control
+unique(mydata$Plot) #random factor - Plot number
+unique(mydata$Plant) # sample ID from Plot
+
+#log transform TotalMeth
+mydata$log.TotalMeth  <- log(mydata$TotalMeth)
+
+#how does TotalMeth vary with Treat
+
+jpeg(paste0(directory,"/Gene_specific_stripchart1_",chrom,"_",start,"_",end,".jpg"), width = 700, height = 500)
+plot(TotalMeth~Treat, data = mydata, cex=1.2,ylab="Total Methylation")
+stripchart(TotalMeth~Treat, vertical = TRUE, method = "jitter", pch = 3,cex.lab=1.5,cex.axis=1.2,
+           col = "blue", data = mydata, add=TRUE)
+dev.off()
+
+
+#how does TotalMeth vary with MixPlot
+jpeg(paste0(directory,"/Gene_specific_stripchart2_",chrom,"_",start,"_",end,".jpg"), width = 700, height = 500)
+plot(TotalMeth~MixPlot, data = mydata, cex=1.2,ylab="Total Methylation")
+stripchart(TotalMeth~MixPlot, vertical = TRUE, method = "jitter", pch = 3,cex.lab=1.5,cex.axis=1.2,
+           col = "blue", data = mydata, add=TRUE)
+dev.off()
+
+#how does log(TotalMeth) vary with Treat
+jpeg(paste0(directory,"/Gene_specific_stripchart3_",chrom,"_",start,"_",end,".jpg"), width = 700, height = 500)
+plot(log.TotalMeth~Treat, data = mydata, cex=1.2, xlab = "Warming Treat", ylab="log(Specific Leaf Area (mm^2/mg)")
+stripchart(log.TotalMeth~Treat, vertical = TRUE, method = "jitter", pch = 3,cex.lab=1.5,cex.axis=1.2,
+           col = "blue", data = mydata, add=TRUE)
+dev.off()
+
+#variables to include in linear mixed model
+fix1.warming <- mydata$MixPlot
+response.TotalMethlog <- mydata$log.TotalMeth
+response.TotalMeth <- mydata$TotalMeth
+rand1.Site <- mydata$Site
+
+#linear mixed models
+z <- lme(response.TotalMeth ~ fix1.warming, random = ~ 1|rand1.Site , data = mydata, na.action = na.exclude)
+
+#with log transformed SLA values
+#z1 <- lme(response.TotalMethlog ~ fix1.warming, random = ~ 1|rand1.Site , data = mydata, na.action = na.exclude)
+
+#not including random effects - for interest
+#z2 <- lm(response.TotalMethlog ~ fix1.warming, data = mydata, na.action = na.exclude)
+
+# parameter estimates
+summary(z)
+#summary(z1)
+#summary(z2)
+
+# conf. intervals for fixed effects and variances
+intervals(z)   
+#intervals(z1) 
+
+# Plot of residuals against predicted values
+plot(z)          
+#plot(z1)
+
+#are residuals normally distributed?
+hist(resid(z))
+#hist(resid(z1))
+
+# variance components for random effects  
+VarCorr(z)            
+#VarCorr(z1)               
+
+# Tests of fixed effects (fitted sequentially if  more than 1 fixed effect)
+anova(z)            
+#anova(z1)
+
+jpeg(paste0(directory,"/Gene_specific_stripchart4_",chrom,"_",start,"_",end,".jpg"), width = 700, height = 500)
+visreg(z, xvar = "fix1.warming", xlab="Warming Treat", ylab="log(Specific Leaf Area (mm^2/mg)")
+dev.off()
+
+jpeg(paste0(directory,"/Gene_specific_stripchart5_",chrom,"_",start,"_",end,".jpg"), width = 700, height = 500)
+plot(fitted(z)~Treat, data = mydata, cex=1.2, ylim =c(min(mydata$TotalMeth, na.rm=TRUE),max(mydata$TotalMeth, na.rm=TRUE)), xlab = "Warming Treat", ylab="DNA Methylation")
+stripchart(TotalMeth~Treat, vertical = TRUE, method = "jitter", pch = 16, cex.lab=1.5,cex.axis=1.2,
+           col = "blue", data = mydata, add=TRUE)
+dev.off()
+
+
+##########################################
+# on local machine
+cd /home/Owner/Desktop
+scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/Gene_specific_stripchart*_Do1_05_a00003*.jpg .
+scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings/SE_Gene_specific_stripchart*.jpg .
+
+#################################################
+
+

@@ -1,4 +1,10 @@
-# Dryas DNA methylation bismark report results
+#########################
+# Part 1b
+# Plotting Wild Parent Plant WGBS mapping to D. octopetala reference
+# Dryas DNA methylation bismark report results plotted in R
+# Jan 2022
+################################
+
 
 library(tidyverse)
 library(stringr)

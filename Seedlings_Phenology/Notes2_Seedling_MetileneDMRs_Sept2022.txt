@@ -1,0 +1,448 @@
+#############################
+# Finding seedling DMRs with Metilene
+# Sept 2022
+#############################
+
+# Started:
+# find differences seedling warming control
+
+# Need to:
+# compare seedling low and high arctic chambers
+# find way to search for short dense changes in methylation across sites
+
+#######################################
+
+#Metilene
+# https://www.bioinf.uni-leipzig.de/Software/metilene/Manual/#12_parameters
+# https://www.bioinf.uni-leipzig.de/Software/metilene/Manual/#5_dmr_de-novo_annotation
+
+##########################################
+# copy methylation calling data over to project folder
+
+tmux attach-session -t Seed
+cp -vr /home/celphin/scratch/Dryas/Seedling_Methylseq/output/* /home/celphin/projects/rpp-rieseber/celphin/Dryas/Methylation_calling/Aug2022_Seedlings/
+
+tmux attach-session -t Seed2
+cp -vr /home/celphin/scratch/Dryas/May2021_Methylseq/output/*  /home/celphin/projects/rpp-rieseber/celphin/Dryas/Methylation_calling/May2021_Parents/
+
+#####################################
+# copy bedGraph files over
+
+#---------------------------------------------
+# seedlings
+
+cd /home/celphin/scratch/Dryas/Seedling_Methylseq/output/bismark_methylation_calls/bedGraph/
+
+cp -v SE_*.bedGraph.gz /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings/input_bedGraphs/
+
+#--------------------
+# unzip all
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings/input_bedGraphs/
+
+gunzip -v *.bedGraph.gz
+
+#-------------------------------
+# combine warming and control seedlings
+
+tmux new-session -s DMR
+tmux attach-session -t DMR
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings/input_bedGraphs/
+
+salloc -c1 --time 2:50:00 --mem 120000m --account rpp-rieseber
+
+module load StdEnv/2020
+module load bedtools/2.30.0 
+
+# make sorted bedgraph files
+
+find . -name "*.bedGraph" -print > file_list.txt
+
+while read name
+do
+bedtools sort -i ${name} >  ${name}_sorted.bedGraph
+sort -c -k1,1 -k2,2n ${name}_sorted.bedGraph
+cat ${name}_sorted.bedGraph | tr ' ' '\t' > ${name}_sorted_tab.bedGraph
+done < file_list.txt
+
+#-------------------------------
+#get list of files
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings/input_bedGraphs/
+find . -name "*W*_sorted_tab.bedGraph" -print > W_list.txt
+find . -name "*C*_sorted_tab.bedGraph" -print > C_list.txt
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings/input_bedGraphs/
+find . -name '*C_L*_sorted_tab.bedGraph' -print > LowC_list.txt
+find . -name '*W_L*_sorted_tab.bedGraph' -print > LowW_list.txt
+cat LowC_list.txt LowW_list.txt > Low_list.txt
+
+find . -name '*C_H*_sorted_tab.bedGraph' -print > HighC_list.txt
+find . -name '*W_H*_sorted_tab.bedGraph' -print > HighW_list.txt
+cat HighC_list.txt HighW_list.txt > High_list.txt
+
+#################################################
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings/input_bedGraphs/
+
+# replace ./ in file names
+sed -i 's/\.\///g' W_list.txt
+sed -i 's/\.\///g' C_list.txt
+
+# replace ./ in file names
+sed -i 's/\.\///g' W_list.txt
+sed -i 's/\.\///g' C_list.txt
+
+# make csv and space delimited files
+sed -z 's/\n/ /g;s/,$/\n/'  W_list.txt > W_list_sp.txt
+sed -z 's/\n/ /g;s/,$/\n/'  C_list.txt > C_list_sp.txt
+
+sed -z 's/\n/,/g;s/,$/\n/'  W_list.txt > W_list_csv.csv
+sed -z 's/\n/,/g;s/,$/\n/'  C_list.txt > C_list_csv.csv
+
+# NOTE: one short in Warming list
+#-------------------------------------
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings/input_bedGraphs/
+
+# replace ./ in file names
+sed -i 's/\.\///g' Low_list.txt
+sed -i 's/\.\///g' High_list.txt
+
+# replace ./ in file names
+sed -i 's/\.\///g' Low_list.txt
+sed -i 's/\.\///g' High_list.txt
+
+# make csv and space delimited files
+sed -z 's/\n/ /g;s/,$/\n/'  Low_list.txt > Low_list_sp.txt
+sed -z 's/\n/ /g;s/,$/\n/'  High_list.txt > High_list_sp.txt
+
+sed -z 's/\n/,/g;s/,$/\n/'  Low_list.txt > Low_list_csv.csv
+sed -z 's/\n/,/g;s/,$/\n/'  High_list.txt > High_list_csv.csv
+
+
+
+########################################
+# setup paramters
+
+# Do1_01_a00001G00358V1.1 -plastocyanin-like domain protein - differentially expressed in both parents and seedlings
+
+###########################################
+# W and C seedlings
+directory="/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings"
+NA="NA"
+h1='W'
+h2='C'
+
+#-------------------------------
+# low arctic and high arctic seedlings
+
+# make sorted bedgraph files
+directory="/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings"
+NA="NA"
+h1='Low'
+h2='High'
+
+#-------------------------------
+in_metilene="metilene_"$h1"_"$h2".input"
+
+#make bed file
+# make sorted bedgraph files
+cd "${directory}/input_bedGraphs/"
+
+sed ':a;N;$!ba;s/\n/ /g' ${h1}_list.txt > h1files
+sed ':a;N;$!ba;s/\n/ /g' ${h2}_list.txt > h2files
+
+sed ':a;N;$!ba;s/\n/ /g' ${h1}_list.txt | \
+sed 's/_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph//g' > H1name
+
+sed ':a;N;$!ba;s/\n/ /g' ${h2}_list.txt | \
+sed -z 's/_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph//g' > H2name
+
+h1name=$(more H1name)
+h2name=$(more H2name)
+
+bedtools unionbedg -header -names $h1name $h2name -filler $NA -i $h1files $h2files \
+| cut -f1,3- | sed 's/end/pos/' > "$in_metilene"
+
+
+#-------------------------------------
+# metilene input file
+
+head -5 "$in_metilene" > subset.txt
+
+grep '^c.*' subset.txt | wc -w
+grep '^Q.*' subset.txt | wc -w
+grep '^Q.*' subset.txt | wc -l
+
+#header should be:
+#chrom pos h1name h2name
+# but the h2names are on new line
+W_ALAS0W_8_265
+	C_ALAS_00C_227
+
+#edit to remove extra enter
+nano "metilene_"$h1"_"$h2".input"
+
+# check header again
+head -5 "metilene_$h1_$h2.input" > subset2.txt
+
+grep '^c.*' subset2.txt | wc -w
+grep '^Q.*' subset2.txt | wc -w
+grep '^Q.*' subset2.txt | wc -l
+
+###########################################
+# Run Metilene
+# header of output
+chr	start	end	q-value	 mean_methyl_diff	#CpGs	p-value_MWU	p-value_2D-KS	mean_g1	mean_g2
+
+tmux new-session -s DMR
+tmux attach-session -t DMR
+
+salloc -c32 --time 2:50:00 --mem 120000m --account def-rieseber
+
+module load StdEnv/2020
+module load bedtools/2.30.0 
+
+# parameters
+# try
+# maxdist (allowed nt distance between two CpGs within a DMR) 5
+# mincpgs (minimum # of CpGs in a DMR) 3
+# mindiff (minimum mean methylation difference for calling DMRs) 0.5
+
+#directory="/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings"
+NA="NA"
+h1='W'
+h2='C'
+
+directory="/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Seedlings"
+NA="NA"
+h1='Low'
+h2='High'
+
+
+directory="/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs"
+NA="NA"
+h1='W'
+h2='C'
+
+maxdist=70
+mincpgs=5
+mindiff=4
+threads=32
+outputname=metilene_"$h1"_"$h2"_Sept2022_"${maxdist}"_"${mincpgs}"_"${mindiff}"
+in_metilene="metilene_"$h1"_"$h2".input"
+
+cd "${directory}"
+
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene \
+"${directory}/data/${in_metilene}" \
+--maxdist ${maxdist} --mincpgs ${mincpgs} --minMethDiff ${mindiff} --mode 1 --threads ${threads} -a W -b C -v 0.2 > \
+"${outputname}"
+
+more "${outputname}"
+
+#------------------------------------------
+# want to elect only low p-values?
+# perl filterOutput.pl -q <string>[-o <string>] [-p <n>] [-c <n>] [-d <n>] [-l <n>] [-a <string>] [-b <string>]
+# q-value is the Bonferroni adjusted p-value
+# need R installed with ggplot2
+
+[INPUT]     -q          path/filename of metilene DMRs
+                -o          path/prefix of output files (default: input_path/)
+                -p          maximum (<) adj. p-value (q-value) for output of significant DMRs (default: 0.05)
+                -c          minimum (>=) cpgs (default:10)
+                -d          minimum mean methylation difference (>=) (default:0.1)
+                -l          minimum length of DMR [nt] (>=) (post-processing, default: 0)
+                -a          name of group A (default:"g1")
+                -b          name of group B (default:"g2")
+
+
+module load nixpkgs/16.09
+module load gcc/7.3.0
+module load r/3.6.0
+module load gdal
+module load udunits
+module load python
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/3.6/
+
+minmeandiff=0.9
+mincpgs=10
+qval=1e-5
+
+outputname="metilene_W_C_Sept2022_70_5_4"
+outputname="metilene_W_C_Sept2022_70_5_0.7"
+outputname="metilene_W_C_Sept2022_150_5_4"
+
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl \
+-q "${directory}/${outputname}" -p ${qval} -c ${mincpgs} -d ${minmeandiff} -a ${h1} -b ${h2} \
+-o "${outputname}_${minmeandiff}"
+
+# header of output
+chr	start	end	q-value	 mean_methyl_diff	#CpGs	mean_g1	   mean_g2
+
+# did it find: Do1_01_a00001:1,758,623-1,758,782
+
+wc -l *.out
+
+407 metilene_W_C_Sept2022_150_5_4_0.9_qval.1e-5.out
+454 metilene_W_C_Sept2022_70_5_0.7_0.7_qval.0.001.out
+385 metilene_W_C_Sept2022_70_5_4_0.9_qval.0.001.out
+
+scp metilene_W_C_Sept2022_70_5_4_0.9_qval.0.001.out
+
+# on local machine
+cd /home/Owner/Desktop
+scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_W_C_Sept2022_70_5_4_0.9_qval.0.001.out .
+
+
+# DMRs 
+ID: Do1_a00028G00040V1.1
+Do1_a00028	195312	195953	3.7444E-71	16.666478	102	42.327	25.66
+
+
+Do1_03_a00002	5374897	5375464	3.338E-51	7.253257	106	37.734	30.481
+Do1_06_a00001	16189522	16190157	6.2852E-47	8.453425	89	83.867	75.413
+Do1_02_a00001	10400308	10401331	1.6681E-46	-6.510648	131	17.527	24.037
+Do1_07_a00002	12442810	12443245	5.656E-45	-14.73753	54	57.641	72.379
+ID: Do1_07_a00002G02343
+
+Do1_07_a00002	13390289	13391396	6.7947E-45	10.292359	135	22.967	12.675
+Do1_02_a00004	1315538	1316252	2.0881E-42	-7.663313	75	11.07	18.733
+
+
+########################################
+# find site specific DMRs
+
+cd "${directory}/data/"
+
+Site1="ALAS"
+Site2="Alex"
+Site3="SVAL"
+Site4="LAT"
+
+directory="/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs"
+NA="NA"
+h1='W'
+h2='C'
+
+maxdist=70
+mincpgs=5
+mindiff=4
+threads=32
+outputname=metilene_"$h1"_"$h2"_Sept2022_"${maxdist}"_"${mincpgs}"_"${mindiff}"
+in_metilene="metilene_"$h1"_"$h2".input"
+
+minmeandiff=5
+mincpgs=5
+qval=0.005
+
+# run site specific code at the end once before running what follows
+
+#-----------------
+#run metilene
+
+cd "${directory}"
+
+module load nixpkgs/16.09
+module load intel/2018.3
+module load bedtools/2.29.2
+
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene \
+"${directory}/data/${Site1}_$in_metilene" \
+--maxdist ${maxdist} --mincpgs ${mincpgs} --minMethDiff ${mindiff} --mode 1 --threads ${threads} -a W -b C -v 0.2 > \
+"${Site1}${outputname}"
+
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene \
+"${directory}/data/${Site2}_$in_metilene" \
+--maxdist ${maxdist} --mincpgs ${mincpgs} --minMethDiff ${mindiff} --mode 1 --threads ${threads} -a W -b C -v 0.2 > \
+"${Site2}${outputname}"
+
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene \
+"${directory}/data/${Site3}_$in_metilene" \
+--maxdist ${maxdist} --mincpgs ${mincpgs} --minMethDiff ${mindiff} --mode 1 --threads ${threads} -a W -b C -v 0.2 > \
+"${Site3}${outputname}"
+
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene \
+"${directory}/data/${Site4}_$in_metilene" \
+--maxdist ${maxdist} --mincpgs ${mincpgs} --minMethDiff ${mindiff} --mode 1 --threads ${threads} -a W -b C -v 0.2 > \
+"${Site4}${outputname}"
+
+#------------------------------
+#subset significant DMRs
+
+module load nixpkgs/16.09
+module load gcc/7.3.0
+module load r/3.6.0
+module load gdal
+module load udunits
+module load python
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/3.6/
+
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl \
+-q "${directory}/${Site1}${outputname}" -p ${qval} -c ${mincpgs} -d ${minmeandiff} -a ${h1} -b ${h2} \
+-o "${Site1}_${outputname}_${minmeandiff}"
+
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl \
+-q "${directory}/${Site2}${outputname}" -p ${qval} -c ${mincpgs} -d ${minmeandiff} -a ${h1} -b ${h2} \
+-o "${Site2}_${outputname}_${minmeandiff}"
+
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl \
+-q "${directory}/${Site3}${outputname}" -p ${qval} -c ${mincpgs} -d ${minmeandiff} -a ${h1} -b ${h2} \
+-o "${Site3}_${outputname}_${minmeandiff}"
+
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl \
+-q "${directory}/${Site4}${outputname}" -p ${qval} -c ${mincpgs} -d ${minmeandiff} -a ${h1} -b ${h2} \
+-o "${Site4}_${outputname}_${minmeandiff}"
+
+wc -l *.out
+
+
+#######################################
+# bedGraph intersection between sites
+# https://bedtools.readthedocs.io/en/latest/content/tools/intersect.html
+
+module load nixpkgs/16.09  
+module load gcc/7.3.0
+module load bedtools/2.29.2
+
+cd "${directory}"
+
+#--------------------------------
+# All sites intersect with total
+bedtools intersect -u -a "${outputname}_${minmeandiff}_qval.${qval}.bedgraph" -b "${Site1}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" | \
+bedtools intersect -u -a stdin -b "${Site2}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" | \
+bedtools intersect -u -a stdin -b "${Site3}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" | \
+bedtools intersect -u -a stdin -b "${Site4}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" > \
+"ALL_Sites_intersect_DMRs_${outputname}_${minmeandiff}_qval.${qval}.bedgraph"
+
+#-----------------------------
+# All sites intersect without total
+bedtools intersect -u -a "${Site1}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" -b "${Site2}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" | \
+bedtools intersect -u -a stdin -b "${Site3}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" | \
+bedtools intersect -u -a stdin -b "${Site4}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" > \
+"No_total_intersect_DMRs_${outputname}_${minmeandiff}_qval.${qval}.bedGraph"
+
+#---------------------
+# All sites intersect but Site 4
+bedtools intersect -u -a "${Site1}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" -b "${Site2}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" | \
+bedtools intersect -u -a stdin -b "${Site3}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" > \
+"All_sites_not${Site4}_intersect_DMRs_${outputname}_${minmeandiff}_qval.${qval}.bedGraph"
+
+#------------------------
+# All sites intersect but Site 3
+bedtools intersect -u -a "${Site1}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" -b "${Site2}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" | \
+bedtools intersect -u -a stdin -b "${Site4}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" > \
+"All_sites_not${Site3}_intersect_DMRs_${outputname}_${minmeandiff}_qval.${qval}.bedGraph"
+
+#------------------------
+# All sites intersect but Site 2
+bedtools intersect -u -a "${Site1}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" -b "${Site3}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" | \
+bedtools intersect -u -a stdin -b "${Site4}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" > \
+"All_sites_not${Site2}_intersect_DMRs_${outputname}_${minmeandiff}_qval.${qval}.bedGraph"
+
+#------------------------
+# All sites intersect but Site 1
+bedtools intersect -u -a "${Site2}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" -b "${Site3}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" | \
+bedtools intersect -u -a stdin -b "${Site4}_${outputname}_${minmeandiff}_qval.${qval}.bedgraph" > \
+"All_sites_not${Site1}_intersect_DMRs_${outputname}_${minmeandiff}_qval.${qval}.bedGraph"
+
+#########################################
+
