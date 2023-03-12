@@ -38,6 +38,8 @@ cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs
 ##########################################
 # copy metilene program and make
 
+wget http://www.bioinf.uni-leipzig.de/Software/metilene/metilene_v02-8.tar.gz
+
 tar -xvzf metilene_v02-8.tar.gz
 
 cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/
@@ -275,8 +277,6 @@ https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4588864/
 
 # July 8th 2022
 
-# make W_list_transpose.csv by transposing W_list.txt in Excel and saving as a csv
-
 cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
 
 Site="SVAL"
@@ -286,10 +286,6 @@ Site="ALAS"
 grep ".*${Site}.*" W_list.txt > "${Site}_W_list.txt"
 grep ".*${Site}.*" C_list.txt > "${Site}_C_list.txt"
 
-#grep ".*${Site}.*" W_list_transpose.csv > "${Site}_W_list_transpose.csv"
-#grep ".*${Site}.*" C_list_transpose.csv > "${Site}_C_list_transpose.csv"
-# currently this tranpose file is not used for anything... just repeat with the site specific files
-
 #--------------------------
 #for Alex
 
@@ -297,9 +293,6 @@ Site="Alex"
 
 grep -E "CASS"\|"DRY"\|"MEAD"\|"WILL"\|"FERT" W_list.txt > "Alex_W_list.txt"
 grep -E "CASS"\|"DRY"\|"MEAD"\|"WILL"\|"FERT" C_list.txt > "Alex_C_list.txt"
-
-#grep -E "CASS"\|"DRY"\|"MEAD"\|"WILL"\|"FERT" W_list_transpose.csv > "Alex_W_list_transpose.csv"
-#grep -E "CASS"\|"DRY"\|"MEAD"\|"WILL"\|"FERT" C_list_transpose.csv > "Alex_C_list_transpose.csv"
 
 #--------------------
 
@@ -416,7 +409,7 @@ head $out_metilene
 /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/${out_metilene} --maxdist 300 --mincpgs 500 --minMethDiff 200 --mode 1 --threads 10 -a W -b C > ""$Site"_metilene_output_July2022_300-500-200.txt"
 /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/${out_metilene} --maxdist 100 --mincpgs 10 --minMethDiff 10 --mode 1 --threads 10 -a W -b C > ""$Site"_metilene_output_July2022_100-10-10.txt"
 
-*******************************
+
 #------------------------------
 #subset significant DMRs
 
@@ -670,7 +663,6 @@ QANW01010754.1	458436	458958	9.993508
 QANW01012165.1	847716	847993	17.556858
 
 
-###############################################
 ###############################################
 # convert bedGraph files to bed files to fasta files
 

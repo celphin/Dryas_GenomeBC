@@ -1,7 +1,18 @@
 ﻿####################################################
 # Compare genes/regions that show inherited warming in RNAseq and DMRs
-
+# March 2023
 ###############################################
+
+# How to best compare?
+# Union of bedgraphs? for DMRs
+# RNAseq text file compare?
+# Both map RNAseq to region, union and compare?
+
+#########################
+
+
+
+
 
 
 ################################
