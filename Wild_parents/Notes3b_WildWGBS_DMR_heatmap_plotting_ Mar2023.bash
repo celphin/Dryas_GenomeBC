@@ -51,6 +51,7 @@ do
 done
 
 ######################################
+# run loop
 tmux new-session -s DMR
 tmux attach-session -t DMR
 
@@ -60,10 +61,16 @@ salloc -c1 --time 3:00:00 --mem 120000m --account def-rieseber
 
 cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/
 
-infile="./All_sites/ALL_Sites_intersect_DMRs_qval.0.05.txt"
+#infile="./All_sites/ALL_Sites_intersect_DMRs_qval.0.05.txt"
+#infile="./TOTAL_DMRs/Total_DMRs_100-10-10_July2022_qval.1e-20.out"  # note cut short at just 8 genes
+infile="./LAT_site/LAT_metilene_W_C_Sept2022_70_5_4_5_qval.1e-5.out"
+# should try:
+#infile="./LAT_site/LAT_DMRs_300-30-15_qval.1e-10.out"
 
-# for X in wc -l ALL_Sites_intersect_DMRs_qval.0.05.txt
-for X in {1..8}
+# for X in wc -l $infile
+wc -l $infile
+
+for X in {1..212}
 do
 chrom=$(awk -v X=${X} 'NR == X {print $1}' $infile)
 start=$(awk -v X=${X} 'NR == X {print $2}' $infile)
@@ -95,6 +102,9 @@ done
 paste Line* > ${infile}_DMRs_summed.txt
 ls Line* > ${infile}_DMRs_list.txt
 
+mv Line* Line_files/
+
+
 ###########################################################
 # try differential methylation analysis - plotting
 # and EdgeR plotting for DMRs
@@ -115,7 +125,6 @@ module load python
 export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.2.1/
 
 R
-
 
 #--------------------------
 # EdgeR
@@ -141,27 +150,20 @@ library ("gplots")
 #library ("Equitable")
 library(RColorBrewer)
 
+#filename="./All_sites/ALL_Sites_intersect_DMRs_qval.0.05.txt_DMRs_summed.txt"
+#filename_list="./All_sites/ALL_Sites_intersect_DMRs_qval.0.05.txt_DMRs_list.txt"
+
+filename="./LAT_site/LAT_metilene_W_C_Sept2022_70_5_4_5_qval.1e-5.out_DMRs_summed.txt"
+filename_list="./LAT_site/LAT_metilene_W_C_Sept2022_70_5_4_5_qval.1e-5.out_DMRs_list.txt"
+
 #read in the data
-mydata <- read.table("./All_sites/ALL_Sites_intersect_DMRs_qval.0.05.txt_DMRs_summed.txt", header=FALSE)
-colnam <- read.table("./All_sites/ALL_Sites_intersect_DMRs_qval.0.05.txt_DMRs_list.txt", header=FALSE)
+mydata <- read.table(filename, header=FALSE)
+colnam <- read.table(filename_list, header=FALSE)
 
 nrow(colnam)
 ncol(mydata)
+colnam =colnam[1:212,]
 nrow(mydata)
-
-# Old data - D. drummondii mapping
-# rownam <- c("chrom", "total", "W_ALAS0W_3_236", "W_ALAS0W_7_263", "W_ALAS0W_15_242", "W_WILL4W_417_13", "W_LATD2W_5_206", "W_LATJ_02W_193", "W_SVAL18W_18_271", "W_ALAS0W_14_249",
- # "W_LATD2W_4_212", "W_LATC9W_11_216", "W_SVAL8W_8_272", "W_DRY9W_50_185", "W_ALAS_00W_232", "W_CASS9W_539_128", "W_FERT22W_12F_111", "W_LATD4W_9_207", "W_ALAS0W_18_248", "W_MEAD6W_466_163", 
- # "W_LATC3W_16_220", "W_WILL10W_437_84", "W_LATJ_04W_188", "W_MEAD_08W_4R0", "W_ALAS0W_16_239", "W_DRY3W_15_69", "W_WILL5W_421_154", "W_ALAS0W_17_235", "W_FERT30W_14F_40", "W_MEAD7W_470_173", 
- # "W_FERT14W_6F_126", "W_DRY6W_31_147", "W_FERT6W_3F_110", "W_SVAL16W_16_277", "W_MEAD1W_444_116", "W_DRY8W_45_155", "W_CASS17W_574_137", "W_DRY1W_3_39", "W_WILL1W_403_67", "W_LATD4W_8_211", 
- # "W_SVAL6W_6_274", "W_MEAD2W_450_70", "W_WILL7W_448_107", "W_LATC5W_18_190", "W_LATC1W_12_219", "W_CASS7W_600_19", "W_CASS10W_544_60", "W_CASS5W_525_130", "W_ALAS_00W_228", "W_SVAL_0W_267",
- # "W_CASS_04W_519", "W_ALAS0W_8_265", "C_ALAS_00C_227", "C_LATJ_02C_194", "C_LATD1C_4_223", "C_LATD2C_7_209", "C_WILL1C_406_152", "C_DRY4C_23_82", "C_SVAL_0C_268", "C_WILL3C_414_100", 
- # "C_MEAD2C_451_76", "C_SVAL_0C_269", "C_SVAL16C_16_276", "C_LATD5C_2_201", "C_CASS17C_576_175", "C_LATD2C_1_203", "C_DRY10C_60_41", "C_SVAL12C_12_273", "C_SVAL49C_49_278", "C_LATD5C_20_199",
- # "C_SVAL8C_8_275", "C_MEAD6C_468_22", "C_FERT5C_1F_97", "C_WILL10C_440_16", "C_ALAS0C_10_246", "C_LATD4C_3_196", "C_FERT39C_20F_71", "C_WILL7C_445_125", "C_DRY2C_10_52", "C_MEAD7C_473_95", 
- # "C_LATD5C_5_191", "C_ALAS0C_19_261", "C_WILL5C_422_31", "C_FERT31C_15F_170", "C_CASS4C_524_4", "C_FERT13C_7F_112", "C_CASS_09C_541", "C_CASS5C_529_159", "C_DRY5C_28_92", "C_LATD2C_6_198", 
- # "C_ALAS0C_4_240", "C_CASS10C_548_144", "C_ALAS0C_18_229", "C_MEAD_03C_1R0_00", "C_DRY9C_53_149", "C_ALAS0C_3_258", "C_ALAS0C_13_254", "C_LATJ_00C_187", "C_ALAS0C_5_238", "C_ALAS_00C_231", 
- # "C_MEAD1C_446_33", "C_CASS8C_535_54", "C_ALAS0C_12_256", "")
-
 
 rownam <- c("Chrom", "Pos", "W_CASS_04W_519_NA",  "W_WILL_7W_448_107",  "W_FERT_14W_6F_126",  "W_LATJ_04W_NA_188",  "W_LATC_1W_12_219",  
             "W_ALAS_0W_14_249","W_LATC_9W_11_216",  "W_DRY_6W_31_147",  "W_SVAL_6W_6_274",  "W_SVAL_18W_18_271",  
@@ -181,8 +183,11 @@ rownam <- c("Chrom", "Pos", "W_CASS_04W_519_NA",  "W_WILL_7W_448_107",  "W_FERT_
             "C_ALAS_0C_00_231",  "C_SVAL_8C_8_275","C_ALAS_0C_5_238",  "C_ALAS_0C_12_256",  "C_LATD_4C_3_196",  "C_ALAS_0C_4_240", "C_CASS_5C_529_159", 
             "C_DRY_4C_23_82",  "C_LATD_5C_20_199",  "C_WILL_1C_406_152",  "C_ALAS_0C_3_258")
 
-colnames(mydata) <- colnam$V1
+colnames(mydata) <- colnam
 rownames(mydata) <- rownam
+
+##############################
+# total data plotting
 
 mydata0 <-  mydata[-c(1,2),]
 
@@ -192,22 +197,113 @@ mydata2 <-  t(as.matrix(mydata1))
 
 # https://r-graph-gallery.com/215-the-heatmap-function.html
 
-# jpeg("./W_C_DMR_heatmap.jpg", width = 3000, height = 1000)
-# heatmap.2 (mydata2, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(mydata2), labRow = rownames(mydata2), col='rainbow', dendrogram = "none", colsep =c(51), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=2, cexCol=2)
-# dev.off()
 
-# jpeg("./W_C_DMR_heatmap_red.jpg", width = 3000, height = 1000)
-# heatmap.2 (mydata2, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(mydata2), labRow = rownames(mydata2),  dendrogram = "none", colsep =c(51), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=2, cexCol=2)
-# dev.off()
-
-
-jpeg("./DMRs_qval.0.05_W_C_DMR_heatmap_order.jpg", width = 3000, height = 1000)
+jpeg(paste0(filename,"_Total_W_C_DMR_heatmap_rainbow_order.jpg"), width = 3000, height = 1000)
 heatmap.2 (mydata2, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(mydata2), labRow = rownames(mydata2), col='rainbow', dendrogram = "none", colsep =c(51), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=2, cexCol=2)
 dev.off()
 
-jpeg("./DMRs_qval.0.05_W_C_DMR_heatmap_red_order.jpg", width = 3000, height = 1000)
+jpeg(paste0(filename,"_Total_W_C_DMR_heatmap_red_order.jpg"), width = 3000, height = 1000)
 heatmap.2 (mydata2, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(mydata2), labRow = rownames(mydata2),  dendrogram = "none", colsep =c(51), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=2, cexCol=2)
 dev.off()
+
+##############################
+# Plot heatmap of site specific 
+
+mydatas <- mydata[order(row.names(mydata)), ]
+
+mydatas$ID <- rownames(mydatas)
+
+q <- as.data.frame(t(as.matrix(as.data.frame((strsplit(as.character(mydatas$ID), "_"))))))
+mydata <- cbind(mydatas, q)
+
+colnames(mydata)[which(colnames(mydata)=="V1")] <- "Treat" 
+colnames(mydata)[which(colnames(mydata)=="V2")] <- "SubSite"
+colnames(mydata)[which(colnames(mydata)=="V3")] <- "Plot"
+colnames(mydata)[which(colnames(mydata)=="V4")] <- "FieldID"
+colnames(mydata)[which(colnames(mydata)=="V5")] <- "PlantID"
+
+#makes sites
+unique(mydata$SubSite)
+
+mydata$Site <- sub('LATD', "LATJ", mydata$SubSite, ignore.case = FALSE)
+mydata$Site <- sub('LATC', "LATJ", mydata$Site, ignore.case = FALSE)
+
+mydata$Site <- sub('WILL', "Alex", mydata$Site, ignore.case = FALSE)
+mydata$Site <- sub('CASS', "Alex", mydata$Site, ignore.case = FALSE)
+mydata$Site <- sub('DRY', "Alex", mydata$Site, ignore.case = FALSE)
+mydata$Site <- sub('FERT', "Alex", mydata$Site, ignore.case = FALSE)
+mydata$Site <- sub('MEAD', "Alex", mydata$Site, ignore.case = FALSE)
+
+unique(mydata$Site)
+
+mydata <- mydata[-which(mydata$Treat=="Chrom"|mydata$Treat=="Pos"),]
+
+colnames(mydata)
+
+library(plyr)
+library(dplyr)
+library(tidyr)
+
+mydata$Site <- as.factor(mydata$Site)
+
+#------
+# Sweden
+LATJ_data  <- filter(mydata, Site=="LATJ")
+# remove columns
+LATJ_data1 <- subset(LATJ_data, select = -c(ID, Treat, SubSite, Plot, FieldID, PlantID, Site))
+XX <- LATJ_data1
+
+XX <-  as.matrix(XX)
+
+jpeg(paste0(filename,"_LATJ_W_C_DMR_heatmap_order.jpg"), width = 6000, height = 2000)
+heatmap.2 (XX, scale = "column", trace = "none", Rowv=NA, Colv = TRUE, labCol = colnames(XX), labRow = rownames(XX), col='rainbow', dendrogram = "none", rowsep =c(10), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=2, cexCol=2)
+dev.off()
+
+#------
+# Alex
+Alex_data  <- filter(mydata, Site=="Alex")
+# remove columns
+Alex_data1 <- subset(Alex_data, select = -c(ID, Treat, SubSite, Plot, FieldID, PlantID, Site))
+XX <- Alex_data1
+
+XX <-  t(as.matrix(XX))
+
+jpeg(paste0(filename,"_Alex_W_C_DMR_heatmap_red_order.jpg"), width = 3000, height = 1000)
+heatmap.2 (XX, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(XX), labRow = rownames(XX),  dendrogram = "none", colsep =c(25), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=2, cexCol=2)
+dev.off()
+
+#------
+# Alaska
+ALAS_data  <- filter(mydata, Site=="ALAS")
+# remove columns
+ALAS_data1 <- subset(ALAS_data, select = -c(ID, Treat, SubSite, Plot, FieldID, PlantID, Site))
+XX <- ALAS_data1
+
+XX <-  t(as.matrix(XX))
+
+jpeg(paste0(filename,"_ALAS_W_C_DMR_heatmap_red_order.jpg"), width = 3000, height = 1000)
+heatmap.2 (XX, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(XX), labRow = rownames(XX),  dendrogram = "none", colsep =c(10), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=2, cexCol=2)
+dev.off()
+
+#------
+# Svalbard
+SVAL_data  <- filter(mydata, Site=="SVAL")
+# remove columns
+SVAL_data1 <- subset(SVAL_data, select = -c(ID, Treat, SubSite, Plot, FieldID, PlantID, Site))
+XX <- SVAL_data1
+
+XX <-  t(as.matrix(XX))
+
+jpeg(paste0(filename,"_SVAL_W_C_DMR_heatmap_red_order.jpg"), width = 3000, height = 1000)
+heatmap.2 (XX, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(XX), labRow = rownames(XX),  dendrogram = "none", colsep =c(10), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=2, cexCol=2)
+dev.off()
+
+
+
+
+################
+# order genes by expression amount
+
 
 #-----------------------
 # plot barplots of total results
@@ -221,9 +317,6 @@ gather(mydata2)
 jpeg(paste0("DMRs_qval.0.05_W_C_DMR_total_barplot.jpg"), width = 3000, height = 1000)
 
 dev.off()
-
-#-------------------------
-# Plot heatmap of site specific 
 
 
 
@@ -242,7 +335,16 @@ library(ggpubr)
 setwd ("/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/")
 
 #import data
-filename = "./Do1_01_a00004_10489852_10490314.txt"
+#filename = "./Do1_01_a00004_10489852_10490314.txt" # DONE
+#filename = "./Do1_05_a00003_1480241_1480901.txt" 
+#filename = "./Do1_05_a00003_1480550_1480822.txt" 
+
+filename = "./Do1_05_a00003_1152846_1152987.txt" # this is the amidase
+
+# need to fix filenames and run
+#filename = "./Do1_04_a00001_11637435_11638165.txt"
+#filename = "./Do1_05_a00002_2523208_2523547.txt"
+
 
 data <- read.table(filename, sep="\t", dec=".", header = TRUE)
 
@@ -309,17 +411,17 @@ mydata1$Site <- sub('MEAD', "Alex", mydata1$Site, ignore.case = FALSE)
 
 mydata1$TotalMeth[which(mydata1$TotalMeth> (15000))] <- NA
 
-jpeg("./treat_methylation_Q9334region.jpg", width = 1000, height = 707)
+jpeg(paste0(filename, "boxplot_subsite_warm_methylation.jpg"), width = 1000, height = 707)
 ggboxplot(mydata1, x = "SubSite", y = "TotalMeth",  color = "Treat", add = "jitter", shape = "Treat")
 dev.off()
 
-jpeg(paste0(filename, "_treatsubsite_methylation.jpg"), width = 1000, height = 707)
+jpeg(paste0(filename, "boxplot_site_warm_methylation.jpg"), width = 1000, height = 707)
 ggboxplot(mydata1, x = "Site", y = "TotalMeth",  color = "Treat", add = "jitter", shape = "Treat")
 dev.off()
 
 write.csv(mydata1, file = paste0(filename,"DMR.csv"), quote = FALSE, row.names=FALSE)
 
-jpeg(paste0(filename, "_col_treatsubsite_methylation.jpg"), width = 1000, height = 707)
+jpeg(paste0(filename, "splitboxplot_site_warm_methylation.jpg"), width = 1000, height = 707)
 ggplot(data=mydata1, aes(x=Treat, y=TotalMeth))+
   geom_boxplot(aes(x=Treat, y=TotalMeth, fill=Treat))+
   facet_wrap(~Site, scales = "free")+ theme_classic()+
@@ -367,7 +469,8 @@ library(plyr)
 library(dplyr)
 library(tidyr)
 
-mydata1 <- gather(mydata, Pos, Methylation, Do1_01_a00004_10489854:Do1_01_a00004_10490314)
+colnames(mydata)
+mydata1 <- gather(mydata, Pos, Methylation, Do1_05_a00003_1152848:Do1_05_a00003_1152987)
 
 mydata1$Methylation <- as.numeric(mydata1$Methylation )
 
@@ -389,7 +492,7 @@ DMR_avg1 <- cbind(Chrom, Start, End, DMR_avg)
 
 colnames(DMR_avg1) <- c("Chrom",    "Start",    "End",    "Site",    "Treat",   "Pos",     "avgMeth")
 
-DMR_avg1 <- DMR_avg1[-which(is.na(DMR_avg1$avgMeth)),]
+#DMR_avg2 <- DMR_avg1[-which(is.na(DMR_avg1$avgMeth)),]
 
 
 # filter by Site and Treat
