@@ -341,6 +341,10 @@ setwd ("/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene
 
 filename = "./Do1_05_a00003_1152846_1152987.txt" # this is the amidase
 
+#														chr	         start	end		q-value	        meanmethyl		CpG										meanW	meanC   
+# LAT_metilene_W_C_Sept2022_70_5_4_5_qval.1e-5.out:  Do1_05_a00003  1152846 1152987 1.1428e-25      16.729108       24     								    63.045  46.316
+# metilene_W_C_Sept2022_150_5_4:                     Do1_05_a00003  1152846 1152987 1.3592e-25      16.729108       24      3.9524e-14      9.0799e-32      63.045  46.316
+
 # need to fix filenames and run
 #filename = "./Do1_04_a00001_11637435_11638165.txt"
 #filename = "./Do1_05_a00002_2523208_2523547.txt"

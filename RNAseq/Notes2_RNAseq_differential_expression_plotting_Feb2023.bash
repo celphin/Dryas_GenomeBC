@@ -615,6 +615,13 @@ jpeg("./plots/Sweden_W_C_RNA_heatmap_legend2.jpg", width = 1000, height = 800)
 heatmap.2 (heatmap1, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
 
+subdat1<- exp_data["Do1_01_a00001G00358V1.1",]
+
+jpeg("W_C_Sweden_RNA_Do1_01_a00001G00358V1.1.jpg", width = 1000, height = 700)
+stripchart(log10(as.numeric (subdat1)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "", main="Parent RNAseq Do1_01_a00001G00358V1", pch=16, cex=4, cex.main=1, cex.axis=2, cex.lab=2)
+dev.off()
+
+
 #----------------------------------
 # Seedlings
 
@@ -727,6 +734,14 @@ jpeg("./plots/Seed_W_C_RNA_heatmap_legend2.jpg", width = 1000, height = 800)
 heatmap.2 (heatmap1, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
 
+subdat1seed <- exp_data["Do1_01_a00001G00358V1.1",]
+
+jpeg("W_C_RNA_Seed_Do1_01_a00001G00358V1.1.jpg", width = 1000, height = 700)
+stripchart (log10(as.numeric (subdat1seed)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "",  main="Seedling RNAseq Do1_01_a00001G00358V1", pch=16, cex=4, cex.main=1, cex.axis=2, cex.lab=2)
+dev.off()
+
+
+
 #-------------------------
 #order genes based on most to least expressed in first individual
 #heatmap1_df <- as.data.frame(heatmap1)
@@ -743,11 +758,32 @@ dev.off()
 #Do1_01_a00001G00358V1.1
 
 #plot the individual expression values from a single gene:
-subdat1 <- exp_data["Do1_01_a00001G00358V1.1",]
 
-jpeg("W_C_RNA_Do1_01_a00001G00358V1.1.jpg", width = 700, height = 500)
-stripchart (log10(as.numeric (subdat1)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "Log10 Expression count", pch=16)
+subdat1<- exp_data["Do1_01_a00001G00358V1.1",]
+jpeg("W_C_Sweden_RNA_Do1_01_a00001G00358V1.1.jpg", width = 1000, height = 700)
+stripchart(log10(as.numeric (subdat1)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "", main="Parent RNAseq Do1_01_a00001G00358V1", pch=16, cex=4, cex.main=1, cex.axis=2, cex.lab=2)
 dev.off()
+
+# Parents
+                       # C_Swed_11 C_Swed_15 C_Swed_16 C_Swed_2 C_Swed_3
+# Do1_01_a00001G00358V1.1       800       830       791      712     1313
+                        # C_Swed_5 C_Swed_8 W_Swed_10 W_Swed_13 W_Swed_14
+# Do1_01_a00001G00358V1.1      783      415      1240       204       153
+                        # W_Swed_16 W_Swed_17 W_Swed_2 W_Swed_5 W_Swed_6
+# Do1_01_a00001G00358V1.1       172       398      105      368     2143
+
+#-----------
+subdat1seed <- exp_data["Do1_01_a00001G00358V1.1",]
+
+jpeg("W_C_RNA_Seed_Do1_01_a00001G00358V1.1.jpg", width = 1000, height = 700)
+stripchart (log10(as.numeric (subdat1seed)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "",  main="Seedling RNAseq Do1_01_a00001G00358V1", pch=16, cex=4, cex.main=1, cex.axis=2, cex.lab=2)
+dev.off()
+
+
+#Seedlings
+                        # C_Seed_1 C_Seed_2 C_Seed_3 W_Seed_1 W_Seed_2 W_Seed_3
+# Do1_01_a00001G00358V1.1      284      151       45      762     2112     1527
+
 
 #----------------------------------
 # Do1_05_a00001G00328V1.1
