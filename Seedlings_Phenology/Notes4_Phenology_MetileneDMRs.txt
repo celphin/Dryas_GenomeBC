@@ -3,7 +3,7 @@
 #############################
 
 # Need to:
-# Compare Sen and MatFL plants for DMRs (Metilene)
+# Compare Sen and MatFL plants for DMRs (Metilene) 
 # Find way to search for short dense changes in methylation across sites
 
 #######################################
