@@ -90,17 +90,16 @@ ls -1 | wc -l
 #-----------------------------
 # check md5 sums 
 
-# on local machine
+# on local machine go to directory with downloaded file
 cd /home/Owner/MyDocuments/Hackery\ Backup/gaiaa/Documents/Cassandra/PhD/GenomeBC_Dryas/RNAseq/Data
-
 scp -v readSets_*.md5 celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_raw_data/
 
-# back on Cedar
+# back on Cedar or your server
 cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_raw_data/
 
 md5sum -c readSets_fastq.md5
 
-# checking
+# should look like this when checking
 NS.1889.003.NEBNext_dual_i7_138---NEBNext_dual_i5_138.L_W10_R1.fastq.gz: OK
 NS.1889.003.NEBNext_dual_i7_138---NEBNext_dual_i5_138.L_W10_R2.fastq.gz: OK
 NS.1889.003.NEBNext_dual_i7_157---NEBNext_dual_i5_157.N_C3_B_R1.fastq.gz: OK
