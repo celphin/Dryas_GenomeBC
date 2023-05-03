@@ -4,7 +4,7 @@
 # Mapping  and calling methylated C's with Methylseq in nextflow
 # Jan 2022
 ################################
-# Nextflow setup 
+# Nextflow setup  
 
 # https://nf-co.re/methylseq
 # https://docs.alliancecan.ca/wiki/Singularity
