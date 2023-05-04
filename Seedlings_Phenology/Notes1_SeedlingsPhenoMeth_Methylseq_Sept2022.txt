@@ -9,219 +9,75 @@
 tmux new-session -s Seed
 tmux attach-session -t Seed
 
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112555/150bp
+cd projects/rpp-rieseber/username
+cp Seedlings_MatureFlwr_raw_data/*/*/*.merge_chastity_passed.fastq.gz ~/scratch/Dryas/Seedling_Methylseq/input/
 
-drwxr-s--- 2 celphin rpp-rieseber       4096 Jul 26 19:17 .
-drwxr-s--- 3 celphin rpp-rieseber       4096 Jul 26 19:17 ..
--rwxr-x--- 1 celphin rpp-rieseber 3657380549 Jul 26 19:17 F112555_1_150bp_4_lanes.merge_chastity_passed.fastq.gz
--rwxr-x--- 1 celphin rpp-rieseber 3565261936 Jul 26 19:18 F112555_2_150bp_4_lanes.merge_chastity_passed.fastq.gz
--rwxr-x--- 1 celphin rpp-rieseber        624 Jul 26 19:17 GSC-2131_F112555_gsc_library.summary
--rwxr-x--- 1 celphin rpp-rieseber        624 Jul 26 19:17 GSC-2131_F112555_gsc_library.tsv
--rwxr-x--- 1 celphin rpp-rieseber        379 Jul 26 19:17 md5sum_results.txt
+cd ~/scratch/Dryas/Seedling_Methylseq/input/
 
-more GSC-2131_F112555_gsc_library.summary
-Information regarding the data in this directory:
+#rename_files.sh (contents of rename_files.sh):
+cat << EOF > ~/scratch/Dryas/Seedling_Methylseq/input/rename_files.sh
+while IFS=, read -r oldname newname
+do
+  mv $oldname $newname
+done < newnames.csv
+EOF
 
-Number of merge entries: 1
--------------------------
-PROJECT SOW     LIBRARY POOLS   INDEX   ANTIBODY        UPPER_PROTOCOL  PLATFORM        SEQ LENGTH      TAXONOMY_ID     SPECIES PATIENT_ID      EXTERNAL_ID  ORIGINAL_SOURCE  UMI_ENABLED
-Loren Rieseberg GSC-2131        F112555 IX10885 CTTTTG          Bisulfite 1.1   Illumina        150             Dryas           SE_A_C_L_170_5  LoR_1   False
+#Need: newnames.csv - list of format: oldname,newname 
+sh rename_files.sh
 
-
-Information regarding the processing to UMI enabled libraries can be found on our website: https://www.bcgsc.ca/services/sequencing-services/duplex-umi
-If there are any questions or additional information is needed please contact us at data_support@bcgsc.ca
-
-#-------------------------------------------------
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112555/150bp  
-more GSC-2131_F112555_gsc_library.summary
-cp F112555_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_A_C_L_170_5_F112555_R1.fastq.gz
-cp F112555_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_A_C_L_170_5_F112555_R2.fastq.gz
-
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112556/150bp
-more GSC-2131_F112556_gsc_library.summary
-cp F112556_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_L_190_43_F112556_R1.fastq.gz
-cp F112556_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_L_190_43_F112556_R2.fastq.gz
- 
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112557/150bp
-more GSC-2131_F112557_gsc_library.summary
-cp F112557_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_L_219_42_F112557_R1.fastq.gz
-cp F112557_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_L_219_42_F112557_R2.fastq.gz
- 
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112558/150bp
-more GSC-2131_F112558_gsc_library.summary
-cp F112558_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_L_198_35_F112558_R1.fastq.gz
-cp F112558_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_L_198_35_F112558_R2.fastq.gz
- 
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112559/150bp
-more GSC-2131_F112559_gsc_library.summary
-cp F112559_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_T_C_L_238_47_F112559_R1.fastq.gz
-cp F112559_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_T_C_L_238_47_F112559_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112560/150bp
-more GSC-2131_F112560_gsc_library.summary
-cp F112560_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_L_187_38_F112560_R1.fastq.gz
-cp F112560_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_L_187_38_F112560_R2.fastq.gz
-  
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112561/150bp
-more GSC-2131_F112561_gsc_library.summary
-cp F112561_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_A_C_L_125_11_F112561_R1.fastq.gz
-cp F112561_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_A_C_L_125_11_F112561_R2.fastq.gz
- 
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112563/150bp
-more GSC-2131_F112563_gsc_library.summary
-cp F112563_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_L_198_34_F112563_R1.fastq.gz
-cp F112563_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_L_198_34_F112563_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112564/150bp
-more GSC-2131_F112564_gsc_library.summary
-cp F112564_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_H_219_105_F112564_R1.fastq.gz
-cp F112564_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_H_219_105_F112564_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112565/150bp
-more GSC-2131_F112565_gsc_library.summary
-cp F112565_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_187_98_F112565_R1.fastq.gz
-cp F112565_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_187_98_F112565_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112566/150bp
-more GSC-2131_F112566_gsc_library.summary
-cp F112566_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_194_92_F112566_R1.fastq.gz
-cp F112566_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_194_92_F112566_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112567/150bp
-more GSC-2131_F112567_gsc_library.summary
-cp F112567_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_H_219_104_F112567_R1.fastq.gz
-cp F112567_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_H_219_104_F112567_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112568/150bp
-more GSC-2131_F112568_gsc_library.summary
-cp F112568_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_191_102_F112568_R1.fastq.gz
-cp F112568_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_191_102_F112568_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112569/150bp
-more GSC-2131_F112569_gsc_library.summary
-cp F112569_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_191_100_F112569_R1.fastq.gz
-cp F112569_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_191_100_F112569_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112570/150bp
-more GSC-2131_F112570_gsc_library.summary
-cp F112570_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_T_W_H_228_95_F112570_R1.fastq.gz
-cp F112570_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_T_W_H_228_95_F112570_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112571/150bp
-more GSC-2131_F112571_gsc_library.summary
-cp F112571_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_H_219_105J_F112571_R1.fastq.gz
-cp F112571_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_W_H_219_105J_F112571_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112572/150bp
-more GSC-2131_F112572_gsc_library.summary
-cp F112572_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_194_92J_F112572_R1.fastq.gz
-cp F112572_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/SE_L_C_H_194_92J_F112572_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112573/150bp
-more GSC-2131_F112573_gsc_library.summary
-cp F112573_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/Asian1_F112573_R1.fastq.gz
-cp F112573_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/Asian1_F112573_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112574/150bp
-more GSC-2131_F112574_gsc_library.summary
-cp F112574_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/Chilliwack1_F112574_R1.fastq.gz
-cp F112574_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/Chilliwack1_F112574_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112575/150bp
-more GSC-2131_F112575_gsc_library.summary
-cp F112575_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Will_3C_100_414_F112575_R1.fastq.gz
-cp F112575_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Will_3C_100_414_F112575_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112576/150bp
-more GSC-2131_F112576_gsc_library.summary
-cp F112576_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Will_4W_13_417_F112576_R1.fastq.gz
-cp F112576_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Will_4W_13_417_F112576_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112577/150bp
-more GSC-2131_F112577_gsc_library.summary
-cp F112577_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Mead_1C_33_446_F112577_R1.fastq.gz
-cp F112577_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Mead_1C_33_446_F112577_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112578/150bp
-more GSC-2131_F112578_gsc_library.summary
-cp F112578_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Mead_1W_116_444_F112578_R1.fastq.gz
-cp F112578_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Mead_1W_116_444_F112578_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112579/150bp
-more GSC-2131_F112579_gsc_library.summary
-cp F112579_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Cass_4C_4_524_F112579_R1.fastq.gz
-cp F112579_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Cass_4C_4_524_F112579_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112580/150bp
-more GSC-2131_F112580_gsc_library.summary
-cp F112580_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Cass_5W_130_525_F112580_R1.fastq.gz
-cp F112580_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Cass_5W_130_525_F112580_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112581/150bp
-more GSC-2131_F112581_gsc_library.summary
-cp F112581_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Cass_10W_60_544_F112581_R1.fastq.gz
-cp F112581_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Cass_10W_60_544_F112581_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112583/150bp
-more GSC-2131_F112583_gsc_library.summary
-cp F112583_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Fert_5C_97_1F_F112583_R1.fastq.gz
-cp F112583_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Fert_5C_97_1F_F112583_R2.fastq.gz
-
-cd /project/6019339/celphin/Dryas/Seedlings_MatureFlwr_raw_data/F112584/150bp
-more GSC-2131_F112584_gsc_library.summary
-cp F112584_1_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Fert_6W_110_3F_F112584_R1.fastq.gz
-cp F112584_2_150bp_4_lanes.merge_chastity_passed.fastq.gz /home/celphin/scratch/Dryas/Seedling_Methylseq/input/MatFl_Fert_6W_110_3F_F112584_R2.fastq.gz
-
-
-cd /home/celphin/scratch/Dryas/Seedling_Methylseq/input/
-
-Asian1_F112573_R1.fastq.gz                 MatFl_Will_3C_100_414_F112575_R2.fastq.gz  SE_L_C_L_198_35_F112558_R1.fastq.gz
-Asian1_F112573_R2.fastq.gz                 MatFl_Will_4W_13_417_F112576_R1.fastq.gz   SE_L_C_L_198_35_F112558_R2.fastq.gz
-Chilliwack1_F112574_R1.fastq.gz            MatFl_Will_4W_13_417_F112576_R2.fastq.gz   SE_L_W_H_219_104_F112567_R1.fastq.gz
-Chilliwack1_F112574_R2.fastq.gz            SE_A_C_L_125_11_F112561_R1.fastq.gz        SE_L_W_H_219_104_F112567_R2.fastq.gz
-MatFl_Cass_10W_60_544_F112581_R1.fastq.gz  SE_A_C_L_125_11_F112561_R2.fastq.gz        SE_L_W_H_219_105_F112564_R1.fastq.gz
-MatFl_Cass_10W_60_544_F112581_R2.fastq.gz  SE_A_C_L_170_5_F112555_R1.fastq.gz         SE_L_W_H_219_105_F112564_R2.fastq.gz
-MatFl_Cass_4C_4_524_F112579_R1.fastq.gz    SE_A_C_L_170_5_F112555_R2.fastq.gz         SE_L_W_H_219_105J_F112571_R1.fastq.gz
-MatFl_Cass_4C_4_524_F112579_R2.fastq.gz    SE_L_C_H_187_98_F112565_R1.fastq.gz        SE_L_W_H_219_105J_F112571_R2.fastq.gz
-MatFl_Cass_5W_130_525_F112580_R1.fastq.gz  SE_L_C_H_187_98_F112565_R2.fastq.gz        SE_L_W_L_190_43_F112556_R1.fastq.gz
-MatFl_Cass_5W_130_525_F112580_R2.fastq.gz  SE_L_C_H_191_100_F112569_R1.fastq.gz       SE_L_W_L_190_43_F112556_R2.fastq.gz
-MatFl_Fert_5C_97_1F_F112583_R1.fastq.gz    SE_L_C_H_191_100_F112569_R2.fastq.gz       SE_L_W_L_198_34_F112563_R1.fastq.gz
-MatFl_Fert_5C_97_1F_F112583_R2.fastq.gz    SE_L_C_H_191_102_F112568_R1.fastq.gz       SE_L_W_L_198_34_F112563_R2.fastq.gz
-MatFl_Fert_6W_110_3F_F112584_R1.fastq.gz   SE_L_C_H_191_102_F112568_R2.fastq.gz       SE_L_W_L_219_42_F112557_R1.fastq.gz
-MatFl_Fert_6W_110_3F_F112584_R2.fastq.gz   SE_L_C_H_194_92_F112566_R1.fastq.gz        SE_L_W_L_219_42_F112557_R2.fastq.gz
-MatFl_Mead_1C_33_446_F112577_R1.fastq.gz   SE_L_C_H_194_92_F112566_R2.fastq.gz        SE_T_C_L_238_47_F112559_R1.fastq.gz
-MatFl_Mead_1C_33_446_F112577_R2.fastq.gz   SE_L_C_H_194_92J_F112572_R1.fastq.gz       SE_T_C_L_238_47_F112559_R2.fastq.gz
-MatFl_Mead_1W_116_444_F112578_R1.fastq.gz  SE_L_C_H_194_92J_F112572_R2.fastq.gz       SE_T_W_H_228_95_F112570_R1.fastq.gz
-MatFl_Mead_1W_116_444_F112578_R2.fastq.gz  SE_L_C_L_187_38_F112560_R1.fastq.gz        SE_T_W_H_228_95_F112570_R2.fastq.gz
-MatFl_Will_3C_100_414_F112575_R1.fastq.gz  SE_L_C_L_187_38_F112560_R2.fastq.gz
-
-# check all files transferred
-28 samples here
+cd /home/username/scratch/Dryas/Seedling_Methylseq/input/
+# check all files transferred (28 samples)
 
 ###########################################################
 # run methylation calling
 
-cd /home/celphin/scratch/Dryas/May2021_Methylseq
+cd /home/username/scratch/Dryas/Seedling_Methylseq/input/
 
-cp -vr /home/celphin/scratch/Dryas/May2021_Methylseq/* /home/celphin/scratch/Dryas/Seedling_Methylseq/
-# done
+# make input_files.csv : (https://nf-co.re/methylseq/2.3.0/parameters), of format sample,fastq1,fastq2 
+cat << EOF > ~/scratch/Dryas/Seedling_Methylseq/input/input_files.sh
+
+ls > ~/scratch/testfilecopy/dir_list.txt
+grep "fastq.gz" ~/scratch/Dryas/Seedling_Methylseq/input/dir_list.txt > ~/scratch/Dryas/Seedling_Methylseq/input/samples_list.csv
+
+#file to be inputted to nextflowconfig
+touch input_files.csv
+#header
+echo "sample,fastq1,fastq2" >> input_files.csv
+
+#adding columns with samplename,fastq1,fastq2
+while read -r line
+do 
+    ext="_R1.fastq.gz"
+    sample=${line%$ext}
+    echo -n $sample",input/"$line"," >> input_files.csv
+    read -r line
+    echo "input/"$line >> input_files.csv
+done <samples_list.csv
+
+# removing all temp files
+rm dir_list.txt
+rm samples_list.csv
+
+EOF
+
+#Set up nextflow
+
+
+#Installing nextflow/methylseq
+# following instructions here: https://nf-co.re/methylseq/2.3.0
+# test this in a separate directory
+nextflow run nf-core/methylseq -profile singularity,cc --outdir ouput
+
+#To get conf files in home dir:
+ls -a
+cd ./nextflow/assets
+cp ./conf ~/scratch/Dryas/Seedling_Methylseq
+cp nextflow.config ~/scratch/Dryas/Seedling_Methylseq
 
 # clean out previous run
 rm -r ./work/*
 rm -r ./output/*
 rm .nextflow.log*
-
-# from 
-# git clone https://github.com/nf-core/methylseq.git
-# Note: needed to copy the nf-core/methylseq/conf/base.config to the directory running the program
-# also need base.config  igenomes.config  modules.config  test.config  test_full.config
-
-# make it run from Greg's account
-nano nextflow.config
-# process.clusterOptions = "--account def-henryg"
 
 # had to run once to set up the singularity image
 
@@ -245,7 +101,7 @@ params {
   fasta = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/Dryas_octopetala_H1.supercontigs.fa'
   // bismark_index = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/BismarkIndex/'
 
-
+}
 
 
 ###############################
@@ -255,17 +111,70 @@ tmux attach-session -t Seed
 
 cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
 
-salloc -c1 --time 23:00:00 --mem 120000m --account def-henryg
+salloc -c12 --time 23:00:00 --mem 120000m --account def-rieseber
 
-module load singularity/3.7
+# Set to the most recent versions 
+#use ‘module spider modulename’, to see most up to date version #
+#module list on following runs, to see if loaded
+
+module load singularity/3.8
 module load StdEnv/2020
-module load nextflow/20.10.0
-module load java/1.8.0_192
+module load nextflow/22.10.6
+module load java/11.0.16_8
+module load apptainer
+
+
 
 cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
 
+
+
+
+#have reference genome be in Seedling_Methylseq/Bismarkindex/
+#Modifications in nextflow.config ( in Seedling_Methylseq directory)
+# use default settings except for the ones listed below (switching syntax here to fit with nextflow)
+# maybe even attach github link to working nextflow.config file ?
+:'
+//params: 
+ 
+params{
+ 	 //Input
+input = 'input/input_files.csv'
+fasta = 'BismarkIndex/Dryas_octopetala_H1.supercontigs.fa'
+
+ // Intermediate files
+save_reference             = true
+save_trimmed               = true
+
+ // Alignment options
+comprehensive              = true
+
+  // Library presets
+ zymo                       = true
+
+ // Bismark options
+ non_directional            = true
+ cytosine_report            = true
+ relax_mismatches        = true
+ no_overlap                 = true
+
+ // Boilerplate options
+    outdir                     = 'output/' //creates and writes to output
+
+}
+
+profiles {
+cc {
+        		process.clusterOptions = "--account rpp-rieseber"
+}
+}
+'
+
+
+
 nextflow run nf-core/methylseq/ -profile singularity,cc 
 
+:'
 #------------------------------------
 
 Picked up JAVA_TOOL_OPTIONS: -Xmx2g
@@ -321,6 +230,7 @@ executor >  slurm (92)
 [-        ] process > multiqc                                        -
 [0d/555277] process > output_documentation                           [100%] 1 of 1 ✔
 
+'
 
 squeue -u celphin
           JOBID     USER      ACCOUNT           NAME  ST  TIME_LEFT NODES CPUS TRES_PER_N MIN_MEM NODELIST (REASON)
@@ -388,7 +298,7 @@ executor >  slurm (21)
 #-------------------------
 # maybe ran out of time - check - just restart
 
-salloc -c1 --time 23:00:00 --mem 120000m --account def-henryg
+salloc -c1 --time 23:00:00 --mem 120000m --account rpp-henryg
 
 module load singularity/3.7
 module load StdEnv/2020
