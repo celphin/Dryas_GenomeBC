@@ -6,26 +6,31 @@
 #############################################################
 # rename files
 
+#Note on tmux sessions + cedar1/cedar5:
+#cedar1 and cedar5 can each have seperate tmux sessions of the same name
+#After creating a session, record which of cedar1/cedar5 is used [username@cedar1~]
+#if default opens to the other cedar#:
+#ssh cedar  # (with desired number)
+#tmux list-session ->to get list of previous sessions
+
 tmux new-session -s Seed
 tmux attach-session -t Seed
 
-cd projects/rpp-rieseber/username
+#copy files
+cd ~/projects/rpp-rieseber/username
 cp Seedlings_MatureFlwr_raw_data/*/*/*.merge_chastity_passed.fastq.gz ~/scratch/Dryas/Seedling_Methylseq/input/
 
+#rename files
 cd ~/scratch/Dryas/Seedling_Methylseq/input/
-
-#rename_files.sh (contents of rename_files.sh):
-cat << EOF > ~/scratch/Dryas/Seedling_Methylseq/input/rename_files.sh
+#Need: newnames.csv - list of format: oldname,newname 
 while IFS=, read -r oldname newname
 do
   mv $oldname $newname
 done < newnames.csv
-EOF
 
-#Need: newnames.csv - list of format: oldname,newname 
-sh rename_files.sh
 
 cd /home/username/scratch/Dryas/Seedling_Methylseq/input/
+ls 
 # check all files transferred (28 samples)
 
 ###########################################################
@@ -34,8 +39,8 @@ cd /home/username/scratch/Dryas/Seedling_Methylseq/input/
 cd /home/username/scratch/Dryas/Seedling_Methylseq/input/
 
 # make input_files.csv : (https://nf-co.re/methylseq/2.3.0/parameters), of format sample,fastq1,fastq2 
-cat << EOF > ~/scratch/Dryas/Seedling_Methylseq/input/input_files.sh
 
+cat << EOF > ~/scratch/Dryas/Seedling_Methylseq/input/input_files.sh
 ls > ~/scratch/testfilecopy/dir_list.txt
 grep "fastq.gz" ~/scratch/Dryas/Seedling_Methylseq/input/dir_list.txt > ~/scratch/Dryas/Seedling_Methylseq/input/samples_list.csv
 
@@ -57,7 +62,6 @@ done <samples_list.csv
 # removing all temp files
 rm dir_list.txt
 rm samples_list.csv
-
 EOF
 
 #Set up nextflow
@@ -79,33 +83,6 @@ rm -r ./work/*
 rm -r ./output/*
 rm .nextflow.log*
 
-# had to run once to set up the singularity image
-
-#-------------------------------
-# edit config files for this
-
-more nextflow.config
-
-// Global default params, used in configs
-params {
-
-  // Workflow flags
-  genomes {
-    'Dryas_octo' {
-      fasta = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/' // Used if no index given
-    }
-    // Any number of additional genomes, key is used with --genome
-  }
-  input = '/home/celphin/scratch/Dryas/Seedling_Methylseq/input/*_R{1,2}.fastq.gz'
-  input_paths = null
-  fasta = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/Dryas_octopetala_H1.supercontigs.fa'
-  // bismark_index = '/scratch/celphin/Dryas/Dryas_octopetala_reference/genomes/BismarkIndex/'
-
-}
-
-
-###############################
-
 tmux new-session -s Seed
 tmux attach-session -t Seed
 
@@ -123,11 +100,7 @@ module load nextflow/22.10.6
 module load java/11.0.16_8
 module load apptainer
 
-
-
 cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
-
-
 
 
 #have reference genome be in Seedling_Methylseq/Bismarkindex/
@@ -141,6 +114,8 @@ params{
  	 //Input
 input = 'input/input_files.csv'
 fasta = 'BismarkIndex/Dryas_octopetala_H1.supercontigs.fa'
+//add after second run:
+//bismark_index = '/scratch/username/Dryas/Seedling_Methylseq/output'
 
  // Intermediate files
 save_reference             = true
@@ -150,30 +125,34 @@ save_trimmed               = true
 comprehensive              = true
 
   // Library presets
- zymo                       = true
+ zymo                      = true
 
  // Bismark options
- non_directional            = true
- cytosine_report            = true
- relax_mismatches        = true
- no_overlap                 = true
+ non_directional           = true
+ cytosine_report           = true
+ relax_mismatches          = true
+ no_overlap                = true
 
  // Boilerplate options
-    outdir                     = 'output/' //creates and writes to output
+outdir                      = 'output/' //creates and writes to output
 
 }
 
 profiles {
-cc {
+  cc {
         		process.clusterOptions = "--account rpp-rieseber"
-}
+  }
 }
 '
 
 
-
+# had to run once to set up the singularity image
+nextflow run nf-core/methylseq/ -profile singularity,cc 
+#update config file, to include bismarkindex parameter 
 nextflow run nf-core/methylseq/ -profile singularity,cc 
 
+
+#Initial run will look like:
 :'
 #------------------------------------
 
@@ -231,8 +210,9 @@ executor >  slurm (92)
 [0d/555277] process > output_documentation                           [100%] 1 of 1 ✔
 
 '
-
+#Looking at time left in compute nodes + submissions, 
 squeue -u celphin
+:'
           JOBID     USER      ACCOUNT           NAME  ST  TIME_LEFT NODES CPUS TRES_PER_N MIN_MEM NODELIST (REASON)
        44241289  celphin def-henryg_c    interactive   R    8:56:41     1   30        N/A  12000M cdr1519 (None)
        44249643  celphin def-henryg_c    interactive   R   13:03:54     1    1        N/A 120000M cdr811 (None)
@@ -263,104 +243,29 @@ squeue -u celphin
        44253263  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
        44253270  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
        44253391  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+'
 
 #---------------------------------------
 #-------------------------
-# ran out of time - just restart
+# if runs out of time -  restart
 
-salloc -c1 --time 23:00:00 --mem 120000m --account def-henryg
+salloc -c1 --time 23:00:00 --mem 120000m --account rpp-rieseber
 
-module load singularity/3.7
+module load singularity/3.8
 module load StdEnv/2020
-module load nextflow/20.10.0
-module load java/1.8.0_192
+module load nextflow/22.10.6
+module load java/11.0.16_8
+module load apptainer
 
 cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
 
 nextflow run nf-core/methylseq/ -profile singularity,cc -resume
 
+#if runs out of time again, restart
 
-executor >  slurm (21)
-[d5/2416ab] process > get_software_versions                         [100%] 1 of 1 ✔
-[fe/bbc415] process > makeBismarkIndex (1)                          [100%] 1 of 1, cached: 1 ✔
-[53/84ad17] process > fastqc (MatFl_Cass_5W_130_525_F112580)        [100%] 28 of 28, cached: 28 ✔
-[5d/944ecb] process > trim_galore (MatFl_Cass_5W_130_525_F112580)   [100%] 28 of 28, cached: 28 ✔
-[bc/6692aa] process > bismark_align (MatFl_Cass_5W_130_525_F112580) [ 43%] 12 of 28, cached: 12
-[40/0e5ff2] process > bismark_deduplicate (SE_L_W_L_219_42_F112557) [100%] 12 of 12, cached: 11
-[9a/9e66a6] process > bismark_methXtract (SE_L_W_L_219_42_F112557)  [ 92%] 11 of 12, cached: 11
-[14/a8942e] process > bismark_report (SE_L_W_L_190_43_F112556)      [100%] 11 of 11, cached: 11
-[-        ] process > bismark_summary                               -
-[bc/948b74] process > qualimap (SE_L_W_L_219_42_F112557)            [100%] 12 of 12, cached: 11
-[17/5762ac] process > preseq (SE_L_W_L_219_42_F112557)              [ 92%] 11 of 12, cached: 11
-[-        ] process > multiqc                                       -
-[0d/555277] process > output_documentation                          [100%] 1 of 1, cached: 1 ✔
+#Message when complete:
 
-#-------------------------
-# maybe ran out of time - check - just restart
-
-salloc -c1 --time 23:00:00 --mem 120000m --account rpp-henryg
-
-module load singularity/3.7
-module load StdEnv/2020
-module load nextflow/20.10.0
-module load java/1.8.0_192
-
-cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
-
-nextflow run nf-core/methylseq/ -profile singularity,cc -resume
-
-executor >  slurm (11)
-[74/691046] process > get_software_versions                            [100%] 1 of 1 ✔
-[fe/bbc415] process > makeBismarkIndex (1)                             [100%] 1 of 1, cached: 1 ✔
-[b1/2e1530] process > fastqc (SE_L_C_H_191_100_F112569)                [100%] 28 of 28, cached: 28 ✔
-[5d/944ecb] process > trim_galore (MatFl_Cass_5W_130_525_F112580)      [100%] 28 of 28, cached: 28 ✔
-[f8/3eae9c] process > bismark_align (MatFl_Cass_5W_130_525_F112580)    [ 93%] 26 of 28, cached: 26
-[08/95601e] process > bismark_deduplicate (SE_L_C_H_191_100_F112569)   [100%] 26 of 26, cached: 26
-[09/3cbd50] process > bismark_methXtract (MatFl_Fert_5C_97_1F_F112583) [ 81%] 21 of 26, cached: 21
-[8a/9c07c0] process > bismark_report (SE_L_C_H_191_100_F112569)        [100%] 21 of 21, cached: 21
-[-        ] process > bismark_summary                                  -
-[29/ee93ae] process > qualimap (MatFl_Fert_5C_97_1F_F112583)           [ 96%] 25 of 26, cached: 25
-[8d/987e20] process > preseq (MatFl_Fert_5C_97_1F_F112583)             [ 92%] 24 of 26, cached: 24
-[-        ] process > multiqc                                          -
-[0d/555277] process > output_documentation                             [100%] 1 of 1, cached: 1 ✔
-
-
-executor >  slurm (16)
-[74/691046] process > get_software_versions                          [100%] 1 of 1 ✔
-[fe/bbc415] process > makeBismarkIndex (1)                           [100%] 1 of 1, cached: 1 ✔
-[b1/2e1530] process > fastqc (SE_L_C_H_191_100_F112569)              [100%] 28 of 28, cached: 28 ✔
-[5d/944ecb] process > trim_galore (MatFl_Cass_5W_130_525_F112580)    [100%] 28 of 28, cached: 28 ✔
-[f8/3eae9c] process > bismark_align (MatFl_Cass_5W_130_525_F112580)  [ 93%] 26 of 28, cached: 26
-[08/95601e] process > bismark_deduplicate (SE_L_C_H_191_100_F112569) [100%] 26 of 26, cached: 26
-[0b/91bc6d] process > bismark_methXtract (SE_L_C_L_187_38_F112560)   [100%] 26 of 26, cached: 21
-[ad/2e54d9] process > bismark_report (SE_L_C_L_187_38_F112560)       [100%] 26 of 26, cached: 21
-[-        ] process > bismark_summary                                -
-[29/ee93ae] process > qualimap (MatFl_Fert_5C_97_1F_F112583)         [100%] 26 of 26, cached: 25
-[d4/c64f1a] process > preseq (SE_L_C_L_187_38_F112560)               [100%] 26 of 26, cached: 24
-[-        ] process > multiqc                                        -
-[0d/555277] process > output_documentation                           [100%] 1 of 1, cached: 1 ✔
-salloc: Job 44609913 has exceeded its time limit and its allocation has been revoked.
-                                                                                     slurmstepd: error: *** STEP 44609913.interactive ON cdr1965 CANCELLED AT 2022-09-13T13:45:01 DUE TO TIME LIMIT ***
-srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
-srun: error: cdr1965: task 0: Killed
-srun: launch/slurm: _step_signal: Terminating StepId=44609913.interactive
-srun: error: Timed out waiting for job step to complete
-
-#-------------------------
-# ran out of time - restart
-
-salloc -c1 --time 23:00:00 --mem 120000m --account def-henryg
-
-module load singularity/3.7
-module load StdEnv/2020
-module load nextflow/20.10.0
-module load java/1.8.0_192
-
-cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
-
-nextflow run nf-core/methylseq/ -profile singularity,cc -resume
-
-
+:'
 WARN: Access to undefined parameter `bwa_meth_index` -- Initialise it to a default value eg. `params.bwa_meth_index = some_value`
 WARN: Access to undefined parameter `fasta_index` -- Initialise it to a default value eg. `params.fasta_index = some_value`
 executor >  slurm (15)
@@ -385,6 +290,7 @@ Succeeded   : 15
 Cached      : 214
 
 
+#### 
 
 
 ###################################
@@ -454,6 +360,8 @@ cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs
 ##########################################
 # copy metilene program and make
 
+
+wget http://www.bioinf.uni-leipzig.de/Software/metilene/metilene_v02-8.tar.gz
 tar -xvzf metilene_v02-8.tar.gz
 
 cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/
@@ -484,7 +392,7 @@ module load bedtools/2.30.0
 # make sorted bedgraph files
 cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
 
-#find . -name "*.bedGraph" -print > file_list.txt
+find . -name "*.bedGraph" -print > file_list.txt
 
 while read name
 do
@@ -536,6 +444,8 @@ Cfiles=$(sed ':a;N;$!ba;s/\n/ /g' C_list.txt)
 Wname=$(tr ',' ' ' < "./W_list_csv.csv")
 Cname=$(tr ',' ' ' < "./C_list_csv.csv")
 
+
+#adjusting to Metilene formatting
 bedtools unionbedg -header -names $Wname $Cname -filler $NA -i $Wfiles $Cfiles | cut -f1,3- | sed 's/end/pos/' > $out_metilene
 
 
@@ -576,6 +486,7 @@ module load bedtools/2.30.0
 
 /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_W_C.input --maxdist 100 --mincpgs 20 --minMethDiff 0.2 --mode 1 --threads 10 -a W -b C -v 0.2 > metilene_output_June2022_maxd100_minC20_mindiff20.txt
 
+#start here
 segmenting Do1_a00047-[146885,147093], 16 CpGs
 segmenting Do1_a00047-[147217,148270], 103 CpGs
 segmenting Do1_a00047-[148449,148480], 3 CpGs
