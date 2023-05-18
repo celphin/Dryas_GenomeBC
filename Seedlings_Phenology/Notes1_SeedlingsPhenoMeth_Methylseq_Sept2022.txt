@@ -72,7 +72,8 @@ EOF
 # test this in a separate directory
 nextflow run nf-core/methylseq -profile singularity,cc --outdir ouput
 
-#To get conf files in home dir:
+#To get conf files in working dir:
+cd
 ls -a
 cd ./nextflow/assets
 cp ./conf ~/scratch/Dryas/Seedling_Methylseq
@@ -88,16 +89,17 @@ tmux attach-session -t Seed
 
 cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
 
-salloc -c12 --time 23:00:00 --mem 120000m --account def-rieseber
+salloc -c12 --time 23:00:00 --mem 120000m --account rpp-rieseber
 
 # Set to the most recent versions 
 #use ‘module spider modulename’, to see most up to date version #
 #module list on following runs, to see if loaded
 
-module load singularity/3.8
+
 module load StdEnv/2020
-module load nextflow/22.10.6
 module load java/11.0.16_8
+module load singularity/3.8
+module load nextflow/22.10.6
 module load apptainer
 
 cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
@@ -249,12 +251,13 @@ squeue -u celphin
 #-------------------------
 # if runs out of time -  restart
 
-salloc -c1 --time 23:00:00 --mem 120000m --account rpp-rieseber
+salloc -c12 --time 23:00:00 --mem 120000m --account rpp-rieseber
 
-module load singularity/3.8
+
 module load StdEnv/2020
-module load nextflow/22.10.6
 module load java/11.0.16_8
+module load nextflow/22.10.6
+module load singularity/3.8
 module load apptainer
 
 cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
@@ -514,12 +517,13 @@ chr	start	end	q-value	mean_methyl	#CpGs	p-value_MWU	p-value_2D-KS	mean_g1	mean_g
 
 # need R installed with ggplot2
 
+#module spider package to see most recent version
 module load nixpkgs/16.09
 module load gcc/7.3.0
 module load r/3.6.0
-module load gdal
+module load python 
+module load gdal #python needs to be loaded to use this
 module load udunits
-module load python
 export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/3.6/
 
 perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_output_June2022_default.txt -p 0.001
