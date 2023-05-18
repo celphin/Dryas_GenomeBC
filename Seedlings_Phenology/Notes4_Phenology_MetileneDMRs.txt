@@ -100,9 +100,6 @@ cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/Sept2022_Phenology/inp
 sed -i 's/\.\///g' Mat_list.txt
 sed -i 's/\.\///g' Sen_list.txt
 
-# replace ./ in file names
-sed -i 's/\.\///g' Mat_list.txt
-sed -i 's/\.\///g' Sen_list.txt
 
 # make csv and space delimited files
 sed -z 's/\n/ /g;s/,$/\n/'  Mat_list.txt > Mat_list_sp.txt
@@ -133,6 +130,10 @@ cd "${directory}/input_bedGraphs/"
 sed ':a;N;$!ba;s/\n/ /g' ${h1}_list.txt > h1files
 sed ':a;N;$!ba;s/\n/ /g' ${h2}_list.txt > h2files
 
+#Unionbedg gives files not found error otherwise
+h1filesinput=$(more h1files)
+h2filesinput=$(more h2files)
+
 sed ':a;N;$!ba;s/\n/ /g' ${h1}_list.txt | \
 sed 's/_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph//g' > H1name
 
@@ -142,18 +143,19 @@ sed -z 's/_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph//g'
 h1name=$(more H1name)
 h2name=$(more H2name)
 
-bedtools unionbedg -header -names $h1name $h2name -filler $NA -i $h1files $h2files \
+bedtools unionbedg -header -names $h1name $h2name -filler $NA -i $h1filesinput $h2filesinput \
 | cut -f1,3- | sed 's/end/pos/' > "$in_metilene"
 
 
 #-------------------------------------
 # metilene input file
 
+#Checking for extra error - did not occur in following runs
 head -5 "$in_metilene" > subset.txt
 
-grep '^c.*' subset.txt | wc -w
-grep '^Q.*' subset.txt | wc -w
-grep '^Q.*' subset.txt | wc -l
+grep '^c.*' subset.txt | wc -w # 21
+grep '^Q.*' subset.txt | wc -w # 0
+grep '^Q.*' subset.txt | wc -l # 0
 
 #header should be:
 #chrom pos h1name h2name
@@ -161,9 +163,10 @@ grep '^Q.*' subset.txt | wc -l
 W_ALAS0W_8_265
 	C_ALAS_00C_227
 
-#edit to remove extra enter
+#edit to remove extra enter, or use prefered text editor
 nano "metilene_"$h1"_"$h2".input"
 
+#this error didn't occur
 # check header again
 head -5 "metilene_$h1_$h2.input" > subset2.txt
 
@@ -206,8 +209,12 @@ cd "${directory}"
 
 /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene \
 "${directory}/data/${in_metilene}" \
---maxdist ${maxdist} --mincpgs ${mincpgs} --minMethDiff ${mindiff} --mode 1 --threads ${threads} -a W -b C -v 0.2 > \
+--maxdist ${maxdist} --mincpgs ${mincpgs} --minMethDiff ${mindiff} --mode 1 --threads ${threads} -a Mat -b Sen -v 0.2 > \
 "${outputname}"
+
+#Number of Tests: 1460410 (correct)
+
+# With my run got : 1386695 tests
 
 more "${outputname}"
 
@@ -227,21 +234,43 @@ more "${outputname}"
                 -b          name of group B (default:"g2")
 
 
-module load nixpkgs/16.09
+module load nixpkgs/16.09 #-> unloads stdenv ???
 module load gcc/7.3.0
 module load r/3.6.0
 module load gdal
 module load udunits
 module load python
+
+
+#Install R ggplot2 : https://docs.alliancecan.ca/wiki/R
+mkdir /home/celphin/R/x86_64-pc-linux-gnu-library/3.6/
 export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/3.6/
+R -e 'install.packages("ggplot2", repos="https://cloud.r-project.org/")'
+
+
+mincpgs=10
 
 minmeandiff=0.9
-mincpgs=10
-qval=1e-5
+qval=0.001
+outputname="metilene_Mat_Sen_Sept2022_70_5_4"
 
-outputname="metilene_W_C_Sept2022_70_5_4"
-outputname="metilene_W_C_Sept2022_70_5_0.7"
-outputname="metilene_W_C_Sept2022_150_5_4"
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl \
+-q "${directory}/${outputname}" -p ${qval} -c ${mincpgs} -d ${minmeandiff} -a ${h1} -b ${h2} \
+-o "${outputname}_${minmeandiff}"
+
+minmeandiff=0.7
+mindiff=0.7
+outputname="metilene_Mat_Sen_Sept2022_70_5_0.7"
+
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl \
+-q "${directory}/${outputname}" -p ${qval} -c ${mincpgs} -d ${minmeandiff} -a ${h1} -b ${h2} \
+-o "${outputname}_${minmeandiff}"
+
+qval=1e-5
+mindiff=4
+minmeandiff=0.9
+maxdist=150
+outputname="metilene_Mat_Sen_Sept2022_150_5_4"
 
 perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl \
 -q "${directory}/${outputname}" -p ${qval} -c ${mincpgs} -d ${minmeandiff} -a ${h1} -b ${h2} \
@@ -254,9 +283,14 @@ chr	start	end	q-value	 mean_methyl_diff	#CpGs	mean_g1	   mean_g2
 
 wc -l *.out
 
-407 metilene_W_C_Sept2022_150_5_4_0.9_qval.1e-5.out
+407 metilene_W_C_Sept2022_150_5_4_0.9_qval.1e-5.out 
 454 metilene_W_C_Sept2022_70_5_0.7_0.7_qval.0.001.out
 385 metilene_W_C_Sept2022_70_5_4_0.9_qval.0.001.out
+
+   4220 metilene_Mat_Sen_150_5_4_0.9_qval.1e-5.out
+   6316 metilene_Mat_Sen_70_5_0.7_0.7_qval.0.001.out
+   4989 metilene_Mat_Sen_70_5_4_0.9_qval.0.001.out
+
 
 scp metilene_W_C_Sept2022_70_5_4_0.9_qval.0.001.out
 
