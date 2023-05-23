@@ -8,6 +8,28 @@
 # BLAST important regions and compare with RNAseq
 
 #######################################
+#Intersection DMRs
+
+bedtools intersect -u -a /home/msandler/projects/rpp-rieseber/msandler/Dryas/Dryas_metilene_run/metilene_Mat_Sen_70_5_4_0.9_qval.0.001.bedgraph 
+-b /home/msandler/projects/rpp-rieseber/Dryas_shared_data/CE_W_C_DMR_bedGraphs/metilene_W_C_Sept2022_70_5_4_0.9_qval.0.001.bedgraph > metilene_intersect_Mat_Sen_W_C.bedGraph
+
+
+# DMRS {WarmingControlDMRS-Intersection}, removes a segment completely, if any overlap is present:
+bedtools subtract -A -a /home/msandler/projects/rpp-rieseber/Dryas_shared_data/CE_W_C_DMR_bedGraphs/metilene_W_C_Sept2022_70_5_4_0.9_qval.0.001.bedgraph -b metilene_intersect_Mat_Sen_W_C.bedGraph > metilene_total_subtract_W_C_Mat_Sen.bedGraph
+
+## DMRS {WarmingControlDMRS-Intersection}, removes overlapping segments:
+bedtools subtract -a /home/msandler/projects/rpp-rieseber/Dryas_shared_data/CE_W_C_DMR_bedGraphs/metilene_W_C_Sept2022_70_5_4_0.9_qval.0.001.bedgraph -b metilene_intersect_Mat_Sen_W_C.bedGraph > metilene_partial_subtract_W_C_Mat_Sen.bedGraph
+
+#resulting counts:
+wc -l metilene_intersect_Mat_Sen_W_C.bedGraph
+  77 metilene_intersect_Mat_Sen_W_C.bedGraph
+
+wc -l metilene_*_W_C_Mat_Sen.bedGraph
+
+  385 metilene_partial_subtract_W_C_Mat_Sen.bedGraph
+  316 metilene_total_subtract_W_C_Mat_Sen.bedGraph
+
+
 
 ###########################
 # From here below - messy results - all for Warming/ Control - should similar analysis in Phenology data though so copied below
@@ -31,14 +53,19 @@ cat "${directory}/${blastname}.bedGraph" | awk '{print $1 "\t" $2 "\t" $3}' > "$
 awk '{$3+=1000}1' "${blastname}.bed" > "${blastname}_extended.bed"
 awk '{$2-=1000}1' "${blastname}_extended.bed" > "${blastname}_extended2.bed"
 
+#changing all negative values to zero:
+awk '{if($2<0) sub($2,0)}1' "${blastname}_extended2.bed" > "${blastname}_extended3.bed"
+
 #----------------------
 # https://bedtools.readthedocs.io/en/latest/content/tools/getfasta.html
 # bedtools getfasta [OPTIONS] -fi <input FASTA> -bed <BED/GFF/VCF>
 
-sed -e 's/ /\t/g' "${blastname}_extended2.bed" > "${blastname}_extended2_tab.bed"
+sed -e 's/ /\t/g' "${blastname}_extended3.bed" > "${blastname}_extended3_tab.bed"
+
+module load bedtools/2.30.0
 
 bedtools getfasta -fi /home/celphin/scratch/Dryas/Dryas_octopetala_reference/genomes/Dryas_octopetala_H1.supercontigs.fa \
--bed "${blastname}_extended2_tab.bed" \
+-bed "${blastname}_extended3_tab.bed" \
 > "${blastname}_extended.fasta"
 
 more "${blastname}_extended.fasta"
@@ -48,13 +75,20 @@ more "${blastname}_extended.fasta"
 
 cd "${directory}/blast/"
 
+#module spider blast+ for most recent version: 2.13.0 right now 
 module load StdEnv/2020
 module load gcc/9.3.0
-module load blast+/2.12.0
+module load blast+/2.12.0 
 
 # https://www.metagenomics.wiki/tools/blast/blastn-output-format-6
 
+#Files to blast:
+mv ${blastname}_extended.fasta Mat_Sen.fasta
+
 # blast to ncbi database
+
+#Run with all the headers 
+
 blastn -db nt -query "${blastname}_extended.fasta" -out "blast_${blastname}_extended.out" -remote -outfmt "6 qseqid stitle"
 
 # blast to gff3 Dryas genome
