@@ -8,8 +8,9 @@
 # BLAST important regions and compare with RNAseq
 
 #######################################
-#Intersection DMRs
+#Intersection and difference DMRS:
 
+#Intersection DMRs
 bedtools intersect -u -a /home/msandler/projects/rpp-rieseber/msandler/Dryas/Dryas_metilene_run/metilene_Mat_Sen_70_5_4_0.9_qval.0.001.bedgraph 
 -b /home/msandler/projects/rpp-rieseber/Dryas_shared_data/CE_W_C_DMR_bedGraphs/metilene_W_C_Sept2022_70_5_4_0.9_qval.0.001.bedgraph > metilene_intersect_Mat_Sen_W_C.bedGraph
 
@@ -33,7 +34,8 @@ wc -l metilene_*_W_C_Mat_Sen.bedGraph
 
 ###########################
 # From here below - messy results - all for Warming/ Control - should similar analysis in Phenology data though so copied below
-
+# !!!: To do: make shell script for format conversions + for extension
+#To do: rename existing fasta to extended (keep those labels clear)
 ###############################################
 # Blast
 # convert bedGraph files to bed files to fasta files for Blast
@@ -45,7 +47,6 @@ cd "${directory}"/blast
 blastname="No_total_intersect_DMRs_${outputname}_${minmeandiff}_qval.${qval}"
 
 cat "${directory}/${blastname}.bedGraph" | awk '{print $1 "\t" $2 "\t" $3}' > "${blastname}.bed"
-
 
 #----------------------------
 # add 500bp on each side of the DMR
@@ -78,7 +79,7 @@ cd "${directory}/blast/"
 #module spider blast+ for most recent version: 2.13.0 right now 
 module load StdEnv/2020
 module load gcc/9.3.0
-module load blast+/2.12.0 
+module load blast+/2.13.0 
 
 # https://www.metagenomics.wiki/tools/blast/blastn-output-format-6
 
@@ -89,12 +90,127 @@ mv ${blastname}_extended.fasta Mat_Sen.fasta
 
 #Run with all the headers 
 
-blastn -db nt -query "${blastname}_extended.fasta" -out "blast_${blastname}_extended.out" -remote -outfmt "6 qseqid stitle"
+#Blastn to full ncbi database, not parallel - Takes too long
+blastn -db nt -query “Mat_Sen.fasta" -out "blast_mat_sen_extended.out" -remote -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+
 
 # blast to gff3 Dryas genome
 blastn -query "${blastname}_extended.fasta" -subject /home/celphin/projects/rpp-rieseber/celphin/Dryas/Reference_genomes/fasta/Dryas_octopetala_H1.transcript.fa -outfmt 6 -out "Dryas_blast_${blastname}_extended.out"
 
 ################################################
+#Edirect installation (https://www.ncbi.nlm.nih.gov/books/NBK179288/):
+
+sh -c "$(wget -q https://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edirect.sh -O -)"
+
+    To activate EDirect for this terminal session, please execute the following:
+    export PATH=${HOME}/edirect:${PATH}
+
+
+
+# Getting Rosacea taxid list:
+
+get_species_taxids.sh -n Rosaceae
+
+Taxid : 3745
+ rank : family
+ division : eudicots
+ scientific name : Rosaceae
+ common name : rose family
+
+get_species_taxids.sh -t 3745 > 3745.txids
+
+
+
+################################################
+#Intersection + difference blast runs, using taxid filter for rosacea (TAXID:316188):
+
+#tmux session Blast2 on cedar5
+module load gcc/9.3.0
+module load bedtools/2.30.0
+module load blast+/2.13.0
+
+directory="/home/msandler/scratch/blast/bedgraph_workdir"
+#Running blast on intersection - not extended:
+blastname="metilene_intersect_Mat_Sen_W_C"
+cat "${directory}/${blastname}.bedGraph" | awk '{print $1 "\t" $2 "\t" $3}' > "${blastname}.bed"
+sed -e 's/ /\t/g' "${blastname}.bed" > "${blastname}_tab.bed"
+
+#Make sure ref genome permissions + in your workdir
+cp /home/msandler/projects/rpp-rieseber/Dryas_shared_data/CE_Dryas_reference_genome/Dryas_octopetala_H1.supercontigs.fa .
+bedtools getfasta -fi Dryas_octopetala_H1.supercontigs.fa \
+-bed "${blastname}_tab.bed" > "${blastname}.fasta"
+
+#Doesn't work: remote and taxidlist are incompatible together, need local data base for this
+#blastn -db nt -query “${directory}/${blastname}.fasta" -out "blast_ncbi_${blastname}" -taxidlist 3745.txids -remote -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+
+blastn -db nt -query “${directory}/${blastname}.fasta" -out "blast_ncbi_${blastname}.out" -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+
+# only against prunus
+blastn -db nt -query bedgraph_workdir/metilene_intersect_Mat_Sen_W_C.fasta -out "blast_ncbi_Prunus_avium_${blastname}.out" -entrez_query "Prunus avium [Organism]" -remote -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+
+
+#Against Rosacea
+blastn -db nt -query bedgraph_workdir/metilene_intersect_Mat_Sen_W_C.fasta -out "blast_ncbi_rosaceaa_${blastname}.out" -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+
+
+#Extended intersection: (Blast2, cedar5)
+directory="/home/msandler/scratch/blast/bedgraph_workdir"
+cd $directory
+blastname="metilene_intersect_Mat_Sen_W_C"
+cat "${directory}/${blastname}.bedGraph" | awk '{print $1 "\t" $2 "\t" $3}' > "${blastname}.bed"
+awk '{$3+=1000}1' "${blastname}.bed" > "${blastname}_extended.bed"
+awk '{$2-=1000}1' "${blastname}_extended.bed" > "${blastname}_extended2.bed"
+#changing all negative values to zero:
+awk '{if($2<0) sub($2,0)}1' "${blastname}_extended2.bed" > "${blastname}_extended3.bed"
+sed -e 's/ /\t/g' "${blastname}_extended3.bed" > "${blastname}_extended_tab.bed"
+
+#Make sure ref genome permissions + in your workdir
+bedtools getfasta -fi Dryas_octopetala_H1.supercontigs.fa \
+-bed "${blastname}_tab.bed" > "${blastname}_extended.fasta"
+
+cd ..
+blastn -db nt -query “${directory}/${blastname}_extended.fasta" -out "blast_ncbi_${blastname}_extended.out" -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+
+
+
+# Difference blasts:
+directory="/home/msandler/scratch/blast/bedgraph_workdir"
+#Running blast on intersection - not extended:
+blastname="metilene_total_subtract_W_C_Mat_Sen"
+
+cd ${directory}
+cat "${directory}/${blastname}.bedGraph" | awk '{print $1 "\t" $2 "\t" $3}' > "${blastname}.bed"
+sed -e 's/ /\t/g' "${blastname}.bed" > "${blastname}_tab.bed"
+
+bedtools getfasta -fi Dryas_octopetala_H1.supercontigs.fa \
+-bed "${blastname}_tab.bed" > "${blastname}.fasta"
+
+cd ..
+
+#running in blast2, cedar5
+#Subtracted W_C, against rosacea, remote
+blastn -db nt -query "${directory}/${blastname}.fasta" -out "blast_ncbi_rosaceaa_${blastname}.out" -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+
+#########################################
+Parallel runs for speed:
+
+#cedar1
+tmux new-session -s ParallelBlast
+tmux attach-session -t ParallelBlast
+
+module load intel/2018.3
+module load nixpkgs/16.09 
+module load kentuntils/20190716
+
+faSplit sequence metilene_intersect_Mat_Sen_W_C.fasta 10 intersect_Mat_Sen_W_C
+
+module load StdEnv/2020
+module load gcc/9.3.0
+module load blast+/2.13.0
+
+blastn -db nt -query bedgraph_workdir/intersect_Mat_Sen_W_C${SLURM_ARRAY_TASK_ID}.fa -out intersect_Mat_Sen_W_C${SLURM_ARRAY_TASK_ID}.fa -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+
+############################################
 # choose a DMR and get all differential methylation for that region - subset input file
 
 # Do1_05_a00003   1152846 	1152987 # amidase
