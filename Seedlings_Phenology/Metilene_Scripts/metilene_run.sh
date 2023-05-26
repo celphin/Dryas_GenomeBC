@@ -17,7 +17,7 @@
 h1='W'
 h2='C'
 metilene_dir=/home/msandler/projects/rpp-rieseber/msandler/Dryas/Dryas_metilene_run
-input_dir="/home/msandler/scratch/Seedling_Metilene/SE_W_C_input_files"
+input_dir="/home/msandler/scratch/Seedling_Metilene/SE_${h1}_${h2}_input_files"
 
 maxdist=$1
 mincpgs=$2

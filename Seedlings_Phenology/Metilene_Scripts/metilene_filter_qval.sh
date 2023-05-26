@@ -16,17 +16,17 @@
     # DMRS, filtered by q-value
 
 ###############################################
+h1='W'
+h2='C'
+metilene_dir=/home/msandler/projects/rpp-rieseber/msandler/Dryas/Dryas_metilene_run
+input_dir="/home/msandler/scratch/Seedling_Metilene/SE_${h1}_${h2}_input_files"
+outputname=SE_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
+
 maxdist=$1
 mincpgs=$2
 mindiff=$3
 minmeandiff=$4
 qval=$5
-
-h1='W'
-h2='C'
-metilene_dir=/home/msandler/projects/rpp-rieseber/msandler/Dryas/Dryas_metilene_run
-input_dir="/home/msandler/scratch/Seedling_Metilene/SE_W_C_input_files"
-outputname=SE_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
 
 mincpgs=10
 
