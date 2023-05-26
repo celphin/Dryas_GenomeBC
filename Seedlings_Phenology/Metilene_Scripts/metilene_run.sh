@@ -1,4 +1,4 @@
-#metilene_prep.sh: script to prepare files for metilene
+#metilene_run.sh: script to prepare files for metilene
 ################################################
 #Input needed:
     #parameters:
@@ -6,13 +6,12 @@
         #2: mincpgs
         #3: mindiff
     #h1, h2, metilenedir, inputdir
+    # .input file from unionbedg before
 #Possible adjustments to script: 
     # inmetilene format
     # outputmetilene format
 #Output:
-    # Union bed file ready for finding DMRS for groups h1, h2
-    # metilene_"$h1"_"$h2".input 
-    # will be located in input_dir
+    # in_metilene.input (name specifed in parameters)
 
 ###############################################
 h1='W'
