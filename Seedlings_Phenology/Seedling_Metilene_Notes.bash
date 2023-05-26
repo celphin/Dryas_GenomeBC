@@ -1,22 +1,25 @@
 ########################################
-#Find seedling DMRS with Metilenes: 
+#Find seedling DMRS with Metilene: 
     #Warming vs Control
     #High vs low arctic conditions
 #Based on Notes2_Seedling_MetileneDMRS_Sept2022.txt
 ########################################
-##metile_prep.sh:
+#metile_prep.sh:
     #adjusts all the files names based on categories,
     #prepares them in the correct format for metilene
+    #Adjust categories, dir names, renaming convention
+#metilene_run.sh
+    #runs metilene for specified parameters
+    #Adjust categories/dir names
+#metilene_filter_qval.sh
+    #Filters metilene output
+    #Adjust categories/dir names
 ########################################
-#Copy Methylseq output to scratch directory:
-
-cp ~/projects/def-rieseber/Dryas_shared_data/CE_Seedling_metilene_input_bedGraphs/ ~/scratch/Seedling_Metilene
-
-
-############################################################
 #Warming vs control DMRS
 
-cd ~/scratch/Seedling_Metilene
+cd scratch
+mkdir Seedling_Metilene
+cd Seedling_Metilene
 #In cedar5
 tmux new-session -s Seedling_Warming_DMRS
 tmux attach-session -t Seedling_Warming_DMRS
@@ -33,6 +36,7 @@ module load bedtools/2.30.0
 #Input directories:
     #input_dir=SE_${h1}_${h2}_input_files 
     #in_metilene="SE_metilene_"$h1"_"$h2".input"
+    #methylseq_output_dir="/home/msandler/projects/def-rieseber/Dryas_shared_data/CE_Seedling_metilene_input_bedGraphs"
 #Adjust rename for loop to be:
     #for bg in SE_*_${h1}*; do mv "$bg" "${h1}_${bg}"; done
     #for bg in SE_*_${h2}*; do mv "$bg" "${h2}_${bg}"; done
@@ -63,7 +67,9 @@ sh metilene_run.sh 70 5 0.7
 #----------------------------------------------------
 #Filter based on qval
 #params: maxdist, mincpgs, mindiff, minmeandif, q-value
-#h1="W", h2="C", in file
+#h1="W", h2="C"
+#input_dir="/home/msandler/scratch/Seedling_Metilene/SE_${h1}_${h2}_input_files"
+#outputname=SE_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
 module load nixpkgs/16.09 
 module load gcc/7.3.0
 module load r/3.6.0
@@ -95,6 +101,7 @@ module load bedtools/2.30.0
 #Input directories (same as for Seedling Warming):
     #input_dir=SE_${h1}_${h2}_input_files 
     #in_metilene="SE_metilene_"$h1"_"$h2".input"
+    #methylseq_output_dir="/home/msandler/projects/def-rieseber/Dryas_shared_data/CE_Seedling_metilene_input_bedGraphs"
 #Adjust rename for loop to be:
     #for bg in SE_*_*_${h1}*; do mv "$bg" "${h1}_${bg}"; done
     #for bg in SE_*_*_${h2}*; do mv "$bg" "${h2}_${bg}"; done
@@ -125,6 +132,8 @@ sh metilene_run.sh 70 5 0.7
 #Filter based on qval
 #params: maxdist, mincpgs, mindiff, minmeandif, q-value
 #h1="L", h2="H", in file
+#input_dir="/home/msandler/scratch/Seedling_Metilene/SE_${h1}_${h2}_input_files"
+#outputname=SE_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
 module load nixpkgs/16.09 
 module load gcc/7.3.0
 module load r/3.6.0
