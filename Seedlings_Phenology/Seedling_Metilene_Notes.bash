@@ -63,6 +63,7 @@ sh metilene_run.sh 70 5 0.7
 #----------------------------------------------------
 #Filter based on qval
 #params: maxdist, mincpgs, mindiff, minmeandif, q-value
+#h1="W", h2="C", in file
 module load nixpkgs/16.09 
 module load gcc/7.3.0
 module load r/3.6.0
@@ -123,6 +124,7 @@ sh metilene_run.sh 70 5 0.7
 #-------------------------------------
 #Filter based on qval
 #params: maxdist, mincpgs, mindiff, minmeandif, q-value
+#h1="L", h2="H", in file
 module load nixpkgs/16.09 
 module load gcc/7.3.0
 module load r/3.6.0
