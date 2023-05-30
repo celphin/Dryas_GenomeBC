@@ -191,25 +191,6 @@ cd ..
 #Subtracted W_C, against rosacea, remote
 blastn -db nt -query "${directory}/${blastname}.fasta" -out "blast_ncbi_rosaceaa_${blastname}.out" -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
 
-#########################################
-Parallel runs for speed:
-
-#cedar1
-tmux new-session -s ParallelBlast
-tmux attach-session -t ParallelBlast
-
-module load intel/2018.3
-module load nixpkgs/16.09 
-module load kentuntils/20190716
-
-faSplit sequence metilene_intersect_Mat_Sen_W_C.fasta 10 intersect_Mat_Sen_W_C
-
-module load StdEnv/2020
-module load gcc/9.3.0
-module load blast+/2.13.0
-
-blastn -db nt -query bedgraph_workdir/intersect_Mat_Sen_W_C${SLURM_ARRAY_TASK_ID}.fa -out intersect_Mat_Sen_W_C${SLURM_ARRAY_TASK_ID}.fa -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
-
 ############################################
 # choose a DMR and get all differential methylation for that region - subset input file
 

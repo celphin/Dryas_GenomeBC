@@ -20,6 +20,7 @@
 cd scratch
 mkdir Seedling_Metilene
 cd Seedling_Metilene
+cp ~/projects/def-rieseber/Dryas_shared_data/MS_scripts/metilene*.sh .
 #In cedar5
 tmux new-session -s Seedling_Warming_DMRS
 tmux attach-session -t Seedling_Warming_DMRS
