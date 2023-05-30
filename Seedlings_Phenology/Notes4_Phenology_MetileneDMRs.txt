@@ -234,7 +234,7 @@ more "${outputname}"
                 -b          name of group B (default:"g2")
 
 
-module load nixpkgs/16.09 #-> unloads stdenv ???
+module load nixpkgs/16.09 
 module load gcc/7.3.0
 module load r/3.6.0
 module load gdal
