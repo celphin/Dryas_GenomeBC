@@ -107,7 +107,7 @@ lrt.list2 <- glmLRT (glm.list2)
 #get the topTags out of the model
 #top <- topTags (lrt.list2, n = 1000)$table
 #top <- topTags (lrt.list2, n = 200)$table
-top <- topTags (lrt.list2, n = 40)$table # p-value all < 5e-02 
+top <- topTags (lrt.list2, n = 2000)$table # p-value all < 5e-02 
 
 fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
 
@@ -162,6 +162,10 @@ dev.off()
 jpeg("./plots/W_C_RNA_heatmap_legend.jpg", width = 1000, height = 800)
 heatmap.2 (heatmap2, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap2), labRow = rownames(heatmap2), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
+
+# write out file of genes that differ a lot
+
+write.table(heatmap2, file = "./RNA_DER_May2023_W_C_Total.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
 
 #------------------------------
 # Alex
@@ -240,7 +244,7 @@ lrt.list2 <- glmLRT (glm.list2)
 #get the topTags out of the model
 #top <- topTags (lrt.list2, n = 1000)$table
 #top <- topTags (lrt.list2, n = 200)$table
-top <- topTags (lrt.list2, n = 40)$table # p-value all < 5e-02, v2
+top <- topTags (lrt.list2, n = 500)$table # p-value all < 5e-02, v2
 
 fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
 
@@ -274,6 +278,11 @@ dev.off()
 jpeg("./plots/Alex_W_C_RNA_heatmap_legend2.jpg", width = 1000, height = 800)
 heatmap.2 (heatmap1, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
+
+# write out file of genes that differ a lot
+
+write.table(heatmap2, file = "./RNA_DER_May2023_W_C_Alex.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
+
 #------------------------------
 # Norway
 
@@ -352,7 +361,7 @@ lrt.list2 <- glmLRT (glm.list2)
 #get the topTags out of the model
 #top <- topTags (lrt.list2, n = 1000)$table
 #top <- topTags (lrt.list2, n = 200)$table
-top <- topTags (lrt.list2, n = 40)$table # p-value all < 5e-02, v2
+top <- topTags (lrt.list2, n = 500)$table # p-value all < 5e-02, v2
 
 fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
 
@@ -386,6 +395,11 @@ dev.off()
 jpeg("./plots/Norway_W_C_RNA_heatmap_legend2.jpg", width = 1000, height = 800)
 heatmap.2 (heatmap1, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
+
+# write out file of genes that differ a lot
+
+write.table(heatmap2, file = "./RNA_DER_May2023_W_C_Norway.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
+
 #------------------------------
 # Alaska
 
@@ -465,7 +479,7 @@ lrt.list2 <- glmLRT (glm.list2)
 #get the topTags out of the model
 #top <- topTags (lrt.list2, n = 1000)$table
 #top <- topTags (lrt.list2, n = 200)$table
-top <- topTags (lrt.list2, n = 40)$table # p-value all < 5e-02, v2
+top <- topTags (lrt.list2, n = 500)$table # p-value all < 5e-02, v2
 
 fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
 
@@ -499,6 +513,11 @@ dev.off()
 jpeg("./plots/Alaska_W_C_RNA_heatmap_legend2.jpg", width = 1000, height = 800)
 heatmap.2 (heatmap1, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
+
+# write out file of genes that differ a lot
+
+write.table(heatmap2, file = "./RNA_DER_May2023_W_C_Alaska.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
+
 #----------------------------------
 # Sweden
 
@@ -579,7 +598,7 @@ lrt.list2 <- glmLRT (glm.list2)
 #get the topTags out of the model
 #top <- topTags (lrt.list2, n = 1000)$table
 #top <- topTags (lrt.list2, n = 200)$table
-top <- topTags (lrt.list2, n = 40)$table # p-value all < 5e-02, v2
+top <- topTags (lrt.list2, n = 500)$table # p-value all < 5e-02, v2
 
 fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
 
@@ -621,6 +640,9 @@ jpeg("W_C_Sweden_RNA_Do1_01_a00001G00358V1.1.jpg", width = 1000, height = 700)
 stripchart(log10(as.numeric (subdat1)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "", main="Parent RNAseq Do1_01_a00001G00358V1", pch=16, cex=4, cex.main=1, cex.axis=2, cex.lab=2)
 dev.off()
 
+# write out file of genes that differ a lot
+
+write.table(heatmap2, file = "./RNA_DER_May2023_W_C_Sweden.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
 
 #----------------------------------
 # Seedlings
@@ -698,7 +720,7 @@ lrt.list2 <- glmLRT (glm.list2)
 #get the topTags out of the model
 #top <- topTags (lrt.list2, n = 1000)$table
 #top <- topTags (lrt.list2, n = 200)$table
-top <- topTags (lrt.list2, n = 40)$table # p-value all < 5e-02, v2
+top <- topTags (lrt.list2, n = 500)$table # p-value all < 5e-02, v2
 
 fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
 
@@ -740,6 +762,10 @@ jpeg("W_C_RNA_Seed_Do1_01_a00001G00358V1.1.jpg", width = 1000, height = 700)
 stripchart (log10(as.numeric (subdat1seed)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "",  main="Seedling RNAseq Do1_01_a00001G00358V1", pch=16, cex=4, cex.main=1, cex.axis=2, cex.lab=2)
 dev.off()
 
+
+# write out file of genes that differ a lot
+
+write.table(heatmap2, file = "./RNA_DER_May2023_W_C_Seedlings.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
 
 
 #-------------------------
