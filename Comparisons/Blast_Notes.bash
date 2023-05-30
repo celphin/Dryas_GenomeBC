@@ -44,7 +44,11 @@ bedtools subtract -A -a Wild_W_C.bedGraph -b Mat_Sen.bedGraph > total_subtract_W
 bedtools intersect -u -a SE_W_C.bedGraph -b SE_L_H.bedGraph > intersect_SE_W_C_SE_L_H.bedGraph
 #Total Subtract: Seedling Warming - Seedling Low High
 bedtools subtract -A -a SE_W_C.bedGraph -b SE_L_H.bedGraph > total_subtract_SE_W_C_SE_L_H.bedGraph
-#Intersection: Seedling Warming + True Parents
+#Include intersect warming Seedling Warming + Parents:
+#Intersect Seedling Warming + Wild Warming
+#Total subtracts Seedling Warming - Parents
+#Intersect: Seedling Low High + Wild Site DMRs (Sweden and Alaska)  vs (Alex + Svalbard)
+
 
 
 
@@ -60,13 +64,14 @@ sh blast_prep_extended.sh "intersect_Wild_W_C_Mat_Sen"
 sh blast_prep_extended.sh "total_subtract_W_C_Mat_Sen"
 sh blast_prep_extended.sh "intersect_SE_W_C_SE_L_H"
 sh blast_prep_extended.sh "total_subtract_SE_W_C_SE_L_H"
-#
-#
+# Intersect Warming Seedling Warming + Parents
+#Intersect Seedling Warming + Wild Warming
+#Total subtracts Seedling Warming - Parents
 
 mkdir fasta_dir
 mv *.fasta fasta_dir/
 #################################################
-#Running blast against Rosaceae, in ncbi
+#Running blast: ncbi Rosaceae, Arabidopsis, and to reference
 #In cedar5:
 tmux new-session -s Blast
 tmux attach-session -t Blast
@@ -98,6 +103,8 @@ blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out
 
 
 blastname="total_subtract_W_C_Mat_Sen"
+#ncbi, against rosaceae
+blastn -db nt -query "${fasta_dir}/${blastname}.fasta" -out "blast_ncbi_rosaceae_${blastname}.out" -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident stitle length mismatch gapopen qstart qend sstart send evalue bitscore"
 #against reference: 
 blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out" -subject Dryas_octopetala_H1.transcript.fa -outfmt 6
 

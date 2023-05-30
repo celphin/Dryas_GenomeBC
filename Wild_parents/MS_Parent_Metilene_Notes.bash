@@ -1,8 +1,10 @@
-########################################
+################################################################################
 #Find Parent DMRS with Metilene: 
     #Warming vs Control (Non site specific)
 #Based on Notes2_Seedling_MetileneDMRS_Sept2022.txt
-########################################
+################################################################################
+#Requires:
+#methylseq output, unzipped
 #metile_prep.sh:
     #adjusts all the files names based on categories,
     #prepares them in the correct format for metilene
@@ -13,7 +15,7 @@
 #metilene_filter_qval.sh
     #Filters metilene output
     #Adjust categories/dir names
-########################################
+###################################################################################
 
 # All Wild plants (not matching seedlings)
 #Warming vs control DMRS
@@ -33,7 +35,7 @@ module load StdEnv/2020
 module load bedtools/2.30.0
 
 
-#Seedling, Warming control specific adjustments:
+#Wild, Warming control specific adjustments:
 #h1,h2: 
     #h1="W", h2="C"
 #Input directories:
@@ -86,12 +88,8 @@ sh metilene_filter_qval.sh 70 5 0.7 0.7 0.001
 
 ##################################################################################
 #True Parent DMRs:
-# Parent plants (matching seedlings)
+#Parent plants (matching seedlings)
 #Warming vs control DMRS
-#!!! Incomplete !!!
-cd scratch 
-mkdir True_Parent_Metilene
-
 
 cd scratch
 mkdir Parent_Metilene
@@ -102,6 +100,41 @@ cp ~/projects/def-rieseber/Dryas_shared_data/MS_scripts/metilene*.sh .
 tmux new-session -s Parent_Warming_DMRS
 tmux attach-session -t Parent_Warming_DMRS
 salloc -c32 --time 4:50:00 --mem 120000m --account rpp-rieseber
+#-----------------------------------------------------------
+#Metilene input prep:
+module load StdEnv/2020
+module load bedtools/2.30.0
+
+#Parent, Warming control specific adjustments:
+#h1,h2: 
+    #h1="W", h2="C"
+#Input directories:
+    #input_dir=P_${h1}_${h2}_input_files 
+    #in_metilene="P_metilene_"$h1"_"$h2".input"
+    #methylseq_output_dir="/home/msandler/projects/def-rieseber/Dryas_shared_data/CE_Wild_metilene_input_bedGraphs"
+#Note: copying is different here:  
+#ID's have been matched to seedling ID's
+#Change : <cp -r ${methylseq_output_dir}/*.deduplicated.bedGraph ./${input_dir}>
+#To: 
+    # cp ${methylseq_output_dir}/*_125_*.deduplicated.bedGraph ./${input_dir}
+    # cp ${methylseq_output_dir}/*_170_*.deduplicated.bedGraph ./${input_dir}
+    # cp ${methylseq_output_dir}/*_187_*.deduplicated.bedGraph ./${input_dir}
+    # cp ${methylseq_output_dir}/*_191_*.deduplicated.bedGraph ./${input_dir}
+    # cp ${methylseq_output_dir}/*_194_*.deduplicated.bedGraph ./${input_dir}
+    # cp ${methylseq_output_dir}/*_219_*.deduplicated.bedGraph ./${input_dir}
+    # cp ${methylseq_output_dir}/*_190_*.deduplicated.bedGraph ./${input_dir}
+    # cp ${methylseq_output_dir}/*_198_*.deduplicated.bedGraph ./${input_dir}
+    # cp ${methylseq_output_dir}/*_228_*.deduplicated.bedGraph ./${input_dir}
+    # cp ${methylseq_output_dir}/*_238_*.deduplicated.bedGraph ./${input_dir}
+
+#Comment out rename for loops (already with proper prefix)
+    #for bg in _*_${h1}*; do mv "$bg" "${h1}_${bg}"; done
+    #for bg in _*_${h2}*; do mv "$bg" "${h2}_${bg}"; done
+
+sh metilene_prep.sh 
+cd ..
+
+
 #------------------------------------------------------------------
 
 #Wild,Warming control specific adjustments,
