@@ -7,9 +7,6 @@
 #blast_prep_extended.sh
     #Maps bedGraph file to fasta, with DMRs extended
     #Param: string, .bedGraph file to be converted 
-#blast_prep_non_extended.sh
-    #Maps bedGraph file to fasta (not extended)
-    #Param: string, .bedGraph file to be converted 
 ###########################################
 #In cedar5
 tmux new-session -s Blast
@@ -25,10 +22,13 @@ cd blast_bedgraphs
 
 # All for metilene parameters: 70,5,4,0.9,0.001
 cp /home/msandler/projects/def-rieseber/Dryas_shared_data/MS_Phenology_metilene_output_bedgraphs/metilene_Mat_Sen_70_5_4_0.9_qval.0.001.bedgraph Mat_Sen.bedGraph
-cp /home/msandler/projects/def-rieseber/Dryas_shared_data/MS_Parent_metilene_output_bedgraphs/Wild_W_C_70_5_4_0.9_qval.0.001.bedgraph Wild_W_C.bedGraph
+cp /home/msandler/projects/def-rieseber/Dryas_shared_data/MS_Wild_metilene_output_bedgraphs/All_Wild_Warming_bedgraphs/Wild_W_C_70_5_4_0.9_qval.0.001.bedgraph Wild_W_C.bedGraph
 cp /home/msandler/projects/def-rieseber/Dryas_shared_data/MS_Seedling_metilene_output_bedgraphs/SE_W_C_70_5_4_0.9_qval.0.001.bedgraph SE_W_C.bedGraph
 cp /home/msandler/projects/def-rieseber/Dryas_shared_data/MS_Seedling_metilene_output_bedgraphs/SE_L_H_70_5_4_0.9_qval.0.001.bedgraph SE_L_H.bedGraph
-# Include True parent here
+cp /home/msandler/projects/def-rieseber/Dryas_shared_data/MS_Wild_metilene_output_bedgraphs/All_Wild_Species_bedgraphs/Wild_Species_DO_DI_70_5_4_0.9_qval.0.001.bedgraph Wild_DO_DI.bedGraph
+cp /home/msandler/projects/def-rieseber/Dryas_shared_data/MS_Wild_metilene_output_bedgraphs/All_Wild_Latitude_bedgraphs/Wild_Lat_L_H_70_5_4_0.9_qval.0.001.bedgraph Wild_Lat_W_C.bedGraph
+cp /home/msandler/projects/def-rieseber/Dryas_shared_data/MS_Wild_metilene_output_bedgraphs/True_Parent_Warming_bedgraphs/P_W_C_70_5_4_0.9_qval.0.001.bedgraph Parent_W_C.bedGraph
+
 
 ###########################################
 #Make intersection and Differece bedgraphs:
@@ -45,14 +45,16 @@ bedtools intersect -u -a SE_W_C.bedGraph -b SE_L_H.bedGraph > intersect_SE_W_C_S
 #Total Subtract: Seedling Warming - Seedling Low High
 bedtools subtract -A -a SE_W_C.bedGraph -b SE_L_H.bedGraph > total_subtract_SE_W_C_SE_L_H.bedGraph
 #Include intersect warming Seedling Warming + Parents:
+bedtools intersect -u -a SE_W_C.bedGraph -b Parent_W_C.bedGraph > intersect_SE_W_C_P_W_C.bedGraph
 #Intersect Seedling Warming + Wild Warming
+bedtools intersect -u -a SE_W_C.bedGraph -b Wild_W_C.bedGraph > intersect_SE_W_C_Wild_W_C.bedGraph
 #Total subtracts Seedling Warming - Parents
+bedtools subtract -A -a SE_W_C.bedGraph -b Parent_W_C.bedGraph > total_subtract_SE_W_C_P_W_C.bedGraph
 #Intersect: Seedling Low High + Wild Site DMRs (Sweden and Alaska)  vs (Alex + Svalbard)
+bedtools intersect -u -a SE_L_H.bedGraph -b Wild_Lat_L_H.bedGraph > intersect_SE_L_H_Wild_L_H.bedGraph
 
 
-
-
-cp *.bedGraph ~/MS_blast_input_bedgraphs
+cp *.bedGraph ~/projects/def-rieseber/Dryas_shared_data/MS_blast_input_bedgraphs
 cd ..
 #############################################
 #preparing files for blasting:
@@ -64,9 +66,10 @@ sh blast_prep_extended.sh "intersect_Wild_W_C_Mat_Sen"
 sh blast_prep_extended.sh "total_subtract_W_C_Mat_Sen"
 sh blast_prep_extended.sh "intersect_SE_W_C_SE_L_H"
 sh blast_prep_extended.sh "total_subtract_SE_W_C_SE_L_H"
-# Intersect Warming Seedling Warming + Parents
-#Intersect Seedling Warming + Wild Warming
-#Total subtracts Seedling Warming - Parents
+sh blast_prep_extended.sh "intersect_SE_W_C_P_W_C"
+sh blast_prep_extended.sh "intersect_SE_W_C_Wild_W_C"
+sh blast_prep_extended.sh "total_subtract_SE_W_C_P_W_C"
+sh blast_prep_extended.sh "intersect_SE_L_H_Wild_L_H"
 
 mkdir fasta_dir
 mv *.fasta fasta_dir/
@@ -81,6 +84,7 @@ cd ~/scratch/blast
 module load StdEnv/2020
 module load gcc/9.3.0
 module load blast+/2.13.0 
+
 cp ~/projects/def-rieseber/Dryas_shared_data/CE_Dryas_reference_genome/*.transcript.fa .
 fasta_dir="fasta_dir"
 #If any of above files not in blast directory:
@@ -89,6 +93,8 @@ fasta_dir="fasta_dir"
 blastname="Mat_Sen"
 #output format6, against rosaceaea 
 blastn -db nt -query "${fasta_dir}/${blastname}.fasta" -out "blast_ncbi_rosaceae_${blastname}.out" -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident stitle length mismatch gapopen qstart qend sstart send evalue bitscore"
+#ncbi, against Arabidopsis
+blastn -db nt -query "${fasta_dir}/${blastname}.fasta" -out "blast_ncbi_arabidopsis_${blastname}.out" -entrez_query "Arabidopsis [Genus]" -remote -outfmt "6 qseqid sseqid pident stitle length mismatch gapopen qstart qend sstart send evalue bitscore"
 #against reference: 
 blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out" -subject Dryas_octopetala_H1.transcript.fa -outfmt 6
 
@@ -119,5 +125,26 @@ blastn -db nt -query "${fasta_dir}/${blastname}.fasta" -out "blast_ncbi_arabidop
 blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out" -subject Dryas_octopetala_H1.transcript.fa -outfmt 6
 
 blastname="total_subtract_SE_W_C_SE_L_H"
+#ncbi, against rosaceaea
+blastn -db nt -query "${fasta_dir}/${blastname}.fasta" -out "blast_ncbi_rosaceae_${blastname}.out" -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident stitle length mismatch gapopen qstart qend sstart send evalue bitscore"
 #against reference: 
 blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out" -subject Dryas_octopetala_H1.transcript.fa -outfmt 6
+
+blastname="intersect_SE_W_C_P_W_C"
+#agaisnt reference
+blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out" -subject Dryas_octopetala_H1.transcript.fa -outfmt 6
+
+blastname="intersect_SE_W_C_Wild_W_C"
+#agaisnt reference
+blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out" -subject Dryas_octopetala_H1.transcript.fa -outfmt 6
+#
+blastname="total_subtract_SE_W_C_P_W_C"
+#agaisnt reference
+blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out" -subject Dryas_octopetala_H1.transcript.fa -outfmt 6
+
+blastname="intersect_SE_L_H_Wild_L_H"
+#agaisnt reference
+blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out" -subject Dryas_octopetala_H1.transcript.fa -outfmt 6
+
+cp *.out ~/projects/def-rieseber/Dryas_shared_data/MS_blast_output
+####################################################################################################################################
