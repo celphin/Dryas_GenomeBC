@@ -75,7 +75,7 @@ $ awk '{blast_id[$1]++;} END {for (var in id) print var, "id: ", Ip[var]," times
 awk '!a[$1$4$5$6$7]++ {print}' grep.out > no_duplicates2.out
 
 awk '{print $4$5$6$7}' grep.out > onlyfield4.out
-#remov
+#remove duplicates
 awk '!a[$4$5$6$7]++ {print}' grep.out > no_duplicates4.out
 #########################################################################
 #Actual filtering:

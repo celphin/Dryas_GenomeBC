@@ -84,16 +84,16 @@ cd ~/scratch/blast
 module load StdEnv/2020
 module load gcc/9.3.0
 module load blast+/2.13.0 
+fasta_dir="fasta_dir"
 
 cp ~/projects/def-rieseber/Dryas_shared_data/CE_Dryas_reference_genome/*.transcript.fa .
-fasta_dir="fasta_dir"
 #If any of above files not in blast directory:
 
 
 blastname="Mat_Sen"
 #output format6, against rosaceaea 
 blastn -db nt -query "${fasta_dir}/${blastname}.fasta" -out "blast_ncbi_rosaceae_${blastname}.out" -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident stitle length mismatch gapopen qstart qend sstart send evalue bitscore"
-#ncbi, against Arabidopsis
+#ncbi, against  (running in Blast)
 blastn -db nt -query "${fasta_dir}/${blastname}.fasta" -out "blast_ncbi_arabidopsis_${blastname}.out" -entrez_query "Arabidopsis [Genus]" -remote -outfmt "6 qseqid sseqid pident stitle length mismatch gapopen qstart qend sstart send evalue bitscore"
 #against reference: 
 blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out" -subject Dryas_octopetala_H1.transcript.fa -outfmt 6
@@ -127,14 +127,14 @@ blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out
 blastname="total_subtract_SE_W_C_SE_L_H"
 #ncbi, against rosaceaea
 blastn -db nt -query "${fasta_dir}/${blastname}.fasta" -out "blast_ncbi_rosaceae_${blastname}.out" -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident stitle length mismatch gapopen qstart qend sstart send evalue bitscore"
-#ncbi, against Arabidopsis:
+#ncbi, against Arabidopsis: (Running in Blast2)
 blastn -db nt -query "${fasta_dir}/${blastname}.fasta" -out "blast_ncbi_arabidopsis_${blastname}.out" -entrez_query "Arabidopsis [Genus]" -remote -outfmt "6 qseqid sseqid pident stitle length mismatch gapopen qstart qend sstart send evalue bitscore"
 #against reference: 
 blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out" -subject Dryas_octopetala_H1.transcript.fa -outfmt 6
 
 blastname="intersect_SE_W_C_P_W_C"
 #output format6, against rosaceaea 
-blastn -db nt -query "${fasta_dir}/${blastname}.fasta" -out "blast_ncbi_rosaceae_${blastname}.out" -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident stitle length mismatch gapopen qstart qend sstart send evalue bitscore"
+#blastn -db nt -query "${fasta_dir}/${blastname}.fasta" -out "blast_ncbi_rosaceae_${blastname}.out" -entrez_query "Rosaceae [Family]" -remote -outfmt "6 qseqid sseqid pident stitle length mismatch gapopen qstart qend sstart send evalue bitscore"
 #agaisnt reference
 blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out" -subject Dryas_octopetala_H1.transcript.fa -outfmt 6
 
