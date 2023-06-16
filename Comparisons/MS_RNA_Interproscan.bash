@@ -74,3 +74,5 @@ grep -f rnaseq_gene_ids.txt go_subtract_W_C_Mat_Sen_id.tsv > overlapped_go_subtr
 grep -f rnaseq_gene_ids.txt no_go_subtract_W_C_Mat_Sen_id.tsv > overlapped_no_goterms_overlapped_warming.tsv
 
 #Get these overlapped genes back to interproscan - > put that output in shared_dir
+
+grep -f overlapped_go_subtract_W_C_Mat_Sen_id.tsv interproscan_blast_ref_total_subtract_W_C_Mat_Sen.tsv |grep 'GO'| awk  '!a[$1$NF]++ {print}' > interproscan_goterms_overlap_rna_subtract_W_C_Mat_Sen.tsv
