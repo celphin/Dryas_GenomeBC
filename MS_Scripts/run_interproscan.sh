@@ -14,5 +14,5 @@ mkdir $output_dir
 for f in $input_dir/*; do
     no_path="${f##*/}"
     file_name="${no_path%.fasta}"
-    interproscan.sh -i $f -f tsv -o $output_dir/$file_name.tsv  --goterms;
+    interproscan.sh -i $f -f tsv -o $output_dir/interproscan_$file_name.tsv  --goterms;
 done
