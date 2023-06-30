@@ -261,9 +261,9 @@ module load interproscan/5.23-62.0
   
  
 if [ $i -lt 10 ]; then
-  srun interproscan.sh -i "subseq/seq00$i.fa" -f tsv -o interproscan_intersect_total_subtract_SE_W_C_SE_L_H_$i.tsv.tsv  --goterms
+  srun interproscan.sh -i "subseq/seq00$i.fa" -f tsv -o interproscan_intersect_total_subtract_SE_W_C_SE_L_H_$i.tsv  --goterms
 else 
-  srun interproscan.sh -i "subseq/seq0$i.fa" -f tsv -o interproscan_intersect_total_subtract_SE_W_C_SE_L_H_$i.tsv.tsv  --goterms
+  srun interproscan.sh -i "subseq/seq0$i.fa" -f tsv -o interproscan_intersect_total_subtract_SE_W_C_SE_L_H_$i.tsv  --goterms
 fi
 
 EOF

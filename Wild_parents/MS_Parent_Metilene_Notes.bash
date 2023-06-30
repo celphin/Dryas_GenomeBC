@@ -15,6 +15,8 @@
 #metilene_filter_qval.sh
     #Filters metilene output
     #Adjust categories/dir names
+#NOTE:
+    #Save all in metilene files for later 
 ###################################################################################
 # All Wild plants (not matching seedlings)
 #Warming vs control DMRS
