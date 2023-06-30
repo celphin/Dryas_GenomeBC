@@ -8,6 +8,14 @@
 # try differential expression analysis - plotting
 # EdgeR
 
+# copy data to shared folder for Marie
+
+cd /home/celphin/projects/def-rieseber/Dryas_shared_data/CE_RNAseq_raw_data
+
+cp -v /home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/RNA_site_tables/gene_names_expression_table1.txt /home/celphin/projects/def-rieseber/Dryas_shared_data/CE_RNAseq_raw_data
+
+
+#---------------------------------
 # https://github.com/owensgl/biol525D/tree/master/Topic_6
 # https://bioconductor.org/packages/release/bioc/html/edgeR.html
 # http://combine-australia.github.io/RNAseq-R/slides/RNASeq_filtering_qc.pdf 
