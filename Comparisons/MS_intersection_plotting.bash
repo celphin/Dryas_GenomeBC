@@ -172,6 +172,11 @@ awk  '!a[$1]++ {print $1}' interproscan_goterms_overlap_rna_subtract_W_C_Mat_Sen
 cp /home/msandler/projects/def-rieseber/msandler/MS_blast_output/Blast_ref_output/blast_ref_total_subtract_W_C_Mat_Sen.out .
 
 #Subset -> all intersection of first and 2nd column
+#FNR iterates through second file
+#NR through first file 
+#records all first field of first file in id
+#If 2nd field of 2nd file in id then prints
+#Sets seperator to 
 awk -F '\t' 'FNR==NR { ids[$1]; next } $2 in ids' gene_ids.txt blast_ref_total_subtract_W_C_Mat_Sen.out > subset.out 
 
 #Removes any repeated sections (even if for different genes)
@@ -184,8 +189,6 @@ awk '!seen[$1]++' subset.out  > RNA_Warming_Minus_Phenology_blast.out
 
 cp ~/projects/def-rieseber/Dryas_shared_data/MS_blast_input_bedgraphs/total_subtract_W_C_Mat_Sen.bedGraph .
 
-#awk '{ print $1}' RNA_Warming_Minus_Phenology_blast.out | awk -F '[:-]' '{ print $1, "\t", $2, "\t", $3}' > Split_field_genes.bed
-
 
 
 #Maybe work sequentially:
@@ -196,8 +199,8 @@ cp ~/projects/def-rieseber/Dryas_shared_data/MS_blast_input_bedgraphs/total_subt
 
 module load bedtools/2.30.0
 
-
-awk '{split($1, arr, /[:-]/); print arr[1] "\t" arr[2] "\t" arr[3] "\t" $1}' RNA_Warming_Minus_Phenology_blast.out > Split_fields_genes.bedGraph
+#splits first field based on :,- as field seprators into the array a
+awk '{split($1, a, /[:-]/); print a[1] "\t" a[2] "\t" a[3] "\t" $1}' RNA_Warming_Minus_Phenology_blast.out > Split_fields_genes.bedGraph
 
 #WORKS 
 bedtools intersect -wa -a total_subtract_W_C_Mat_Sen.bedGraph -b Split_fields_genes.bedGraph > RNA_total_subtract_W_C_Mat_Sen.bedGraph
