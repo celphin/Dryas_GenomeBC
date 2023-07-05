@@ -41,7 +41,15 @@ Rscript Box_Script_Do1_01_a00001.R
 
 Rscript Box_Script.R "Do1_01_a00001" 1104484 1104878
 
-#########
+
+######################################################
+module load StdEnv/2020
+module load r/4.2.1
+module load gdal
+module load udunits
+module load python
+export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.2.1/
+#############################################################
 #Loop to get all the plots:
 
 
@@ -59,11 +67,31 @@ awk -F "\t" -v start="$start" -v end="$end" '{ if(($2 >= start) && ($2 <= end)) 
 Rscript Box_Script.R ${chrom} $start $end
 
 done < RNA_total_subtract_W_C_Mat_Sen.bedGraph
+################################################################
+#For the all sites intersect:
+cp ../ALL_Sites_intersect_DMRs.bedgraph .
+
+while read dmr
+do
+chrom=$(awk '{print $1}' <<< $dmr)
+start=$(awk '{print $2}' <<< $dmr)
+end=$(awk '{print $3}' <<< $dmr)
+
+
+grep "^${chrom}" data/Wild_metilene_W_C.input > "data/${chrom}.txt"
+awk -F "\t" -v start="$start" -v end="$end" '{ if(($2 >= start) && ($2 <= end)) { print } }' "data/${chrom}.txt"  > "data/${chrom}_${start}_${end}.txt"
+
+
+Rscript Box_Script.R ${chrom} $start $end
+
+done < ALL_Sites_intersect_DMRs.bedgraph
+##################################################################
+scp -v msandler@cedar.computecanada.ca:/home/msandler/scratch/Wild_Metilene/Plotting/DMR_BoxPlots/ALL_plots/* 
 
 
 #check plots
 On local machine
-scp -v msandler@cedar.computecanada.ca:/home/msandler/scratch/Wild_Metilene/Plotting/DMR_BoxPlots/plots/* .
+scp -v msandler@cedar.computecanada.ca:/home/msandler/scratch/Wild_Metilene/Plotting/DMR_BoxPlots/ALL_Site_Intersect_Plots/* .
 
 
 
