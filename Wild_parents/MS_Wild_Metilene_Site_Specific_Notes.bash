@@ -300,4 +300,15 @@ cp Alaska_Metilene/Alaska_W_C_70_5_4_0.9_qval.0.001.bedgraph Alaska_W_C.bedGraph
 module load bedtools/2.30.0
 bedtools intersect -u -a Nunavut_W_C.bedGraph -b Svalbard_W_C.bedGraph| bedtools intersect -u -a stdin -b Sweden_W_C.bedGraph | bedtools intersect -u -a stdin -b Alaska_W_C.bedGraph > ALL_Sites_intersect_DMRs.bedgraph
 
-#List of DMRS:
+#Bedtools intersect all but Nunavut
+bedtools intersect -u -a Svalbard_W_C.bedGraph -b Sweden_W_C.bedGraph | bedtools intersect -u -a stdin -b Alaska_W_C.bedGraph > SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph
+
+#Bedtools intersect all but Svalbard
+bedtools intersect -u -a Nunavut_W_C.bedGraph -b Sweden_W_C.bedGraph | bedtools intersect -u -a stdin -b Alaska_W_C.bedGraph > ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph
+
+#Bedtools intersect all but Sweden
+bedtools intersect -u -a Nunavut_W_C.bedGraph -b Svalbard_W_C.bedGraph| bedtools intersect -u -a stdin -b Alaska_W_C.bedGraph > ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph
+
+#Bedtools intersect all but Alaska
+bedtools intersect -u -a Nunavut_W_C.bedGraph -b Svalbard_W_C.bedGraph| bedtools intersect -u -a stdin -b Sweden_W_C.bedGraph > ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph
+

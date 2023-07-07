@@ -27,9 +27,6 @@ tmux attach-session -t Seedling_Warming_DMRS
 
 #----------------------------------------
 #Metilene input prep:
-module load StdEnv/2020
-module load bedtools/2.30.0
-
 
 #Seedling, Warming control specific adjustments:
 #h1,h2: 
@@ -42,8 +39,9 @@ module load bedtools/2.30.0
     #for bg in SE_*_${h1}*; do mv "$bg" "${h1}_${bg}"; done
     #for bg in SE_*_${h2}*; do mv "$bg" "${h2}_${bg}"; done
 
+module load StdEnv/2020
+module load bedtools/2.30.0
 sh metilene_prep.sh 
-cd ..
 
 #----------------------------------------
 #Run metilene:

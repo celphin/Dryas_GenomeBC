@@ -171,3 +171,7 @@ blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out
 
 cp *.out ~/projects/def-rieseber/Dryas_shared_data/MS_blast_output
 ####################################################################################################################################
+cd ~/projects/def-rieseber/Dryas_shared_data/MS_blast_output/
+mv Blast_ref_output Blast_raw_ref_output
+
+#awk 'index($2, substr($1, 1, index($1, ":")-1))' $f | cut -f2 > blast_out.txt

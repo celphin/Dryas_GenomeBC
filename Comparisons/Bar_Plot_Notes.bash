@@ -86,6 +86,78 @@ Rscript Box_Script.R ${chrom} $start $end
 
 done < ALL_Sites_intersect_DMRs.bedgraph
 ##################################################################
+cp Box_Script.R Box_Script_Sweden.R
+#change in Box_Script_Sweden.R:
+
+cd /home/msandler/scratch/Wild_Metilene/Sweden_Metilene/Sweden_W_C_input_files
+
+sed 's/^W..........._/"W_/g' ./W_list.txt | \
+sed 's/^W.........._/"W_/g' | \
+sed 's/^W........_/"W_/g' | \
+sed 's/^W......._/"_/g' | \
+sed 's/_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph/", /g' | \
+sed ':a;N;$!ba;s/\n/ /g'
+
+
+"W_LATD4W_8_211",  "W_LATD2W_4_212",  "W_LATJ_02W_193",  "W_LATC1W_12_219",  "W_LATC5W_18_190",  "W_LATD2W_5_206",  "W_LATC9W_11_216",  "W_LATC3W_16_220",  "W_LATD4W_9_207",  "W_LATJ_04W_188"
+
+#C_List
+sed 's/^C..........._/"C_/g' ./C_list.txt | \
+sed 's/^C.........._/"C_/g' | \
+sed 's/^C........_/"C_/g' | \
+sed 's/^C......._/"C_/g' | \
+sed 's/_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph/", /g' | \
+sed ':a;N;$!ba;s/\n/ /g'
+
+"C_LATD2C_6_198",  "C_LATD5C_20_199",  "C_LATD5C_2_201",  "C_LATD5C_5_191",  "C_LATJ_02C_194",  "C_LATD2C_1_203",  "C_LATD1C_4_223",  "C_LATJ_00C_187",  "C_LATD2C_7_209",  "C_LATD4C_3_196",
+
+
+#Col name
+colnames(data) <- c("chrom", "pos", "W_LATD4W_8_211",  "W_LATD2W_4_212",  "W_LATJ_02W_193",  "W_LATC1W_12_219",  "W_LATC5W_18_190",  "W_LATD2W_5_206",  "W_LATC9W_11_216",  "W_LATC3W_16_220",  "W_LATD4W_9_207",  "W_LATJ_04W_188", "C_LATD2C_6_198",  "C_LATD5C_20_199",  "C_LATD5C_2_201",  "C_LATD5C_5_191",  "C_LATJ_02C_194",  "C_LATD2C_1_203",  "C_LATD1C_4_223",  "C_LATJ_00C_187",  "C_LATD2C_7_209",  "C_LATD4C_3_196")
+datat <-  as.data.frame(t(as.matrix(data)))
+datat$ID <- c("chrom", "pos", "W_LATD4W_8_211",  "W_LATD2W_4_212",  "W_LATJ_02W_193",  "W_LATC1W_12_219",  "W_LATC5W_18_190",  "W_LATD2W_5_206",  "W_LATC9W_11_216",  "W_LATC3W_16_220",  "W_LATD4W_9_207",  "W_LATJ_04W_188", "C_LATD2C_6_198",  "C_LATD5C_20_199",  "C_LATD5C_2_201",  "C_LATD5C_5_191",  "C_LATJ_02C_194",  "C_LATD2C_1_203",  "C_LATD1C_4_223",  "C_LATJ_00C_187",  "C_LATD2C_7_209",  "C_LATD4C_3_196")
+datat <- datat[-c(1,2),]
+in_metilene="Sweden_metilene_W_C.input"
+#comment out all but Treat Plot
+
+jpeg(paste0(directory,"/Sweden_SE_P_plots/TreatPlot_",chrom,"_",start,"_",end,".jpg"), width = 1700, height = 1500)
+
+
+
+
+###################################################################
+#For Seedling + True parent intersection 
+cp ~/projects/def-rieseber/Dryas_shared_data/MS_blast_input_bedgraphs/intersect_SE_W_C_P_W_C.bedGraph .
+#Get Sweden_metilene_W_C.input in data
+
+mkdir Sweden_SE_P_plots
+
+while read dmr
+do
+chrom=$(awk '{print $1}' <<< $dmr)
+start=$(awk '{print $2}' <<< $dmr)
+end=$(awk '{print $3}' <<< $dmr)
+
+
+grep "^${chrom}" data/Sweden_metilene_W_C.input > "data/${chrom}.txt"
+awk -F "\t" -v start="$start" -v end="$end" '{ if(($2 >= start) && ($2 <= end)) { print } }' "data/${chrom}.txt"  > "data/${chrom}_${start}_${end}.txt"
+
+
+Rscript Box_Script_Sweden.R ${chrom} $start $end
+
+done < intersect_SE_W_C_P_W_C.bedGraph
+
+scp -v msandler@cedar.computecanada.ca:/home/msandler/scratch/Wild_Metilene/Plotting/DMR_BoxPlots/Sweden_SE_P_plots/* .
+
+
+
+##################################################################
+
+
+
+
+
+###############################################################
 scp -v msandler@cedar.computecanada.ca:/home/msandler/scratch/Wild_Metilene/Plotting/DMR_BoxPlots/ALL_plots/* 
 
 

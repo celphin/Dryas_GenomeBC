@@ -103,8 +103,7 @@ tmux attach-session -t Parent_Warming_DMRS
 salloc -c32 --time 4:50:00 --mem 120000m --account rpp-rieseber
 #-----------------------------------------------------------
 #Metilene input prep:
-module load StdEnv/2020
-module load bedtools/2.30.0
+
 
 #Parent, Warming control specific adjustments:
 #h1,h2: 
@@ -132,6 +131,8 @@ module load bedtools/2.30.0
     #for bg in _*_${h1}*; do mv "$bg" "${h1}_${bg}"; done
     #for bg in _*_${h2}*; do mv "$bg" "${h2}_${bg}"; done
 
+module load StdEnv/2020
+module load bedtools/2.30.0
 sh metilene_prep.sh 
 cd ..
 
