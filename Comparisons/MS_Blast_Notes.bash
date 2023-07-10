@@ -171,7 +171,15 @@ blastn -query "${fasta_dir}/${blastname}.fasta" -out "blast_ref_${blastname}.out
 
 cp *.out ~/projects/def-rieseber/Dryas_shared_data/MS_blast_output
 ####################################################################################################################################
+#Leaves only blasts matching to the same part of the chromosome eg "Do1_01_a0004"
 cd ~/projects/def-rieseber/Dryas_shared_data/MS_blast_output/
-mv Blast_ref_output Blast_raw_ref_output
 
-#awk 'index($2, substr($1, 1, index($1, ":")-1))' $f | cut -f2 > blast_out.txt
+for file in *
+do awk 'index($2, substr($1, 1, index($1, ":")-1))' "$file" > cleaned_"$file"
+done
+
+mkdir raw_blast_ref
+mkdir cleaned_blast_ref
+mv cleaned_* cleaned_blast_ref
+mv blast_ref_* raw_blast_ref
+####################################################################################################################################
