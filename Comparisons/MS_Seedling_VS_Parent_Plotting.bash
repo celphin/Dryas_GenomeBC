@@ -58,3 +58,25 @@ Rscript Box_Script_SE_P.R ${chrom} $start $end
 
 done < Alas_Swed_SE_P_W_C_intersect.bedGraph
 #############################
+#Plotting inheritane for WC-MatSen
+cp ~/projects/def-rieseber/Dryas_shared_data/MS_blast_input_bedgraphs/total_subtract_W_C_Mat_Sen.bedGraph .
+
+
+while read dmr
+do
+
+chrom=$(awk '{print $1}' <<< $dmr)
+start=$(awk '{print $2}' <<< $dmr)
+end=$(awk '{print $3}' <<< $dmr)
+
+
+grep "^${chrom}" data/P_metilene_W_C.input > "data/P_${chrom}.txt"
+grep "^${chrom}" data/SE_metilene_W_C.input > "data/SE_${chrom}.txt"
+
+awk -F "\t" -v start="$start" -v end="$end" '{ if(($2 >= start) && ($2 <= end)) { print } }' "data/P_${chrom}.txt"  > "data/P_${chrom}_${start}_${end}.txt"
+awk -F "\t" -v start="$start" -v end="$end" '{ if(($2 >= start) && ($2 <= end)) { print } }' "data/SE_${chrom}.txt"  > "data/SE_${chrom}_${start}_${end}.txt"
+
+Rscript Box_Script_SE_P.R ${chrom} $start $end
+
+done < total_subtract_W_C_Mat_Sen.bedGraph
+######################################
