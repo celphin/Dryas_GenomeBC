@@ -63,7 +63,7 @@ sed -z 's/\n/ /g;s/,$/\n/'  ${h2}_list.txt > ${h2}_list_sp.txt
 sed -z 's/\n/,/g;s/,$/\n/'  ${h1}_list.txt > ${h1}_list_csv.csv
 sed -z 's/\n/,/g;s/,$/\n/'  ${h2}_list.txt > ${h2}_list_csv.csv
 #-----------------------------
-#make union bedfile for metilne input
+#make union bedfile for metilene input
 NA="NA"
 
 sed ':a;N;$!ba;s/\n/ /g' ${h1}_list.txt > h1files
