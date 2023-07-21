@@ -10,6 +10,7 @@
 #########################################
 blastname=$1
 directory="blast_bedgraphs"
+ref_genome=Dryas_octopetala_H1.supercontigs.fa
 
 cat "${directory}/${blastname}.bedGraph" | awk '{print $1 "\t" $2 "\t" $3}' > "${blastname}.bed"
 
@@ -24,7 +25,7 @@ awk '{if($2<0) sub($2,0)}1' "${blastname}_extended2.bed" > "${blastname}_extende
 sed -e 's/ /\t/g' "${blastname}_extended3.bed" > "${blastname}_extended3_tab.bed"
 
 #get fasta
-bedtools getfasta -fi Dryas_octopetala_H1.supercontigs.fa \
+bedtools getfasta -fi $ref_genome \
 -bed "${blastname}_extended3_tab.bed" \
 > "${blastname}.fasta"
 
