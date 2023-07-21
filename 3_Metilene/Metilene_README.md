@@ -98,14 +98,21 @@ sh metilene_prep.sh maxdist mincpgs mindiff minmeandiff qval
 
 ## Notes Files:
 
+### Metilene_Installation_Notes.bash###
+* Install gg plot library ( necessary for post metilene)
+* Installation and compilation of Metilene
+* Install before running any of the other note files
+
 ### MS_Parent_Metilene_Notes:
+Required data: Wild Methylseq data
 Requests allocations, specifies modifications, loads modules, and runs the three scripts in the folder on:
 * All wild plants for Warming versus control
 * All true parent plants, matched too seedling ID, for warming versus control
 * All wild plants for high Arctic sites versus low Arctic sites
-* All wild plants for Dryas Octapetala versus Dryas Integrifolia
+* All wild plants for Dryas Octopetala versus Dryas Integrifolia
 
 ### MS_Wild_Metilene_Site_Specific_Notes
+Required data: Wild Methylseq data
 Requests allocations, specifies modifications, loads modules, and runs the three scripts in the folder on:
 * Svalbard sites
 * Sweden sites
@@ -117,11 +124,13 @@ Currently (moved to bedgraph_intersect notes):
 * Creates intersections of all groups of 3 sites
 
 ### MS_Seedling_Metilene_Notes
+Required data: Seedling Methylseq data
 Requests allocations, specifies modifications, loads modules, and runs the three scripts in the folder on:
 * All seedling plants for Warming versus Control
 * All seedling plants for high Arctic sites versus low Arctic sites
 
 ### MS_Phenology_Metilene_Notes
+Required data: Phenology Methylseq data
 Requests allocations, specifies modifications, loads modules, and runs the three scripts in the folder on:
 * Samples for which data was collected for mature flowers versus senesence
 
