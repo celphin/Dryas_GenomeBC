@@ -39,7 +39,7 @@ Runs metilene on the specified input file, with desired parameters
 * StdEnv/2020
 * bedtools/2.30.0
 
-***Inputs: ***
+***Inputs:***
 * h1 - group 1
 * h2 - group 2
 * metilene_dir - name of directory where metilene is downloaded
