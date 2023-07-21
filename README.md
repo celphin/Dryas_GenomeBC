@@ -1,12 +1,43 @@
 # Dryas_GenomeBC
  DNA methylation and RNAseq analyses
  
- ## Methylation
-  nf-core Methylseq for WGBS mapping and calling methylated C's \
-  Metilene for detecting differentially methylated regions 
+ ## 1_RNAseq - mRNA
+* TODO (update)
+* RSEM for mapping to transcriptome 
+* EdgeR for normalization and plotting heat maps
+
+ ## 2_Methylseq
+* nf-core Methylseq for WGBS mapping and calling methylated C's 
+* Run on wild, phenology, and seedling data
  
- ## RNAseq - mRNA
-  RSEM for mapping to transcriptome 
-  EdgeR for normalization and plotting heat maps
- 
- ## Bedtools Union to compare
+ ## 3_Metilene
+* Metilene for detecting DMRs
+* Run for detecting various Wild, Seedling, and Phenology DMRS
+* Scripts for preparing files for Metilene and running metilene
+
+## 4_Bedgraphs_Intersections
+* Bedtools for comparisons
+* Crosses over DMRs, to find intersecting or non-intersecting DMRS
+
+## 5_Blast
+* Script for extending DMRS, and mapping to fasta file
+* Notes on Blasting DMRS to reference and to NCBI
+
+## 6_Interproscan
+* Scripts for running interproscan on a set of files
+* Script on running interproscan on divided subseq files
+* Script for formatting file to run on interproscan
+* Notes on running interproscan on both Methylation and RNA data, and on comparing/combining the two
+
+## 7_Plots_Comparisons
+* Several scripts for plotting
+* General notes on heatmap plotting (RNA and methylation)
+* Notes on inheritence plotting
+
+ ## Old_Files_Semi_Sorted - Temporary
+* Notes on original runs of certain anlyses + analyses not yet used/completed
+
+## Unused scripts
+* Phenogram script for interproscan + annotation file to format to phenogram
+* gff3 to cds conversion
+
