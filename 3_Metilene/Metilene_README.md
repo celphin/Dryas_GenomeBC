@@ -137,7 +137,7 @@ Requests allocations, specifies modifications, loads modules, and runs the three
 
 
 ## Todo for Folder:
-1. Create file for metilene download and R download
-2. Potentially make all scripts to sbatch runnable with slurm specifications and modules premade into the files?
-3. Remove redundant cross over with bedgraph intersection file in site specific notes ??
-4. Double check that all information is complete
+1. Potentially make all scripts to sbatch runnable with slurm specifications and modules premade into the files?
+2. Remove redundant cross over with bedgraph intersection file in site specific notes ??
+3. Double check that all information is complete
+4. Make copy output file (copies over all intermediate files that may be neccessary)
