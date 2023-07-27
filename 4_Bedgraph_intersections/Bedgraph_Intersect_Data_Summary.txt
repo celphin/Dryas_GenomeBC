@@ -1,25 +1,31 @@
  # DMRs FileName
     866 Alaska_W_C.bedGraph
+    358 Svalbard_W_C.bedGraph
+   1737 Sweden_W_C.bedGraph
+    322 Nunavut_W_C.bedGraph
+    449 Parent_W_C.bedGraph
+	
+      4 ALL_Sites_intersect_DMRs.bedgraph
       7 ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph
       9 ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph
      19 ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph
-      4 ALL_Sites_intersect_DMRs.bedgraph
-    338 intersect_SE_L_H_Wild_L_H.bedGraph
-    152 intersect_SE_W_C_P_W_C.bedGraph
-    108 intersect_SE_W_C_SE_L_H.bedGraph
-     84 intersect_SE_W_C_Wild_W_C.bedGraph
-     69 intersect_Wild_W_C_Mat_Sen.bedGraph
-   4989 Mat_Sen.bedGraph
-    322 Nunavut_W_C.bedGraph
-    449 Parent_W_C.bedGraph
+     15 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph
+
     426 SE_L_H.bedGraph
     888 SE_W_C.bedGraph
-    358 Svalbard_W_C.bedGraph
-     15 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph
-   1737 Sweden_W_C.bedGraph
-    736 total_subtract_SE_W_C_P_W_C.bedGraph
+    152 intersect_SE_W_C_P_W_C.bedGraph
+     84 intersect_SE_W_C_Wild_W_C.bedGraph
+	 
+	736 total_subtract_SE_W_C_P_W_C.bedGraph
     780 total_subtract_SE_W_C_SE_L_H.bedGraph
-    316 total_subtract_W_C_Mat_Sen.bedGraph
-  14986 Wild_Lat_L_H.bedGraph
+
     385 Wild_W_C.bedGraph
+   4989 Mat_Sen.bedGraph
+     69 intersect_Wild_W_C_Mat_Sen.bedGraph
+    316 total_subtract_W_C_Mat_Sen.bedGraph
+	 
+  14986 Wild_Lat_L_H.bedGraph
+  	338 intersect_SE_L_H_Wild_L_H.bedGraph
+    108 intersect_SE_W_C_SE_L_H.bedGraph
+
   28043 total
