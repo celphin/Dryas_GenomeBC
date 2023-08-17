@@ -1,0 +1,560 @@
+#########################################################
+# Dryas seedling and phenology DNA methylation calling
+# nf-core Methylseq
+# Mapping WGBS data to reference
+# Calling methylated sites
+#############################################################
+# rename files
+
+#Note on tmux sessions + cedar1/cedar5:
+#cedar1 and cedar5 can each have seperate tmux sessions of the same name
+#After creating a session, record which of cedar1/cedar5 is used [username@cedar1~]
+#if default opens to the other cedar#:
+#ssh cedar  # (with desired number)
+#tmux list-session ->to get list of previous sessions
+
+tmux new-session -s Seed
+tmux attach-session -t Seed
+
+#copy files
+cd ~/projects/rpp-rieseber/username
+cp Seedlings_MatureFlwr_raw_data/*/*/*.merge_chastity_passed.fastq.gz ~/scratch/Dryas/Seedling_Methylseq/input/
+
+#rename files
+cd ~/scratch/Dryas/Seedling_Methylseq/input/
+#Need: newnames.csv - list of format: oldname,newname 
+while IFS=, read -r oldname newname
+do
+  mv $oldname $newname
+done < newnames.csv
+
+
+cd /home/username/scratch/Dryas/Seedling_Methylseq/input/
+ls 
+# check all files transferred (28 samples)
+
+###########################################################
+# run methylation calling
+
+cd /home/username/scratch/Dryas/Seedling_Methylseq/input/
+
+# make input_files.csv : (https://nf-co.re/methylseq/2.3.0/parameters), of format sample,fastq1,fastq2 
+
+cat << EOF > ~/scratch/Dryas/Seedling_Methylseq/input/input_files.sh
+ls > ~/scratch/testfilecopy/dir_list.txt
+grep "fastq.gz" ~/scratch/Dryas/Seedling_Methylseq/input/dir_list.txt > ~/scratch/Dryas/Seedling_Methylseq/input/samples_list.csv
+
+#file to be inputted to nextflowconfig
+touch input_files.csv
+#header
+echo "sample,fastq1,fastq2" >> input_files.csv
+
+#adding columns with samplename,fastq1,fastq2
+while read -r line
+do 
+    ext="_R1.fastq.gz"
+    sample=${line%$ext}
+    echo -n $sample",input/"$line"," >> input_files.csv
+    read -r line
+    echo "input/"$line >> input_files.csv
+done <samples_list.csv
+
+# removing all temp files
+rm dir_list.txt
+rm samples_list.csv
+EOF
+
+#Set up nextflow
+
+
+#Installing nextflow/methylseq
+# following instructions here: https://nf-co.re/methylseq/2.3.0
+# test this in a separate directory
+nextflow run nf-core/methylseq -profile singularity,cc --outdir ouput
+
+#To get conf files in working dir:
+cd
+ls -a
+cd ./nextflow/assets
+cp ./conf ~/scratch/Dryas/Seedling_Methylseq
+cp nextflow.config ~/scratch/Dryas/Seedling_Methylseq
+
+# clean out previous run
+rm -r ./work/*
+rm -r ./output/*
+rm .nextflow.log*
+
+tmux new-session -s Seed
+tmux attach-session -t Seed
+
+cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
+
+salloc -c12 --time 23:00:00 --mem 120000m --account rpp-rieseber
+
+# Set to the most recent versions 
+#use ‘module spider modulename’, to see most up to date version #
+#module list on following runs, to see if loaded
+
+
+module load StdEnv/2020
+module load java/11.0.16_8
+module load singularity/3.8
+module load nextflow/22.10.6
+module load apptainer
+
+cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
+
+
+#have reference genome be in Seedling_Methylseq/Bismarkindex/
+#Modifications in nextflow.config ( in Seedling_Methylseq directory)
+# use default settings except for the ones listed below (switching syntax here to fit with nextflow)
+# maybe even attach github link to working nextflow.config file ?
+:'
+//params: 
+ 
+params{
+ 	 //Input
+input = 'input/input_files.csv'
+fasta = 'BismarkIndex/Dryas_octopetala_H1.supercontigs.fa'
+//add after second run:
+//bismark_index = '/scratch/username/Dryas/Seedling_Methylseq/output'
+
+ // Intermediate files
+save_reference             = true
+save_trimmed               = true
+
+ // Alignment options
+comprehensive              = true
+
+  // Library presets
+ zymo                      = true
+
+ // Bismark options
+ non_directional           = true
+ cytosine_report           = true
+ relax_mismatches          = true
+ no_overlap                = true
+
+ // Boilerplate options
+outdir                      = 'output/' //creates and writes to output
+
+}
+
+profiles {
+  cc {
+        		process.clusterOptions = "--account rpp-rieseber"
+  }
+}
+'
+
+
+# had to run once to set up the singularity image
+nextflow run nf-core/methylseq/ -profile singularity,cc 
+#update config file, to include bismarkindex parameter 
+nextflow run nf-core/methylseq/ -profile singularity,cc 
+
+
+#Initial run will look like:
+:'
+#------------------------------------
+
+Picked up JAVA_TOOL_OPTIONS: -Xmx2g
+N E X T F L O W  ~  version 20.10.0
+Launching `nf-core/methylseq` [distracted_albattani] - revision: 03972a686b [master]
+
+
+------------------------------------------------------
+ Only displaying parameters that differ from defaults.
+------------------------------------------------------
+WARN: Access to undefined parameter `bwa_meth_index` -- Initialise it to a default value eg. `params.bwa_meth_index = some_value`
+WARN: Access to undefined parameter `fasta_index` -- Initialise it to a default value eg. `params.fasta_index = some_value`
+[-        ] process > get_software_versions -
+[-        ] process > get_software_versions -
+[-        ] process > get_software_versions -
+[-        ] process > get_software_versions [  0%] 0 of 1
+[-        ] process > get_software_versions [  0%] 0 of 1
+[-        ] process > get_software_versions [  0%] 0 of 1
+[-        ] process > get_software_versions [  0%] 0 of 1
+[-        ] process > makeBismarkIndex      [  0%] 0 of 1
+[-        ] process > fastqc                [  0%] 0 of 28
+[-        ] process > trim_galore           [  0%] 0 of 28
+[-        ] process > bismark_align         -
+[-        ] process > bismark_deduplicate   -
+[-        ] process > bismark_methXtract    -
+[-        ] process > bismark_report        -
+[-        ] process > bismark_summary       -
+[-        ] process > qualimap              -
+[-        ] process > preseq                -
+[-        ] process > multiqc               -
+[-        ] process > output_documentation  [  0%] 0 of 1
+Pulling Singularity image docker://nfcore/methylseq:1.6.1 [cache /scratch/celphin/Dryas/Seedling_Methylseq/work/singularity/nfcore-methylseq-1.6.1.img]
+WARN: Singularity cache directory has not been defined -- Remote image will be stored in the path: /scratch/celphin/Dryas/Seedling_Methylseq/work/singularity -- Use env variable NXF_SINGULARITY_CACHEDIR to specify a different location
+
+
+
+------------------------------------------------------
+ Only displaying parameters that differ from defaults.
+------------------------------------------------------
+
+executor >  slurm (92)
+[c8/fc2c90] process > get_software_versions                          [100%] 1 of 1 ✔
+[fe/bbc415] process > makeBismarkIndex (1)                           [100%] 1 of 1 ✔
+[53/84ad17] process > fastqc (MatFl_Cass_5W_130_525_F112580)         [100%] 28 of 28 ✔
+[82/e492b5] process > trim_galore (Chilliwack1_F112574)              [100%] 28 of 28 ✔
+[60/2cbc09] process > bismark_align (SE_L_C_H_191_102_F112568)       [  4%] 1 of 28
+[32/9513a6] process > bismark_deduplicate (SE_L_C_H_191_102_F112568) [100%] 1 of 1
+[f3/17ec2a] process > bismark_methXtract (SE_L_C_H_191_102_F112568)  [100%] 1 of 1
+[20/458e78] process > bismark_report (SE_L_C_H_191_102_F112568)      [100%] 1 of 1
+[-        ] process > bismark_summary                                -
+[ae/d6a5aa] process > qualimap (SE_L_C_H_191_102_F112568)            [100%] 1 of 1
+[c7/5396f9] process > preseq (SE_L_C_H_191_102_F112568)              [100%] 1 of 1
+[-        ] process > multiqc                                        -
+[0d/555277] process > output_documentation                           [100%] 1 of 1 ✔
+
+'
+#Looking at time left in compute nodes + submissions, 
+squeue -u celphin
+:'
+          JOBID     USER      ACCOUNT           NAME  ST  TIME_LEFT NODES CPUS TRES_PER_N MIN_MEM NODELIST (REASON)
+       44241289  celphin def-henryg_c    interactive   R    8:56:41     1   30        N/A  12000M cdr1519 (None)
+       44249643  celphin def-henryg_c    interactive   R   13:03:54     1    1        N/A 120000M cdr811 (None)
+       44252278  celphin def-henryg_c nf-bismark_ali   R 7-18:14:25     1   12        N/A     64G cdr1069 (None)
+       44252285  celphin def-henryg_c nf-bismark_ali   R 7-21:42:31     1   12        N/A     64G cdr1755 (None)
+       44252301  celphin def-henryg_c nf-bismark_ali   R 7-22:03:20     1   12        N/A     64G cdr1715 (None)
+       44252340  celphin def-henryg_c nf-bismark_ali   R 7-22:12:51     1   12        N/A     64G cdr1033 (None)
+       44252380  celphin def-henryg_c nf-bismark_ali   R 7-22:21:37     1   12        N/A     64G cdr1051 (None)
+       44252401  celphin def-henryg_c nf-bismark_ali   R 7-22:30:50     1   12        N/A     64G cdr1071 (None)
+       44253398  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253400  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253410  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44252457  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44252655  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44252896  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44252922  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44252926  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44252950  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253053  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253060  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253081  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253118  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253154  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253157  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253171  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253187  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253191  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253263  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253270  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+       44253391  celphin def-henryg_c nf-bismark_ali  PD 8-00:00:00     1   12        N/A     64G  (Priority)
+'
+
+#---------------------------------------
+#-------------------------
+# if runs out of time -  restart
+
+salloc -c12 --time 23:00:00 --mem 120000m --account rpp-rieseber
+
+
+module load StdEnv/2020
+module load java/11.0.16_8
+module load nextflow/22.10.6
+module load singularity/3.8
+module load apptainer
+
+cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
+
+nextflow run nf-core/methylseq/ -profile singularity,cc -resume
+
+#if runs out of time again, restart
+
+#Message when complete:
+
+:'
+WARN: Access to undefined parameter `bwa_meth_index` -- Initialise it to a default value eg. `params.bwa_meth_index = some_value`
+WARN: Access to undefined parameter `fasta_index` -- Initialise it to a default value eg. `params.fasta_index = some_value`
+executor >  slurm (15)
+[28/7ba12f] process > get_software_versions                              [100%] 1 of 1 ✔
+[fe/bbc415] process > makeBismarkIndex (1)                               [100%] 1 of 1, cached: 1 ✔
+[53/84ad17] process > fastqc (MatFl_Cass_5W_130_525_F112580)             [100%] 28 of 28, cached: 28 ✔
+[48/29b8a0] process > trim_galore (MatFl_Will_4W_13_417_F112576)         [100%] 28 of 28, cached: 28 ✔
+[92/5a1491] process > bismark_align (MatFl_Will_4W_13_417_F112576)       [100%] 28 of 28, cached: 26 ✔
+[40/b3f566] process > bismark_deduplicate (MatFl_Will_4W_13_417_F112576) [100%] 28 of 28, cached: 26 ✔
+[f4/9e358d] process > bismark_methXtract (MatFl_Will_4W_13_417_F112576)  [100%] 28 of 28, cached: 26 ✔
+[96/2885cd] process > bismark_report (MatFl_Will_4W_13_417_F112576)      [100%] 28 of 28, cached: 26 ✔
+[fe/d714d7] process > bismark_summary                                    [100%] 1 of 1 ✔
+[cb/f29b4d] process > qualimap (MatFl_Will_4W_13_417_F112576)            [100%] 28 of 28, cached: 26 ✔
+[35/7d1acc] process > preseq (MatFl_Will_4W_13_417_F112576)              [100%] 28 of 28, cached: 26 ✔
+[1a/abd87b] process > multiqc (1)                                        [100%] 1 of 1 ✔
+[0d/555277] process > output_documentation                               [100%] 1 of 1, cached: 1 ✔
+-[nf-core/methylseq] Pipeline completed successfully-
+Completed at: 14-Sep-2022 16:54:40
+Duration    : 16h 1m 5s
+CPU hours   : 3'992.7 (92.2% cached)
+Succeeded   : 15
+Cached      : 214
+
+
+#### 
+
+
+###################################
+# save the bismark report to local computer
+cd /home/celphin/scratch/Dryas/Seedling_Methylseq/
+
+cd /home/Owner/Desktop
+scp -v celphin@cedar.computecanada.ca:/home/celphin/scratch/Dryas/Seedling_Methylseq/output/MultiQC/multiqc_report.html .
+scp -v celphin@cedar.computecanada.ca:/home/celphin/scratch/Dryas/Seedling_Methylseq/output/bismark_methylation_calls/bedGraph/SE_*.bedGraph.gz ./Seedling_bedgraph
+scp -v celphin@cedar.computecanada.ca:/home/celphin/scratch/Dryas/Seedling_Methylseq/output/bismark_methylation_calls/bedGraph/MatFl_*.bedGraph.gz ./MatFlwr_bedgraph
+
+scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/*LAT*deduplicated.bedGraph ./Lat_bedGraph
+  
+
+# MultiQC
+# ~ 60% of reads mapped
+
+# Unzip bedgraphs
+cd /home/Owner/MyDocuments/Hackery\ Backup/gaiaa/Documents/Cassandra/PhD/GenomeBC_Dryas/Wild_Dryas_WGBS/June2022_DMRs/Seedling_bedgraph/
+
+gunzip SE_*.bedGraph.gz
+
+######################################
+# run metilene to find the DMRs in seedlings
+
+
+#--------------------------------------------
+# run metilene to find the DMRs in mature flower vs senecence 
+
+
+
+
+#-------------------------------------------------------------
+# find DMRs
+
+#DMRs
+#June 2022
+
+#Metilene
+# https://www.bioinf.uni-leipzig.de/Software/metilene/Manual/#12_parameters
+# https://www.bioinf.uni-leipzig.de/Software/metilene/Manual/#5_dmr_de-novo_annotation
+
+##########################################
+# check space
+
+#quota
+
+                             Description                Space           # of files
+                    /home (user celphin)              12G/50G            145k/500k
+                 /scratch (user celphin)            3494G/20T            40k/1000k
+                /project (group celphin)            31k/2048k               1/1025
+             /project (group def-henryg)            6527G/10T            256k/500k
+        /project (group rrg-rieseber-ac)          6177G/2048k            552k/1025
+              /project (group def-cronk)            1265G/10T             33k/500k
+           /project (group def-rieseber)            7407G/10T            367k/500k
+           /project (group rpp-rieseber)            198T/200T            422k/500k
+--
+On some clusters, a break down per user may be available by adding the option '--per_user'.
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs
+
+# replace
+/scratch/celphin/Dryas/Nov2020_Metilene_DMR/
+# with
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/
+
+##########################################
+# copy metilene program and make
+
+
+wget http://www.bioinf.uni-leipzig.de/Software/metilene/metilene_v02-8.tar.gz
+tar -xvzf metilene_v02-8.tar.gz
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/
+
+make
+
+###################################
+# copy bedGraph files over
+cd /scratch/celphin/Dryas/Nov2020_Metilene_DMR/data/
+mkdir /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+cp -v C*.bedGraph /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+cp -v W*.bedGraph /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+# upzip all the bedgraph files
+# gunzip -v /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/*.gz
+
+######################################
+tmux new-session -s DMR
+tmux attach-session -t DMR
+
+salloc -c1 --time 3:00:00 --mem 120000m --account def-rieseber
+
+module load StdEnv/2020
+module load bedtools/2.30.0 
+
+# make sorted bedgraph files
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+find . -name "*.bedGraph" -print > file_list.txt
+
+while read name
+do
+bedtools sort -i ${name} >  ${name}_sorted.bedGraph
+sort -c -k1,1 -k2,2n ${name}_sorted.bedGraph
+cat ${name}_sorted.bedGraph | tr ' ' '\t' > ${name}_sorted_tab.bedGraph
+done < file_list.txt
+
+#-------------------------------
+#get list of files
+find . -name "W*_sorted_tab.bedGraph" -print > W_list.txt
+find . -name "C*_sorted_tab.bedGraph" -print > C_list.txt
+
+# replace ./ in file names
+sed -i 's/\.\///g' W_list.txt
+sed -i 's/\.\///g' C_list.txt
+
+# make csv and space delimited files
+tr '\t' ',' < "./W_list.txt" > "./W_list_csv.csv"
+tr '\t' ',' < "./C_list.txt" > "./C_list_csv.csv"
+
+tr '\t' ' ' < "./W_list.txt" > "./W_list_sp_.txt"
+tr '\t' ' ' < "./C_list.txt" > "./C_list_sp_.txt"
+
+# NOTE: one short in Warming list
+
+#---------------------------
+#make bed file
+
+tmux new-session -s DMR
+tmux attach-session -t DMR
+
+salloc -c1 --time 3:00:00 --mem 120000m --account def-rieseber
+
+module load StdEnv/2020
+module load bedtools/2.30.0 
+
+# make sorted bedgraph files
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+NA="NA"
+h1='W'
+h2='C'
+out_metilene="metilene_"$h1"_"$h2".input"
+
+Wfiles=$(sed ':a;N;$!ba;s/\n/ /g' W_list.txt)
+Cfiles=$(sed ':a;N;$!ba;s/\n/ /g' C_list.txt)
+
+Wname=$(tr ',' ' ' < "./W_list_csv.csv")
+Cname=$(tr ',' ' ' < "./C_list_csv.csv")
+
+
+#adjusting to Metilene formatting
+bedtools unionbedg -header -names $Wname $Cname -filler $NA -i $Wfiles $Cfiles | cut -f1,3- | sed 's/end/pos/' > $out_metilene
+
+
+############################
+head -5 metilene_W_C.input > subset.txt
+
+grep '^c.*' subset.txt | wc -w
+grep '^Q.*' subset.txt | wc -w
+grep '^Q.*' subset.txt | wc -l
+
+#103 values per line
+
+#header should be:
+#chrom pos ${Wname} ${Cname}
+# but the Cnames are one new line
+W_ALAS0W_8_265
+	C_ALAS_00C_227
+
+#edit to remove extra enter
+nano metilene_W_C.input
+
+# check header again
+head -5 metilene_W_C.input > subset2.txt
+
+grep '^c.*' subset2.txt | wc -w
+103
+grep '^Q.*' subset2.txt | wc -w
+412
+grep '^Q.*' subset2.txt | wc -l
+4
+-------------------------------
+salloc -c10 --time 3:00:00 --mem 120000m --account def-rieseber
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/
+
+module load StdEnv/2020
+module load bedtools/2.30.0 
+
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_W_C.input --maxdist 100 --mincpgs 20 --minMethDiff 0.2 --mode 1 --threads 10 -a W -b C -v 0.2 > metilene_output_June2022_maxd100_minC20_mindiff20.txt
+
+#start here
+segmenting Do1_a00047-[146885,147093], 16 CpGs
+segmenting Do1_a00047-[147217,148270], 103 CpGs
+segmenting Do1_a00047-[148449,148480], 3 CpGs
+Number of Tests: 849862
+
+
+# maxdist (allowed nt distance between two CpGs within a DMR)
+# mincpgs (minimum # of CpGs in a DMR)
+# minMethDiff (minimum mean methylation difference for calling DMRs)
+
+# should try default values
+/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/metilene_W_C.input --mode 1 --threads 10 -a W -b C > metilene_output_June2022_default.txt
+
+
+Number of Tests: 899946
+
+# header of output
+chr	start	end	q-value	mean_methyl	#CpGs	p-value_MWU	p-value_2D-KS	mean_g1	mean_g2
+
+#####################################
+# want to elect only low p-values?
+#perl filterOutput.pl -q <string>[-o <string>] [-p <n>] [-c <n>] [-d <n>] [-l <n>] [-a <string>] [-b <string>]
+
+#q-value is the Bonferroni adjusted p-value
+
+# need R installed with ggplot2
+
+#module spider package to see most recent version
+module load nixpkgs/16.09
+module load gcc/7.3.0
+module load r/3.6.0
+module load python 
+module load gdal #python needs to be loaded to use this
+module load udunits
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/3.6/
+
+perl /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_v0.2-8/metilene_output.pl -q /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_output_June2022_default.txt -p 0.001
+
+[INFO]  Mon Jun 20, 19:37:43, 2022      Checking flags
+[INFO]  Mon Jun 20, 19:37:43, 2022      Filter DMRs.
+[INFO]  Mon Jun 20, 19:37:44, 2022      Wrote 638 DMRs with adj. p-value<0.001, a minimum absolute difference>=0.1, a minimum length [CpG]>=10 and a minimum length [nt]>=0
+[INFO]  Mon Jun 20, 19:37:44, 2022      Bedgraph file containing DMR difference: /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/metilene_qval.0.001.bedgraph
+[INFO]  Mon Jun 20, 19:37:44, 2022      Plot DMR statistics.
+Warning messages:
+1: Removed 630 rows containing non-finite values (stat_bin).
+2: Removed 2 rows containing missing values (geom_bar).
+null device
+          1
+
+#####################################
+#make into loop to run through list of DMRs and make into bedGraph
+
+#test
+chrom=QANW01012871.1	
+start=644636
+end=645586
+
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/data/
+
+grep "^${chrom}" metilene_W_C.input | awk '^"${chrom}"[ \t].*[ \t]' "${start}<=$1 && $1>=${end}" {print} > "${chrom}_${start}_${end}.txt"
+
+#https://www.geeksforgeeks.org/awk-command-unixlinux-examples/
+#awk
+
+grep "^${chrom}" metilene_W_C.input | awk '${start}<=$1 && $1>=${end} > 2 {print $0}' > "${chrom}_${start}_${end}.txt"
+
+
+

@@ -1,0 +1,34 @@
+#All DMR counts are for 70/5/4/0.9/0.001 statistics values
+------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+FileName                                      #DMRS         # Blasted and Cleaned (%)       # Matched to RNA DERS
+Alaska_W_C.bedGraph                           866           --      
+Svalbard_W_C.bedGraph                         358           --
+Sweden_W_C.bedGraph                           1737          --
+Nunavut_W_C.bedGraph                          322           --
+Parent_W_C.bedGraph                           449           --  
+	
+ALL_Sites_intersect_DMRs.bedgraph             4             --
+ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph  7             --
+ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph  9             --
+ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph  19            --
+SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph  15            --
+
+SE_L_H.bedGraph                               426           --
+SE_W_C.bedGraph                               888           --
+intersect_SE_W_C_P_W_C.bedGraph               152           108 (71.05%)
+intersect_SE_W_C_Wild_W_C.bedGraph            84            59  (70.24%)    
+	 
+total_subtract_SE_W_C_P_W_C.bedGraph          736           525 (71.33%)            
+total_subtract_SE_W_C_SE_L_H.bedGraph         780           544 (69.74%)
+
+Wild_W_C.bedGraph                             385           --
+Mat_Sen.bedGraph                              4989          3306 (66.27%)
+intersect_Wild_W_C_Mat_Sen.bedGraph           69            49  (71.01%)
+total_subtract_W_C_Mat_Sen.bedGraph           316           213 (67.04%)
+	 
+Wild_Lat_L_H.bedGraph                         14986        --
+intersect_SE_L_H_Wild_L_H.bedGraph   	      338          258  (76.33%)        
+intersect_SE_W_C_SE_L_H.bedGraph              108          89   (82.41%)
+
+total                                         28043 
