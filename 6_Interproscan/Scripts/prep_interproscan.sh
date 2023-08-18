@@ -9,7 +9,7 @@
     #module laod r-bundle-bioconductor/3.16 
 ##############################################
 ref_protein=/home/msandler/projects/def-rieseber/Dryas_shared_data/CE_Dryas_reference_genome/Dryas_octopetala_H1.protein.fa
-input_dir=/home/msandler/projects/def-rieseber/Dryas_shared_data/MS_blast_output/Blast_ref_output
+input_dir=/home/msandler/projects/def-rieseber/Dryas_shared_data/MS_blast_output/Blast_ref_output/cleaned_blast_ref
 output_dir=interproscan_input
 
 mkdir $output_dir
