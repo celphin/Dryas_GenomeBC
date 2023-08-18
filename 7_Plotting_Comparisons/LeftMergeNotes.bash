@@ -1,3 +1,6 @@
+#########################################
+#In progress notes (July 2023)
+#########################################
 module load StdEnv/2020
 module load r/4.2.1
 module load gdal

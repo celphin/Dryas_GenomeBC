@@ -1,5 +1,6 @@
 ###############################################################
 #Notes on making box plot for desired DMR:
+#IN PROGRESS
     #Messy for now, script describes how to do
 ###############################################################
 

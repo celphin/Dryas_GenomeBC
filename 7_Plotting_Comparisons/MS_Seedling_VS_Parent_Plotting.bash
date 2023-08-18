@@ -1,5 +1,6 @@
 ############################################
 #MS_Seedling_VS_Parent_Plotting.bash
+    #Inheritence Plots Notes
     #Creates: 
         #Scatter plot of Parents vs Seedling
         #Bar plots for DMRS comparing parents and seedlings

@@ -1,3 +1,7 @@
+########################################
+#Plotting inheritence bar plots
+#In progress (needs to be cleaned)
+########################################
 args = commandArgs(trailingOnly=TRUE)
 
 # test if there is at least two arguments: if not, return an error
