@@ -1,5 +1,6 @@
 ##################################
-#Blast_Notes.bash:
+#June 2023
+#MS_Blast_Notes_Comparisons.bash:
     #Make intersection and difference bedgraphs
     #Prepare bedgraphs for blast
     #Blast bedgraphs

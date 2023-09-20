@@ -1,5 +1,6 @@
 #############################################################
 #Old Version: See MS_DMRs_Interproscan_Aug_2023.bash, for more recent version of this 
+
 #Running Interproscan on DMRS blasted to reference
 #Note: Installed version does not work well with compute canada system + available dependencies, use module
 #Running interproscan on:
