@@ -23,7 +23,8 @@ module load r/4.2.1
 module load gdal
 module load udunits
 module load python
-export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.2.1/
+#export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.2.1/
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.2.1/
 
 R
 
@@ -36,17 +37,18 @@ R
 # install.packages('gplots')
 
 #paste it in here (i.e. replace my path with yours):
-setwd ("/scratch/msandler/RNAseq_analysis")
+#setwd ("/scratch/msandler/RNAseq_analysis")
+setwd ("/home/celphin/projects/def-rieseber/Dryas_shared_data/MS_RNAseq_DERs/")
 
 #find your working directory:
 getwd()
 
 #load the libraries you will need 
-library ("edgeR")
-library ("gplots")
+library(edgeR)
+library(gplots)
 
 #read in the data
-mydata <- read.table("./gene_names_expression_table1.txt", header=TRUE)
+mydata <- read.table("/home/celphin/projects/def-rieseber/Dryas_shared_data/CE_RNAseq_raw_data/gene_names_expression_table1.txt", header=TRUE)
 
 CDS <- mydata[,1]
 exp_data <- mydata[,c(2:length(mydata))]
@@ -96,7 +98,7 @@ plotMDS (list2, col = col_treat, pch=col_site)
 dev.off()
 
 #Set the model to use. This one includes the intercept, but other models can be specified that omit the intercept or that have more complex designs. See EdgeR manual for details.
-design <- model.matrix (~treat)
+design <- model.matrix (~treat_site)
 
 #fit the common + tagwise dispersion models
 list2 <- estimateGLMCommonDisp (list2, design)
@@ -111,11 +113,141 @@ lrt.list2 <- glmLRT (glm.list2)
 #top <- topTags (lrt.list2, n = 200)$table
 top <- topTags (lrt.list2, n = 2000)$table # p-value all < 5e-02 
 
+#------------------
+# gets the DERs and their information here
+
 fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
 
 dim(lrt.list2$table[fdr<0.05,])
 length(lrt.list2$table$PValue[lrt.list2$table$PValue<0.05])
 
+lrt.list3 <- cbind(lrt.list2$table, fdr)
+
+DERs_FDR <- lrt.list3[lrt.list3$fdr<0.05,]
+
+dim(DERs_FDR)
+# treat*site 21
+# treat 24
+# treat+site 6058 
+# treat_site 2600
+
+write.table(DERs_FDR, file = "./RNA_DERs_Oct2023_W_C_Total.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
+
+
+                            logFC     logCPM       LR       PValue         fdr
+# Do1_01_a00001G00030V1.1 -1.555119  0.6418423 18.68095 1.545183e-05 0.018544255
+# Do1_01_a00001G00085V1.1 -2.313605  2.3305637 28.13965 1.128694e-07 0.001221876
+# Do1_01_a00001G00274V1.1 -1.558471  3.0357361 19.20198 1.175912e-05 0.016283671
+# Do1_01_a00001G01424V1.1 -1.166022  4.6918350 20.21781 6.910660e-06 0.016283671
+# Do1_01_a00003G00772V1.1 -2.098630  0.2479064 19.35295 1.086511e-05 0.016283671
+# Do1_02_a00003G01208V1.1 -1.947013  3.7626088 22.40433 2.208758e-06 0.006627010
+# Do1_03_a00001G00983V1.1 -1.592588  2.9575249 16.33764 5.300064e-05 0.041483369
+# Do1_03_a00001G01365V1.1  3.317710  1.2698965 27.01589 2.017897e-07 0.001221876
+# Do1_03_a00001G01606V1.1  2.201592  0.9893801 19.46556 1.024302e-05 0.016283671
+# Do1_03_a00002G00567V1.1 -1.476117  5.8557118 16.41551 5.086744e-05 0.041483369
+# Do1_03_a00002G00615V1.1  2.974555  1.6162456 18.23439 1.953201e-05 0.021975958
+# Do1_04_a00001G01481V1.1 -2.287186  4.5534372 25.11579 5.398887e-07 0.002429769
+# Do1_04_a00002G00429V1.1 -1.825682  0.2126465 20.02648 7.637724e-06 0.016283671
+# Do1_04_a00004G00131V1.1  3.032924  3.0171184 18.96812 1.329212e-05 0.017091765
+# Do1_05_a00003G00079V1.1 -2.978305 -0.3997939 26.99841 2.036233e-07 0.001221876
+# Do1_05_a00003G00319V1.1 -2.590086  2.5616164 15.95157 6.498387e-05 0.048743320
+# Do1_06_a00001G01291V1.1  2.247983 -0.4754747 16.91118 3.917021e-05 0.035257104
+# Do1_06_a00001G02298V1.1  1.402241  0.3019848 19.65192 9.290992e-06 0.016283671
+# Do1_06_a00001G02407V1.1 -1.969638  2.1677893 17.49011 2.888057e-05 0.027363585
+# Do1_06_a00001G02519V1.1 -2.410007  2.4129034 16.53544 4.774933e-05 0.040932543
+# Do1_06_a00001G02551V1.1  2.743289  0.2693729 22.99003 1.628441e-06 0.005863041
+# Do1_06_a00002G00928V1.1  1.558237  1.7748365 17.72458 2.553061e-05 0.027035414
+# Do1_07_a00002G00350V1.1 -1.835707  2.9102510 19.38836 1.066553e-05 0.016283671
+# Do1_07_a00002G02243V1.1 -1.235973  3.6158298 17.54269 2.809291e-05 0.027363585
+
+#-----------------------------------
+# try another method
+install.packages("statmod")
+library(statmod)
+design <- model.matrix (~0+treat_site)
+fit <- glmQLFit(list2, design, robust=TRUE)
+head(fit$coefficients)
+
+#-----
+con <- makeContrasts(treat_siteAlasW - treat_siteAlasC, levels=design)
+qlf <- glmQLFTest(fit, contrast=con)
+topTags(qlf)
+summary(decideTests(qlf))
+
+       # -1*treat_siteAlasC 1*treat_siteAlasW
+# Down                                      9
+# NotSig                                17989
+# Up                                        4
+
+Alaska_W_C_DERs <- qlf$table[which(!decideTests(qlf)==0),]
+write.table(Alaska_W_C_DERs, file = "./RNA_Alaska_W_C_DERs.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
+
+#-----
+con <- makeContrasts(treat_siteNorwW - treat_siteNorwC, levels=design)
+qlf <- glmQLFTest(fit, contrast=con)
+topTags(qlf)
+summary(decideTests(qlf))
+
+       # -1*treat_siteNorwC 1*treat_siteNorwW
+# Down                                      0
+# NotSig                                18002
+# Up                                        0
+
+Norway_W_C_DERs <- qlf$table[which(!decideTests(qlf)==0),]
+write.table(Norway_W_C_DERs, file = "./RNA_Norway_W_C_DERs.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
+
+#-----
+con <- makeContrasts(treat_siteSwedW - treat_siteSwedC, levels=design)
+qlf <- glmQLFTest(fit, contrast=con)
+topTags(qlf)
+summary(decideTests(qlf))
+
+
+       # -1*treat_siteSwedC 1*treat_siteSwedW
+# Down                                      2
+# NotSig                                17998
+# Up                                        2
+
+Sweden_W_C_DERs <-  qlf$table[which(!decideTests(qlf)==0),]
+write.table(Sweden_W_C_DERs, file = "./RNA_Sweden_W_C_DERs.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
+
+#-----
+con <- makeContrasts(treat_siteAlexW  - treat_siteAlexC, levels=design)
+qlf <- glmQLFTest(fit, contrast=con)
+topTags(qlf)
+summary(decideTests(qlf))
+
+       # -1*treat_siteAlexC 1*treat_siteAlexW
+# Down                                    129
+# NotSig                                17782
+# Up                                       91
+
+Alex_W_C_DERs <- qlf$table[which(!decideTests(qlf)==0),]
+write.table(Alex_W_C_DERs, file = "./RNA_Alex_W_C_DERs.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
+
+#-----
+con <- makeContrasts(treat_siteSeedW - treat_siteSeedC, levels=design)
+qlf <- glmQLFTest(fit, contrast=con)
+topTags(qlf)
+summary(decideTests(qlf))
+       # -1*treat_siteSeedC 1*treat_siteSeedW
+# Down                                      7
+# NotSig                                17988
+# Up                                        7
+
+
+Seedling_W_C_DERs <- qlf$table[which(!decideTests(qlf)==0),]
+write.table(Seedling_W_C_DERs, file = "./RNA_Seedling_W_C_DERs.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
+
+
+#---------------------------
+plotMD(qlf)
+tr <- glmTreat(fit, contrast=con, lfc=log2(1.2))
+topTags(tr)
+summary(decideTests(tr))
+plotMD(tr)
+
+#----------------------------------
 #make a heatmap by getting the counts per million from each gene and turning them relative proportions (columns add up to 1)
 sub1 <- colSums (cpm.list2)
 sub2 <- matrix (rep(sub1,nrow (cpm.list2)), c (nrow (cpm.list2),ncol(cpm.list2)),byrow = TRUE)
