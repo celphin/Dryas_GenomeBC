@@ -23,7 +23,8 @@ cd ./original_data
 awk '{print $2}' dryas_goterm_file.tsv | sort | uniq -c | sort -bgr  > ../go_terms_Dryas.txt
 
 ##########################################
-# Genes of interest: monooxygenase, defense, UDP-glycosyltransferase, carbohydrate, lipid, ATP, ADP, polysaccharide, oxidoreductase, membrane, structural,
+# Genes of interest: monooxygenase, defense, UDP-glycosyltransferase, carbohydrate, lipid,
+# ATP, ADP, polysaccharide, oxidoreductase, membrane, structural,
 # hydrolase, DNA, RNA, serine-type, polygalacturonase, catalytic, signal 
  
  awk '{s+=$1}END{print s}' go_terms_Dryas.txt
