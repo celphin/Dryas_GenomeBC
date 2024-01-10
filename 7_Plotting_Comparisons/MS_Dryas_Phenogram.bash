@@ -31,6 +31,12 @@ ruby pheno_gram.rb -i Dryas_Phenology_Phenogram.txt -g Dryas_Genome.txt -t "Drya
 #Too many, figure out way to subset
 #ruby pheno_gram.rb -i Dryas_L_H_SE_Wild_Phenogram.txt -g Dryas_Genome.txt -t "Dryas Latitude Phenogram" -o Dryas_L_H_SE_Wild_Phenogram -f jpg
 #######################################################\
-scp -v msandler@cedar.computecanada.ca:/home/msandler/projects/def-rieseber/Dryas_shared_data/MS_Dryas_Phenogram/*.jpg .
+scp -v msandler@graham.computecanada.ca:/home/msandler/projects/def-rieseber/Dryas_shared_data/MS_Dryas_Phenogram/*.jpg .
 
+scp -v msandler@graham.computecanada.ca:/home/msandler/scratch/Dryas_W_C_SE_Wild_P_RNA_Phenogram.jpg .
 
+########################################################
+
+ruby pheno_gram.rb -i Dryas_Intersecting_W_C_Phenogram_Chr.txt -g Dryas_Genome.txt -t "Dryas Warming Intersections Phenogram" -o Dryas_Intersect_W_C_SE_Wild_P_RNA_Phenogram -f jpg
+
+scp -v msandler@graham.computecanada.ca:/home/msandler/projects/def-rieseber/Dryas_shared_data/MS_Dryas_Phenogram/Dryas_Intersect_W_C_SE_Wild_P_RNA_Phenogram.jpg .

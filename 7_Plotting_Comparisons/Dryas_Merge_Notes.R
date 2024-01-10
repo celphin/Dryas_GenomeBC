@@ -117,6 +117,7 @@ process_interproscan_file <- function(interpro_file){
 }
 
 interproscan_table <- process_interproscan_file(interproscanfile)
+print(head(interproscan_table))
 
 
 ############################################################################
@@ -230,5 +231,19 @@ print(result)
 filtered_pheno_table$CHR <- gsub(".*0(\\d+)_a0*(\\d+)", "\\1\\2", filtered_pheno_table$CHR)
 write.table(filtered_pheno_table, "Dryas_Total_Origin_Phenogram_Chr.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 ###################################################################
-#Phenogram: RNA, True parent, seedling
-SE_W_C Parent_W_C
+#Isolate repeating values
+phenogram_table <- read.delim(Dryas_Total_Origin_Phenogram_Chr.txt, sep = "\t")
+sorted_phenogram_table <- phenogram_table[order(phenogram_table$CHR, phenogram_table$POS), ]
+
+#duplicates <- duplicated(sorted_phenogram_table[, c("CHR", "POS")])
+intersecting_phenogram_table <- sorted_phenogram_table[duplicated(sorted_phenogram_table[, c("CHR", "POS")]) | duplicated(sorted_phenogram_table[, c("CHR", "POS")], fromLast = TRUE), ]
+print(head(intersecting_phenogram_table))
+# Filter the data frame to keep only duplicated rows
+write.table(intersecting_phenogram_table, "Dryas_Intersecting_Phenogram_Chr.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+# Display the duplicated data frame
+
+sorted_W_C_pheno <- sorted_phenogram_table[grepl("SE_W_C|Wild_W_C|Parent_W_C|RNA", sorted_phenogram_table$PHENOTYPE), ]
+intersecting_W_C_table <- sorted_W_C_pheno[duplicated(sorted_W_C_pheno[, c("CHR", "POS")]) | duplicated(sorted_W_C_pheno[, c("CHR", "POS")], fromLast = TRUE), ]
+print(head(intersecting_phenogram_table))
+
+write.table(intersecting_W_C_table, "Dryas_Intersecting_W_C_Phenogram_Chr.txt", sep = "\t", quote = FALSE, row.names = FALSE)
