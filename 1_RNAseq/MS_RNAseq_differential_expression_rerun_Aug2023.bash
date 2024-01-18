@@ -14,8 +14,6 @@
 # https://bioconductor.org/packages/release/bioc/html/edgeR.html
 # http://combine-australia.github.io/RNAseq-R/slides/RNASeq_filtering_qc.pdf 
 
-
-
 # get R on server
 # open R
 module load StdEnv/2020
@@ -66,6 +64,34 @@ list1 <- DGEList (counts = exp_data, group = treat)
 #calculate the normalization factors to adjust the effective library size relative to other libraries in the dataset (norm.factor that minimizes log fold change among samples)
 list1 <- calcNormFactors (list1)
 
+#----------------------
+# also see https://rpubs.com/jrgonzalezISGlobal/enrichment
+
+# filter and see dimensions
+keep.exprs <- filterByExpr(dge)
+dge.filt <- dge[keep.exprs,]
+dim(dge.filt)
+
+# plot
+mm <- model.matrix( ~ group, data=dge.filt$samples)
+v <- voom(dge.filt, design = mm, plot = TRUE)
+
+fit <- lmFit(v, mm)
+fit <- eBayes(fit)
+topTable(fit)
+
+tt <- topTable(fit, n=Inf)
+mask <- tt$adj.P.Val < 0.05 &
+        abs(tt$logFC) > log2(2)
+deGenes <- rownames(tt[mask, ])
+head(deGenes)
+
+length(deGenes)
+
+geneUniverse <- rownames(tt)
+length(geneUniverse)
+
+#----------------------
 #calculate the counts per million
 cpm.list1 <- cpm(list1)
 
