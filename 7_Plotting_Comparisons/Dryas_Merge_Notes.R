@@ -9,10 +9,11 @@
     #RNA merge 
 #Can be run as script or just inputted into R
 
+# install.packages("dplyr", "tidyr")
+
 library(dplyr)
 library(tidyr)
 library(stringr)
-#Get Alaska file:
 
 #####################################################################
 #Constants:
@@ -103,6 +104,8 @@ Parent_W_C <- merge_metilene(Parent_W_C_blast, "original_data/P_W_C_70_5_4_0.9_q
 SE_W_C <- merge_metilene(Seedling_W_C_blast, "original_data/SE_W_C_70_5_4_0.9_qval.0.001.out")
 SE_L_H <- merge_metilene(Seedling_L_H_blast, "original_data/SE_L_H_70_5_4_0.9_qval.0.001.out")
 print("Metilene loaded")
+
+
 ############################################################################
 
 #Interproscan file processing
@@ -122,8 +125,6 @@ print(head(interproscan_table))
 
 ############################################################################
 #process_go terms
-
-
 
 process_go_terms <- function(goterm_file) {
     goterm_file_lines <- readLines(goterm_file)
@@ -156,24 +157,22 @@ merge_go_names <- function(interproscan_terms, go_terms){
 
 collapsed_go_terms <- merge_go_names(interproscan_table, go_terms)
 
-
-##########################################################################
 gene_dmr_table <- merge(dmr_table, dryas_genes, by = "Gene")
 #Modify DMR table
 gene_dmr_table$Origin <- sub("^original_data/", "", gene_dmr_table$Origin)
-write.table(gene_dmr_table, "Gene_DMR_Total_Merged_table.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
+#write.table(gene_dmr_table, "Gene_DMR_Total_Merged_table2.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
+
 ##########################################################################
 #Save dmrs with go table
 ##########################################################################
-
 
 gene_dmr_go_table <- merge(gene_dmr_table, collapsed_go_terms, by = "Gene", all.x = TRUE)
 gene_dmr_go_table <- distinct(gene_dmr_go_table)
 
 # Gene Origin  Scaffold DMR_Start DMR_End q-value meanmethyl CpG  meanW  meanC Gene_Start Gene_End GO_Terms Go_Names
 
+#write.table(gene_dmr_go_table, "Gene_DMR_Total_GO_Merged_table2.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
 
-write.table(gene_dmr_go_table, "Gene_DMR_Total_GO_Merged_table.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
 ##########################################################################
 #Read RNA 
 read_rna <- function(rna_file) {
@@ -186,13 +185,13 @@ read_rna <- function(rna_file) {
 }
 
 rna_table <- read_rna("original_data/RNA_DERS_Oct2023_W_C_Total_No_Headers.txt")
+
 #######################################################################
 #Attach GO_Terms, and names
 #!!! Start end did not work!!!
 rna_table <- merge(rna_table, dryas_genes, by = "Gene")
 rna_go_table <- merge(rna_table, collapsed_go_terms, by = "Gene", all.x = TRUE)
 print(head(rna_go_table, n=20))
-
 
 #col names : Gene     logFC     logCPM        LR       PValue          fdr  Gene_Start Gene_End GO_Terms GO_Name
 
@@ -201,15 +200,105 @@ print(head(rna_go_table, n=20))
 rna_go_table <- rna_go_table %>% mutate(Origin = "RNA")
 rna_go_table <- rna_go_table %>% mutate(Scaffold = str_extract(Gene, "Do1_[^G]+"))
 print(head(rna_go_table))
-write.table(rna_go_table, "Gene_RNA_Total_GO_Merged_table.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
+#write.table(rna_go_table, "Gene_RNA_Total_GO_Merged_table2.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
+
 ######################################################################
 #Combine:
 total_table <- bind_rows(gene_dmr_go_table, rna_go_table)
 print(head(total_table))
 
-write.table(total_table, "Gene_DMR_RNA_GO_Merged_table.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
+#write.table(total_table, "Gene_DMR_RNA_GO_Merged_table.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
 
-#Get scaffold:
+##############################################################
+# Separate out the RNA data from the wild warming DMRs
+# left join by gene IDs
+
+print(head(rna_go_table))
+print(head(gene_dmr_go_table))
+DMRs_RNA <- left_join(gene_dmr_go_table, rna_go_table, by="Gene")
+print(head(DMRs_RNA))
+
+write.table(DMRs_RNA, "Gene_DMR_RNA_GO_Left_join_table.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
+
+#-------------------------------------
+# subset for only the DER and DMR genes/regions
+
+DMRs_DER <- DMRs_RNA[which(!is.na(DMRs_RNA$Gene_Start.y)),]
+print(head(DMRs_DER))
+
+write.table(DMRs_DER, "DMR_DERs_Left_join_table.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
+
+#------------------
+unique(DMRs_DER$Origin.x)
+ # [1] "Mat_Sen"      "SE_W_C"       "Alaska_W_C"   "Wild_Lat_L_H" "Nunavut_W_C"
+ # [6] "Svalbard_W_C" "SE_L_H"       "Wild_W_C"     "Sweden_W_C"   "Parent_W_C"
+
+DMRs_DER_Wild_W_C <- DMRs_DER[which(DMRs_DER$Origin.x=="Wild_W_C"),]
+nrow(DMRs_DER_Wild_W_C)
+# 44
+
+DMRs_DER_SE_W_C <- DMRs_DER[which(DMRs_DER$Origin.x=="SE_W_C"),]
+nrow(DMRs_DER_SE_W_C)
+#130
+
+DMRs_DER_Alaska_W_C <- DMRs_DER[which(DMRs_DER$Origin.x=="Alaska_W_C"),]
+nrow(DMRs_DER_Alaska_W_C)
+#120
+
+DMRs_DER_Lat_L_H <- DMRs_DER[which(DMRs_DER$Origin.x=="Wild_Lat_L_H"),]
+nrow(DMRs_DER_Lat_L_H)
+#2676
+
+DMRs_DER_Nunavut_W_C <- DMRs_DER[which(DMRs_DER$Origin.x=="Nunavut_W_C"),]
+nrow(DMRs_DER_Nunavut_W_C)
+#39
+
+#-----------------
+# difference between gene and DMR positions
+
+print(head(DMRs_DER))
+DMRs_DER$DMR_DER_diffstart <- abs(DMRs_DER$DMR_Start - DMRs_DER$Gene_Start.x)
+
+DMRs_DER_closesubset <- DMRs_DER[which(DMRs_DER$DMR_DER_diffstart>20000),]
+
+nrow(DMRs_DER_closesubset)
+#1928
+
+DMRs_DER_W_C_close <- DMRs_DER_closesubset[-which(DMRs_DER_closesubset$Origin.x=="Wild_Lat_L_H"|DMRs_DER_closesubset$Origin.x=="SE_L_H"|DMRs_DER_closesubset$Origin.x=="Mat_Sen"),]
+nrow(DMRs_DER_W_C_close)
+# 254
+
+write.table(DMRs_DER_W_C_close, "DMR_DERs_Left_join_W_C_closesubset.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
+
+#----------------------------------
+# number of genes that fit close subset
+
+DMRs_DER_Wild_W_C <- DMRs_DER_closesubset[which(DMRs_DER_closesubset$Origin.x=="Wild_W_C"),]
+nrow(DMRs_DER_Wild_W_C)
+# 6
+
+DMRs_DER_SE_W_C <- DMRs_DER_closesubset[which(DMRs_DER_closesubset$Origin.x=="SE_W_C"),]
+nrow(DMRs_DER_SE_W_C)
+#25
+
+DMRs_DER_Alaska_W_C <- DMRs_DER_closesubset[which(DMRs_DER_closesubset$Origin.x=="Alaska_W_C"),]
+nrow(DMRs_DER_Alaska_W_C)
+#53
+
+DMRs_DER_Lat_L_H <- DMRs_DER_closesubset[which(DMRs_DER_closesubset$Origin.x=="Wild_Lat_L_H"),]
+nrow(DMRs_DER_Lat_L_H)
+#1403
+
+DMRs_DER_Nunavut_W_C <- DMRs_DER_closesubset[which(DMRs_DER_closesubset$Origin.x=="Nunavut_W_C"),]
+nrow(DMRs_DER_Nunavut_W_C)
+#14
+
+#---------------
+#bash
+
+grep "Wild_W_C" DMR_DERs_Left_join_table.tsv | sort -u  | uniq | wc -l 
+# 44
+
 ###################################################################
 #Get Phenogram with origin as phenotype
 #total_table <- read.delim("Gene_DMR_RNA_GO_Merged_table.tsv", na.)
