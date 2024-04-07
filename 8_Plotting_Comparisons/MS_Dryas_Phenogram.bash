@@ -76,16 +76,14 @@ ruby pheno_gram.rb -i Dryas_Intersecting_W_C_Phenogram_Chr.txt -g Dryas_Genome.t
 #---------------------------------
 # Make image of defense genes
 
-# Test
-grep "GO:" Gene_DMR_Total_GO_Merged_table.tsv | grep "Wild_W_C"  | awk '{print $1 " " $11 " " $14}'  | sort | uniq | grep GO:defense > Pheno_defense_go_terms_Wild.txt
-sed 's/a0000//g' Pheno_defense_go_terms_Wild.txt | sed 's/Do1_0//g' | sed 's/_//' | sed 's/G0....//' > Phenogram_defense_Wild_w_c.txt
-
-# DMR
+# DMR Warming
 grep "GO:" Gene_DMR_Total_GO_Merged_table.tsv | grep "Wild_W_C"  | awk '{print $1 " " $11 " " $14}'  | sort | uniq  > Pheno_go_terms_Wild.txt
 sed 's/a0000//g' Pheno_go_terms_Wild.txt | sed 's/Do1_0//g' | sed 's/_//' | sed 's/G0....//' | sed 's/ /\t/g'  > Phenogram_GOterms_Wild_w_c.txt
 # add header and remove contigs
 nano Phenogram_GOterms_Wild_w_c.txt
 
+cp Phenogram_GOterms_Wild_w_c.txt Phenograms/
+cd Phenograms/
 ruby pheno_gram.rb -i Phenogram_GOterms_Wild_w_c.txt -g Dryas_Genome.txt -t "Dryas DMR Warming GO terms" -o DMR_Warming_GO -f jpg
 
 # copy to local machine
@@ -93,25 +91,46 @@ scp -v celphin@cedar.computecanada.ca:/home/celphin/scratch/Dryas/MS_Dryas_Merge
 
 #------------------------
 # RNA
-grep "GO:" Gene_DMR_Total_GO_Merged_table.tsv | grep "Wild_W_C"  | awk '{print $1 " " $11 " " $14}'  | sort | uniq  > Pheno_go_terms_Wild.txt
-sed 's/a0000//g' Pheno_go_terms_Wild.txt | sed 's/Do1_0//g' | sed 's/_//' | sed 's/G0....//' | sed 's/ /\t/g'  > Phenogram_GOterms_Wild_w_c.txt
+grep "GO:" Gene_RNA_Total_GO_Merged_table.tsv  | awk '{print $1 " " $7 " " $10}'  | sort | uniq  > Pheno_go_terms_Wild_RNA.txt
+sed 's/a0000//g' Pheno_go_terms_Wild_RNA.txt | sed 's/Do1_0//g' | sed 's/_//' | sed 's/G0....//' | sed 's/ /\t/g'  > Phenogram_RNA_GOterms_Wild_w_c.txt
 # add header and remove contigs
-nano Phenogram_GOterms_Wild_w_c.txt
+nano Phenogram_RNA_GOterms_Wild_w_c.txt
 
-ruby pheno_gram.rb -i Phenogram_GOterms_Wild_w_c.txt -g Dryas_Genome.txt -t "Dryas DMR Warming GO terms" -o DMR_Warming_GO -f jpg
+cp Phenogram_RNA_GOterms_Wild_w_c.txt Phenograms/
+cd Phenograms/
+ruby pheno_gram.rb -i Phenogram_RNA_GOterms_Wild_w_c.txt -g Dryas_Genome.txt -t "Dryas RNA Warming GO terms" -o RNA_Warming_GO -f jpg
 
 # copy to local machine
-scp -v celphin@cedar.computecanada.ca:/home/celphin/scratch/Dryas/MS_Dryas_Merged_Data/Phenograms/DMR_Warming_GO.jpg .
+scp -v celphin@cedar.computecanada.ca:/home/celphin/scratch/Dryas/MS_Dryas_Merged_Data/Phenograms/RNA_Warming_GO.jpg .
 
 
 #---------------------------
 # DMR_RNA
+# need to first extract the rows that contain RNA
+
 grep "GO:" Gene_DMR_RNA_GO_Left_join_table.tsv | grep "Wild_W_C"  | awk '{print $1 " " $11 " " $14}'  | sort | uniq  > Pheno_go_terms_Wild.txt
 sed 's/a0000//g' Pheno_go_terms_Wild.txt | sed 's/Do1_0//g' | sed 's/_//' | sed 's/G0....//' | sed 's/ /\t/g'  > Phenogram_GOterms_Wild_w_c_DMR-RNA.txt
 # add header and remove contigs
 nano Phenogram_GOterms_Wild_w_c_DMR-RNA.txt
 
+cp Phenogram_GOterms_Wild_w_c_DMR-RNA.txt Phenograms/
+cd Phenograms/
 ruby pheno_gram.rb -i Phenogram_GOterms_Wild_w_c_DMR-RNA.txt -g Dryas_Genome.txt -t "Dryas DMR-RNA Warming GO terms" -o DMR_RNA_Warming_GO -f jpg
 
 # copy to local machine
-scp -v celphin@cedar.computecanada.ca:/home/celphin/scratch/Dryas/MS_Dryas_Merged_Data/Phenograms/DMR_Warming_GO.jpg .
+scp -v celphin@cedar.computecanada.ca:/home/celphin/scratch/Dryas/MS_Dryas_Merged_Data/Phenograms/DMR_RNA_Warming_GO.jpg .
+
+#---------------------------
+# DMR Phenology
+grep "GO:" Gene_DMR_Total_GO_Merged_table.tsv | grep "Mat_Sen"  | awk '{print $1 " " $11 " " $14}'  | sort | uniq  > Pheno_go_terms_Mat_Sen.txt
+sed 's/a0000//g' Pheno_go_terms_Mat_Sen.txt | sed 's/Do1_0//g' | sed 's/_//' | sed 's/G0....//' | sed 's/ /\t/g'  > Phenogram_GOterms_Mat_Sen.txt
+# add header and remove contigs
+nano Phenogram_GOterms_Mat_Sen.txt
+
+cp Phenogram_GOterms_Mat_Sen.txt Phenograms/
+cd Phenograms/
+
+ruby pheno_gram.rb -i Phenogram_GOterms_Mat_Sen.txt -g Dryas_Genome.txt -t "Dryas DMR Phenology GO terms" -o DMR_Mat_Sen_GO -f jpg
+
+# copy to local machine
+scp -v celphin@cedar.computecanada.ca:/home/celphin/scratch/Dryas/MS_Dryas_Merged_Data/Phenograms/DMR_Mat_Sen_GO.jpg .
