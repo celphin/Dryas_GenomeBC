@@ -37,7 +37,6 @@ Prepares files for, configures, and runs Nextflow's methylseq on Mature flowers.
 
 ### Notes1a_WildWGBS_Methylseq_Mapping_Methcalling_Jan2022
 
-
 Prepares files for, configures, and runs Nextflow's methylseq on all Wild Plants. Some post processing.
 
 
