@@ -4,270 +4,308 @@
 # Mapping WGBS data to reference
 # Calling methylated sites
 #############################################################
-# organize folders
 
-mv input/ nf-core-methylseq_2.7.0/2_7_0/
-mv output/ nf-core-methylseq_2.7.0/2_7_0/
-mv nextflow.config nf-core-methylseq_2.7.0/2_7_0/
-
-#--------------
 # Try run to setup reference genome  in Bismarkindex/
-# on Cedar
+# try on narval but slow due to allocation running low
+# try on Cedar with high allocation but poor disk connection
 
 tmux new-session -s Dryas
 tmux attach-session -t Dryas
 
 cd /home/celphin/scratch/Dryas/methylseq
 
-salloc -c1 --time 23:00:00 --mem 120000m --account rrg-rieseber-ac
+#salloc -c1 --time 1:00:00 --mem 120000m --account rrg-rieseber-ac
 
 cd /home/celphin/scratch/Dryas/methylseq
 source nf-core-env/bin/activate
 module load nextflow/24.04.4
 module load apptainer/1.3.4
-export NXF_SINGULARITY_CACHEDIR=/project/rrg-rieseber-ac/NXF_SINGULARITY_CACHEDIR
 
-nextflow run nf-core-methylseq_2.7.0/2_7_0/  -profile singularity,cedar 
+export NXF_SINGULARITY_CACHEDIR=/project/def-rieseber/NXF_SINGULARITY_CACHEDIR
+nextflow run nf-core-methylseq_2.7.1/2_7_1/ -profile singularity,narval 
 
-# executor >  slurm (240)
-# [b0/3103ee] NFC…SMARK_GENOMEPREPARATION (BismarkIndex/DoctH0_Main.fasta) | 0 of 1
-# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:CAT_FASTQ                         -
-# [52/17c391] NFCORE_METHYLSEQ:METHYLSEQ:FASTQC (W_WILL7W_448_107)         | 0 of 131
-# [36/1561e3] NFCORE_METHYLSEQ:METHYLSEQ:TRIMGALORE (W_LATC5W_18_190)      | 0 of 131
-# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_ALIGN             -
-# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:SAMTOOLS_SORT_ALIGNED     -
-# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_DEDUPLICATE       -
-# [-        ] NFC…METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_METHYLATIONEXTRACTOR -
-# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_COVERAGE2CYTOSINE -
-# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_REPORT            -
-# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_SUMMARY           -
-# [-        ] NFC…E_METHYLSEQ:METHYLSEQ:BISMARK:SAMTOOLS_SORT_DEDUPLICATED -
-# [-        ] NFC…_METHYLSEQ:METHYLSEQ:BISMARK:SAMTOOLS_INDEX_DEDUPLICATED -
-# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:QUALIMAP_BAMQC                    -
-# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:PRESEQ_LCEXTRAP                   -
-# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:MULTIQC                           -
+#export NXF_SINGULARITY_CACHEDIR=/project/rrg-rieseber-ac/NXF_SINGULARITY_CACHEDIR
+#nextflow run nf-core-methylseq_2.7.1/2_7_1/ -profile singularity,cedar
+
+#######################
+# Check pipeline info to get run times
+
+# task_id  hash            native_id       name                                                        status           exit     submit                 duration         realtime        %cpu     peak_rss     peak_vmem       rchar   wchar
+# 1       6c/07611a       48656697        NFCORE_METHYLSEQ:PREPARE_GENOME:BISMARK_GENOMEPREPARATION (BismarkIndex/DoctH0_Main.fasta)     COMPLETED       0       2024-11-18 14:28:21.524 46m 48s        35m 11s 43.4%   1.1 GB  1.3 GB  1.9 GB  1.1 GB
+# 9       98/4c70d0       48656718        NFCORE_METHYLSEQ:METHYLSEQ:TRIMGALORE (C_ALAS0C_13_254)        COMPLETED       0       2024-11-18 14:28:32.612 57m 56s         30m 23s        600.2%  591.7 MB      3.4 GB   202.3 GB        195.7 GB
+# 7       c7/1fb64b       48656713        NFCORE_METHYLSEQ:METHYLSEQ:TRIMGALORE (C_ALAS0C_12_256)        COMPLETED       0       2024-11-18 14:28:26.221 1h 3m 25s       35m 31s        576.2%  587.3 MB       3.4 GB  230.7 GB        223.2 GB
+# 6       11/c631b8       48656693        NFCORE_METHYLSEQ:METHYLSEQ:TRIMGALORE (C_ALAS0C_10_246)        COMPLETED       0       2024-11-18 14:28:20.968 1h 7m 30s       1h 1m 20s       466.5% 584.7 MB       3.4 GB  286.2 GB        276.8 GB
+# 5       f5/e63d65       48656700        NFCORE_METHYLSEQ:METHYLSEQ:TRIMGALORE (Asian1_F112573)         COMPLETED        0       2024-11-18 14:28:22.193 1h 14m 9s       46m 22s        437.8%  590.9 MB      3.4 GB   282 GB         274.6 GB
+# 16      88/18ee78       48656752        NFCORE_METHYLSEQ:METHYLSEQ:TRIMGALORE (C_ALAS0C_4_240)         COMPLETED        0       2024-11-18 14:28:48.923 1h 16m 46s      28m 54s        537.0%  589.5 MB      3.4 GB   204.7 GB        198.1 GB
+# 15      14/3e0097       48656744        NFCORE_METHYLSEQ:METHYLSEQ:TRIMGALORE (C_ALAS0C_3_258)         COMPLETED        0       2024-11-18 14:28:45.951 1h 19m 44s      35m 59s         629.2%  589.2 MB      3.4 GB   227.8 GB        220.5 GB
+# 4       e9/23a371       48656711        NFCORE_METHYLSEQ:METHYLSEQ:FASTQC     (C_ALAS0C_12_256)       -COMPLETED       0       2024-11-18 14:28:25.287 3h 24m 39s      9m 30s           197.8%  7.3 GB         40.3 GB  7.4 GB         4.5 MB
+# 2       e0/0ba4bf       48656705        NFCORE_METHYLSEQ:METHYLSEQ:FASTQC     (Asian1_F112573)        -COMPLETED       0       2024-11-18 14:28:23.221 3h 21m 10s      10m 26s          197.2%  6.8 GB         40.3 GB  7.4 GB         4.5 MB
 
 
-###################################################
-# restart pipeline with edited config to show new reference in Bismarkindex/
 
-tmux new-session -s Dryas
-tmux attach-session -t Dryas
-
-cd /home/celphin/scratch/Dryas/methylseq
-
-salloc -c1 --time 23:00:00 --mem 120000m --account rrg-rieseber-ac
-
-cd /home/celphin/scratch/Dryas/methylseq
-source nf-core-env/bin/activate
-module load nextflow/24.04.4
-module load apptainer/1.3.4
-export NXF_SINGULARITY_CACHEDIR=/project/rrg-rieseber-ac/NXF_SINGULARITY_CACHEDIR
-
-nextflow run nf-core-methylseq_2.7.0/2_7_0/  -profile singularity,cedar -resume
-
-# some errors but launched more jobs
-#                 /scratch (user celphin)              11T/20T            37k/1000k
+####################################################
+# Make copy of reference and now run without running ref
+ 
+cp -r /home/celphin/scratch/Dryas/methylseq/output/bismark/reference_genome/BismarkIndex* /home/celphin/scratch/Dryas/methylseq/input/reference/
 
 #------------------------------------
 # After run for future runs edit config for BismarkIndex
-nano /home/celphin/scratch/Dryas/methylseq/nf-core-methylseq_2.7.0/2_7_0/nextflow.config
+nano /home/celphin/scratch/Dryas/methylseq/nf-core-methylseq_2.7.1/2_7_1/nextflow.config
 
 params{
 
     // Input options
     input                      = '/home/celphin/scratch/Dryas/methylseq/input/input_files.csv'
-    fasta                      = '/home/celphin/scratch/Dryas/methylseq/input/DoctH0_Main.fasta'
+    fasta                      = '/home/celphin/scratch/Dryas/methylseq/input/reference/DoctH0_Main.fasta'
     //add after second run:
-    bismark_index              = '/home/celphin/scratch/Dryas/methylseq/output/bismark/reference_genome/BismarkIndex/'
+    bismark_index            = '/home/celphin/scratch/Dryas/methylseq/input/reference/BismarkIndex/'
 }
 
+# Change 
+save_reference             = true to false
+save_trimmed               = true to false
+
+#----------------
+nano /home/celphin/scratch/Dryas/methylseq/nf-core-methylseq_2.7.1/2_7_1/conf/base.config
+
+# change 5 hours to 1 hours
+# change 7 hours to 2 hours
+# change 4 days to 1 days
+
+# change to 4 attempts as Error stratedgy
+
+# add memory to alignment process 72G to 120Gb
+
 #######################################################
-# resume pipeline with more time
-
-tmux new-session -s Dryas
-tmux attach-session -t Dryas
+# start pipeline again with reference
 
 cd /home/celphin/scratch/Dryas/methylseq
 
-salloc -c1 --time 23:00:00 --mem 120000m --account rrg-rieseber-ac
+# narval3
+tmux new-session -s Dryas1
+tmux attach-session -t Dryas1
+
+#salloc -c1 --time 18:00:00 --mem 128000m --account def-rieseber
 
 cd /home/celphin/scratch/Dryas/methylseq
+
 source nf-core-env/bin/activate
 module load nextflow/24.04.4
 module load apptainer/1.3.4
-export NXF_SINGULARITY_CACHEDIR=/project/rrg-rieseber-ac/NXF_SINGULARITY_CACHEDIR
+export NXF_SINGULARITY_CACHEDIR=/project/def-rieseber/NXF_SINGULARITY_CACHEDIR
 
-nextflow run nf-core-methylseq_2.7.0/2_7_0/  -profile singularity,cedar -resume
+nextflow run nf-core-methylseq_2.7.1/2_7_1/  -profile singularity,narval 
 
-# ERROR ~ Error executing process > 'NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_ALIGN (C_CAS
-# S17C_576_175)'
+# executor >  slurm (333)
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:CAT_FASTQ           -
+# [b4/23fe1c] NFC…HYLSEQ:METHYLSEQ:FASTQC (W_WILL5W_421_154) | 131 of 131 ✔
+# [6c/5352bd] NFC…LSEQ:METHYLSEQ:TRIMGALORE (W_SVAL8W_8_272) | 131 of 131, cached: 60 ✔
+# [f7/1537df] NFC…SEQ:BISMARK:BISMARK_ALIGN (W_SVAL8W_8_272) | 51 of 51, failed: 12
+# [-        ] NFC…EQ:METHYLSEQ:BISMARK:SAMTOOLS_SORT_ALIGNED -
+# [-        ] NFC…LSEQ:METHYLSEQ:BISMARK:BISMARK_DEDUPLICATE -
+# [-        ] NFC…YLSEQ:BISMARK:BISMARK_METHYLATIONEXTRACTOR -
+# [-        ] NFC…ETHYLSEQ:BISMARK:BISMARK_COVERAGE2CYTOSINE -
+# [-        ] NFC…METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_REPORT -
+# [-        ] NFC…ETHYLSEQ:METHYLSEQ:BISMARK:BISMARK_SUMMARY -
+# [-        ] NFC…THYLSEQ:BISMARK:SAMTOOLS_SORT_DEDUPLICATED -
+# [-        ] NFC…HYLSEQ:BISMARK:SAMTOOLS_INDEX_DEDUPLICATED -
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:QUALIMAP_BAMQC      -
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:PRESEQ_LCEXTRAP     -
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:MULTIQC             -
+
+
+#---------------------------
+# [agitated_spence]
+# ERROR ~ Error executing process > 'NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_ALIGN (C_FERT5C_1F_97)'
 
 # Caused by:
-  # Process `NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_ALIGN (C_CASS17C_576_175)` terminate
-# d with an error exit status (255)
+  # Process `NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_ALIGN (C_FERT5C_1F_97)` terminated with an error exit status (255)
 
-# Command executed:
+cd /lustre07/scratch/celphin/Dryas/methylseq/work/dc/66383cd334b9b52ce22e71be15abcd
+more .command.log
 
-  # if [ ! -f BismarkIndex/DoctH0_Main.fasta ]; then
-      # ln -s $(readlink DoctH0_Main.fasta) BismarkIndex/DoctH0_Main.fasta;
-  # fi
+# Chromosome number extraction failed for *
+# (ERR): bowtie2-align died with signal 13 (PIPE)
+# (ERR): bowtie2-align died with signal 13 (PIPE)
+# (ERR): bowtie2-align died with signal 13 (PIPE)
+# slurmstepd: error: Detected 1 oom_kill event in StepId=37167039.batch. Some of the step tasks ha
+# ve been OOM Killed.
 
-  # bismark \
-      # -1 C_CASS17C_576_175_1_val_1.fq.gz -2 C_CASS17C_576_175_2_val_2.fq.gz \
-      # --genome BismarkIndex \
-      # --bam \
-      # --bowtie2    --non_directional  --unmapped  --score_min L,0,-0.6 --multicore 2
+# C_SVAL8C_8_275 (37167079) 
+# C_ALAS0C_10_246
 
-  # cat <<-END_VERSIONS > versions.yml
-  # "NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_ALIGN":
-      # bismark: $(echo $(bismark -v 2>&1) | sed 's/^.*Bismark Version: v//; s/Copyright.*$/
-# /')
-  # END_VERSIONS
+# check various output file sizes - maybe not completing due to short on memory
 
-# Command exit status:
-  # 255
+# -rw-r----- 1 celphin celphin  9661453352 Nov 14 16:37 Asian1_F112573_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin 10596301569 Nov 14 16:36 C_ALAS0C_10_246_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  7331628014 Nov 14 16:38 C_ALAS0C_12_256_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  9760597564 Nov 14 16:38 C_ALAS0C_18_229_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  9529231898 Nov 14 16:40 C_ALAS0C_19_261_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  6495125640 Nov 14 16:39 C_ALAS0C_4_240_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin 10758344752 Nov 14 16:41 C_ALAS0C_5_238_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin 10475024815 Nov 14 16:43 C_ALAS_00C_231_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  8055652897 Nov 14 16:43 C_CASS10C_548_144_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  8281149750 Nov 14 16:44 C_CASS8C_535_54_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  6906953612 Nov 14 16:45 C_DRY5C_28_92_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  8220094753 Nov 14 16:46 C_FERT31C_15F_170_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  7926455786 Nov 14 16:46 C_FERT39C_20F_71_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin 10177843181 Nov 14 16:47 C_FERT5C_1F_97_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin 10810601227 Nov 14 16:49 C_LATD1C_4_223_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  7524951589 Nov 14 16:48 C_LATD2C_1_203_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  9650252163 Nov 14 16:49 C_LATD5C_20_199_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  9520776418 Nov 14 16:50 C_MEAD1C_446_33_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  8293634258 Nov 14 16:51 C_MEAD6C_468_22_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  9637296980 Nov 14 16:51 C_MEAD7C_473_95_1_val_1_bismark_bt2_pe.bam
+# -rw-r----- 1 celphin celphin  6342303744 Nov 14 16:52 C_SVAL16C_16_276_1_val_1_bismark_bt2_pe.bam
 
-# Command error:
+# #----------
+# -rw-r-----. 1 celphin celphin  9727700151 Nov 23 12:22 Asian1_F112573_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin 11082997345 Nov 23 11:50 C_ALAS_00C_227_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin 10482924112 Nov 23 11:04 C_ALAS_00C_231_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  7441835006 Nov 23 09:26 C_ALAS0C_13_254_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  9762131252 Nov 23 10:32 C_ALAS0C_18_229_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8950226082 Nov 23 10:43 C_ALAS0C_19_261_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8431881588 Nov 23 09:15 C_ALAS0C_3_258_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  7756507998 Nov 23 09:06 C_ALAS0C_4_240_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin 12091358709 Nov 23 11:54 C_CASS_09C_541_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8095671583 Nov 23 12:34 C_CASS17C_576_175_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8008259941 Nov 23 11:27 C_CASS4C_524_4_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8755044955 Nov 23 11:05 C_CASS5C_529_159_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8283471388 Nov 23 10:54 C_CASS8C_535_54_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8149344809 Nov 23 12:09 C_DRY2C_10_52_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8201724757 Nov 23 12:06 C_DRY4C_23_82_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  7556929481 Nov 23 10:18 C_DRY5C_28_92_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8085317491 Nov 23 10:52 C_DRY9C_53_149_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin 12656804860 Nov 23 13:00 C_FERT13C_7F_112_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8222461474 Nov 23 11:56 C_FERT31C_15F_170_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  7928228326 Nov 23 10:44 C_FERT39C_20F_71_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  9091686390 Nov 23 12:05 C_FERT5C_1F_97_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin 10812002267 Nov 23 12:06 C_LATD1C_4_223_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8536382223 Nov 23 11:00 C_LATD2C_1_203_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin 11068553783 Nov 23 12:10 C_LATD2C_6_198_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  9111750794 Nov 23 13:23 C_LATD2C_7_209_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  9710697680 Nov 23 11:35 C_LATD4C_3_196_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  9304470441 Nov 23 13:39 C_LATD5C_20_199_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  9316620796 Nov 23 13:18 C_LATD5C_2_201_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  9351360838 Nov 23 12:35 C_LATD5C_5_191_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin 12177072907 Nov 23 14:20 C_LATJ_00C_187_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  9848917818 Nov 23 14:24 C_MEAD2C_451_76_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  7371305657 Nov 23 13:09 C_MEAD6C_468_22_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8275295038 Nov 23 12:09 C_SVAL12C_12_273_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  9916882420 Nov 23 13:18 C_SVAL16C_16_276_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8713308994 Nov 23 12:59 C_SVAL49C_49_278_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8987550736 Nov 23 13:21 C_SVAL8C_8_275_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  7995768054 Nov 23 14:17 C_WILL1C_406_152_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  8798756353 Nov 23 14:28 C_WILL3C_414_100_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin 10145793519 Nov 23 15:02 C_WILL5C_422_31_1_val_1_bismark_bt2_pe.ba
 
-  # Created C -> T as well as G -> A converted versions of the FastQ file C_CASS17C_576_175_
-# 2_val_2.fq.gz.temp.1 (31399235 sequences in total)
-
-  # Input files are C_CASS17C_576_175_1_val_1.fq.gz.temp.1_C_to_T.fastq and C_CASS17C_576_17
-# 5_1_val_1.fq.gz.temp.1_G_to_A.fastq and C_CASS17C_576_175_2_val_2.fq.gz.temp.1_C_to_T.fast
-# q and C_CASS17C_576_175_2_val_2.fq.gz.temp.1_G_to_A.fastq (FastQ)
-  # Now running 4 individual instances of Bowtie 2 against the bisulfite genome of /scratch/
-# celphin/Dryas/methylseq/output/bismark/reference_genome/BismarkIndex/ with the specified o
-# ptions: -q --score-min L,0,-0.6 --ignore-quals --no-mixed --no-discordant --dovetail --max
-# ins 500
-
-  # Now starting a Bowtie 2 paired-end alignment for CTread1GAread2CTgenome (reading in sequ
-# ences from C_CASS17C_576_175_1_val_1.fq.gz.temp.1_C_to_T.fastq and C_CASS17C_576_175_2_val
-# _2.fq.gz.temp.1_G_to_A.fastq, with the options: -q --score-min L,0,-0.6 --ignore-quals --n
-# o-mixed --no-discordant --dovetail --maxins 500 --norc))
-  # Chromosomal sequence could not be extracted for       A00977:110:HFTTCDSXY:2:1119:32461:
-# 35978_1:N:0:CAACTCCA+GAATCCGT   DoctH0-10       1
-  # Found first alignment:
-  # A00977:110:HFTTCDSXY:2:1101:1868:1000_1:N:0:CAACTCCA+GAATCCGT/1       77      *       00
-# *       *       0       0       TGAAGAATAATAAGAAGAGGGTTTTTATGGTTATAATAATTATTAGTGTTTTTTTTTT
-# TTTTTTTATAAT    F:FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF:FF:FFFFFFFFFFFFFFFFFFFFF:::FFF  YT
-# :Z:UP
-  # A00977:110:HFTTCDSXY:2:1101:1868:1000_2:N:0:CAACTCCA+GAATCCGT/2       141     *       00
-# *       *       0       0       ATTATAAAAAAAAAAAAAAAAACACTAATAATTATTATAACCAAAAAAACCCTCTACT
-# TATTATTCTACA    FF:,,F:FFFFFFFFFFFF:F:F,FFFFFF:F,FFF,FFFFF,:FFFFF:F:F,F,:,:::,FF,::,:F  YT
-# :Z:UP
-  # Now starting a Bowtie 2 paired-end alignment for GAread1CTread2GAgenome (reading in sequ
-# ences from C_CASS17C_576_175_1_val_1.fq.gz.temp.1_G_to_A.fastq and C_CASS17C_576_175_2_val
-# _2.fq.gz.temp.1_C_to_T.fastq, with the options: -q --score-min L,0,-0.6 --ignore-quals --n
-# o-mixed --no-discordant --dovetail --maxins 500 --norc))
-
-  # >>> Writing bisulfite mapping results to C_CASS17C_576_175_1_val_1.fq.gz.temp.1_bismark_
-# bt2_pe.bam <<<
-
-  # Unmapped sequences will be written to C_CASS17C_576_175_1_val_1.fq.gz.temp.1_unmapped_re
-# ads_1.fq and C_CASS17C_576_175_2_val_2.fq.gz.temp.1_unmapped_reads_2.fq
-
-  # Reading in the sequence files C_CASS17C_576_175_1_val_1.fq.gz.temp.1 and C_CASS17C_576_1
-# 75_2_val_2.fq.gz.temp.1
-  # Chromosomal sequence could not be extracted for       A00977:110:HFTTCDSXY:2:1105:21992:
-# 18161_1:N:0:CAACTCCA+GAATCCGT   DoctH0-10       1
-  # Chromosomal sequence could not be extracted for       A00977:110:HFTTCDSXY:2:1106:12771:
-# 19351_1:N:0:CAACTCCA+GAATCCGT   DoctH0-12       2
-  # Processed 1000000 sequence pairs so far
-
-#-----------------------
-# 22122_1:N:0:CAACTCCA+GAATCCGT   DoctH0-12       1
-  # Chromosomal sequence could not be extracted for       A00977:110:HFTTCDSXY:2:1163:8793:1
-# 4747_1:N:0:CAACTCCA+GAATCCGT    DoctH0-10       3
-  # Chromosomal sequence could not be extracted for       A00977:110:HFTTCDSXY:2:1175:31675:
-# 2895_1:N:0:CAACTCCA+GAATCCGT    DoctH0-12       101899
-  # (ERR): bowtie2-align died with signal 9 (KILL)
-  # (ERR): bowtie2-align died with signal 9 (KILL)
-  # Use of uninitialized value $flag_2 in numeric eq (==) at /usr/local/bin/bismark line 328
-# 9, <__ANONIO__> line 6300638.
-  # Chromosome number extraction failed for *
-  # (ERR): bowtie2-align died with signal 13 (PIPE)
-  # (ERR): bowtie2-align died with signal 13 (PIPE)
-
-# Work dir:
-  # /scratch/celphin/Dryas/methylseq/work/cc/ce5d35131e327b810735d283760055
-
-# Tip: when you have fixed the problem you can continue the execution adding the option `-re
-# sume` to the run command line
-
- # -- Check '.nextflow.log' file for details
-# ERROR ~ Pipeline failed. Please refer to troubleshooting docs: https://nf-co.re/docs/usage
-# /troubleshooting
-
- # -- Check '.nextflow.log' file for details
+# #-----------------
+# -rw-r----- 1 celphin celphin 4541786807 Nov 17 01:58 C_CASS4C_524_4.sorted.bam
+# -rw-r----- 1 celphin celphin 8006069754 Nov 16 21:46 C_CASS4C_524_4_1_val_1_bismark_bt2_pe.bam
 
 
+#---------------------------------
+# check log of past runs
 
+nextflow log
+# TIMESTAMP               DURATION        RUN NAME        STATUS  REVISION ID     SESSION ID                              COMMAND                                                                 
+# 2024-11-21 01:55:05     -               awesome_agnesi  -       78f1f08d90      ceaa73c5-ac10-4639-97e5-b8221f81bd20    nextflow run nf-core-methylseq_2.7.1/2_7_1/ -profile singularity,narval 
+# 2024-11-22 02:05:41     1d 1h 47m 4s    cheeky_mercator ERR     78f1f08d90      ceaa73c5-ac10-4639-97e5-b8221f81bd20    nextflow run nf-core-methylseq_2.7.1/2_7_1/ -profile singularity,narval -resume
+# 2024-11-23 03:54:02     11h 20m 46s     prickly_mcnulty ERR     78f1f08d90      ceaa73c5-ac10-4639-97e5-b8221f81bd20    nextflow run nf-core-methylseq_2.7.1/2_7_1/ -profile singularity,narval -resume
 
-# Chromosome number extraction failed
-# Signal 9 (KILL): This typically indicates that the process was killed by the operating system, 
-# often due to exceeding resource limits (like memory). 
+#---------------------------------
+# resume pipeline with more memory 
 
+nano /home/celphin/scratch/Dryas/methylseq/nf-core-methylseq_2.7.1/2_7_1/conf/base.config
 
-#######################################################
-# resume pipeline with more time
+# add memory to alignment process 120G to 200Gb
 
+#-----------------------------
+#narval3
 tmux new-session -s Dryas
 tmux attach-session -t Dryas
-
-cd /home/celphin/scratch/Dryas/methylseq
-
-salloc -c1 --time 23:00:00 --mem 120000m --account rrg-rieseber-ac
 
 cd /home/celphin/scratch/Dryas/methylseq
 source nf-core-env/bin/activate
 module load nextflow/24.04.4
 module load apptainer/1.3.4
-export NXF_SINGULARITY_CACHEDIR=/project/rrg-rieseber-ac/NXF_SINGULARITY_CACHEDIR
+export NXF_SINGULARITY_CACHEDIR=/project/def-rieseber/NXF_SINGULARITY_CACHEDIR
 
-nextflow run nf-core-methylseq_2.7.0/2_7_0/  -profile singularity,cedar --max_memory 200GB -resume
+nextflow run nf-core-methylseq_2.7.1/2_7_1/  -profile singularity,narval --max_memory 200GB -resume
 
-executor >  slurm (109)
-[-        ] NFCORE_METHYLSEQ:METHYLSEQ:CAT_FASTQ     -
-[52/17c391] NFC…:METHYLSEQ:FASTQC (W_WILL7W_448_107) | 131 of 131, cached: 131 ✔
-[97/69db15] NFC…THYLSEQ:TRIMGALORE (W_CASS7W_600_19) | 113 of 131, cached: 113
-[91/f991c0] NFC…ARK:BISMARK_ALIGN (W_CASS10W_544_60) | 28 of 113, cached: 27, failed: 1
-[e5/239c3b] NFC…OLS_SORT_ALIGNED (W_CASS17W_574_137) | 0 of 27
-[e7/ef8c39] NFC…BISMARK_DEDUPLICATE (W_ALAS0W_7_263) | 0 of 27
-[-        ] NFC…BISMARK:BISMARK_METHYLATIONEXTRACTOR -
-[-        ] NFC…EQ:BISMARK:BISMARK_COVERAGE2CYTOSINE -
-[-        ] NFC…SEQ:METHYLSEQ:BISMARK:BISMARK_REPORT -
-[-        ] NFC…EQ:METHYLSEQ:BISMARK:BISMARK_SUMMARY -
-[-        ] NFC…Q:BISMARK:SAMTOOLS_SORT_DEDUPLICATED -
-[-        ] NFC…:BISMARK:SAMTOOLS_INDEX_DEDUPLICATED -
-[-        ] NFC…E_METHYLSEQ:METHYLSEQ:QUALIMAP_BAMQC -
-[-        ] NFC…_METHYLSEQ:METHYLSEQ:PRESEQ_LCEXTRAP -
-[-        ] NFCORE_METHYLSEQ:METHYLSEQ:MULTIQC       | 0 of 1
-
-
-
-#ERROR ~ Error executing process > 'NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_ALIGN (C_LATJ_00C_187)'
-
-#     47344041  celphin rrg-rieseber nf-NFCORE_METH  PD 8-00:00:00     1   12        N/A     72G  (ReqNodeNotAvail, Reserved for maintenance)
+# executor >  slurm (131)
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:CAT_FASTQ           -
+# [b4/23fe1c] NFC…HYLSEQ:METHYLSEQ:FASTQC (W_WILL5W_421_154) | 131 of 131, cached: 131 ✔
+# [75/0151c8] NFC…EQ:METHYLSEQ:TRIMGALORE (W_WILL5W_421_154) | 131 of 131, cached: 131 ✔
+# [26/de19c6] NFC…Q:BISMARK:BISMARK_ALIGN (W_WILL5W_421_154) | 0 of 131
+# [-        ] NFC…EQ:METHYLSEQ:BISMARK:SAMTOOLS_SORT_ALIGNED -
+# [-        ] NFC…LSEQ:METHYLSEQ:BISMARK:BISMARK_DEDUPLICATE -
+# [-        ] NFC…YLSEQ:BISMARK:BISMARK_METHYLATIONEXTRACTOR -
+# [-        ] NFC…ETHYLSEQ:BISMARK:BISMARK_COVERAGE2CYTOSINE -
+# [-        ] NFC…METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_REPORT -
+# [-        ] NFC…ETHYLSEQ:METHYLSEQ:BISMARK:BISMARK_SUMMARY -
+# [-        ] NFC…THYLSEQ:BISMARK:SAMTOOLS_SORT_DEDUPLICATED -
+# [-        ] NFC…HYLSEQ:BISMARK:SAMTOOLS_INDEX_DEDUPLICATED -
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:QUALIMAP_BAMQC      -
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:PRESEQ_LCEXTRAP     -
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:MULTIQC             -
 
 
-scontrol update jobid=47343921 TimeLimit=7-00:00:00
 
+#---------------------------------
+# resume pipeline 
 
-#######################################################
-# resume pipeline with more time
-
+#Cedar1
 tmux new-session -s Dryas
 tmux attach-session -t Dryas
-
-cd /home/celphin/scratch/Dryas/methylseq
-
-salloc -c1 --time 23:00:00 --mem 120000m --account rrg-rieseber-ac
 
 cd /home/celphin/scratch/Dryas/methylseq
 source nf-core-env/bin/activate
 module load nextflow/24.04.4
 module load apptainer/1.3.4
-export NXF_SINGULARITY_CACHEDIR=/project/rrg-rieseber-ac/NXF_SINGULARITY_CACHEDIR
+export NXF_SINGULARITY_CACHEDIR=/project/def-rieseber/NXF_SINGULARITY_CACHEDIR
 
-nextflow run nf-core-methylseq_2.7.0/2_7_0/  -profile singularity,cedar --max_memory 200GB -resume
+nextflow run nf-core-methylseq_2.7.1/2_7_1/  -profile singularity,narval --max_memory 200GB -resume
+
+
+#######################################
+# updating job times and memory
+
+squeue -u celphin -t PD -o "%.18i"
+
+for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == "5:00:00" {print $1}'); do
+  scontrol update JobId=$job_id TimeLimit=1:00:00
+done
+
+for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == "7:00:00" {print $1}'); do
+  scontrol update JobId=$job_id TimeLimit=2:00:00
+done
+
+for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == "4-00:00:00" {print $1}'); do
+  scontrol update JobId=$job_id TimeLimit=1-00:00:00
+done
+
+
+for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == "2:00:00" {print $1}'); do
+  scontrol update JobId=$job_id MinMemoryNode=72000
+done
+
+for job_id in $(squeue -u celphin -t PD -o "%.18i %.10m" --noheader | awk '$2 == "72000M" {print $1}'); do
+  scancel $job_id 
+done
+
+for job_id in $(squeue -u celphin -t PD -o "%.18i %.10m" --noheader | awk '$2 == "200G" {print $1}'); do
+  scontrol update JobId=$job_id MinMemoryNode=150000
+done
+
+for job_id in $(squeue -u celphin -t PD -o "%.18i %.10m" --noheader | awk '$2 == "200G" {print $1}'); do
+  scontrol update JobId=$job_id MinMemoryNode=150000
+done
+
+for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == "1-00:00:00" {print $1}'); do
+  scontrol update JobId=$job_id TimeLimit=12:00:00
+done
+
+for job_id in $(squeue -u celphin -t PD -o "%.18i %.10m" --noheader | awk '$2 == "120G" {print $1}'); do
+  scontrol update JobId=$job_id MinMemoryNode=200000
+done
