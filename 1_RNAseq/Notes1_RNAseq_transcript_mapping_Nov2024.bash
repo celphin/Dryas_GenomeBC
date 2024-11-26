@@ -70,10 +70,33 @@ install -d /usr/local/bin /usr/local/bin/samtools-1.3
 make: *** [Makefile:162: install] Error 1
 
 #------------------------------------
-# unzip reference
+# copy over reference
+# DoctH0_Main.fasta
+# DoctH0.AED_0.6_protein.fasta
+# FINAL_DoctH0.AED_0.6.sorted.gff3
+# Dryasoct_interproscan_edited.tsv
+# Dryasoct_GO_mappings.ermineJ.txt
 
-cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/Reference_genomes/
-tar -xvzf Dryas_octopetala_H1.tar.gz
+
+#------------------------------
+# try https://github.com/gpertea/gffread
+# to get to protein conversion
+
+# Install
+ cd /home/celphin/scratch/
+  git clone https://github.com/gpertea/gffread
+  cd gffread
+  make release
+
+cd /home/celphin/projects/rrg-rieseber-ac/rpp-rieseber/celphin/Dryas/RNAseq_analysis/reference
+
+/home/celphin/scratch/Annotation/gffread/gffread -h
+
+# to run proteins
+/home/celphin/scratch/gffread/gffread -g DoctH0_Main.fasta FINAL_DoctH0.AED_0.6.sorted.gff3 -y Dry-octo-H0_proteins.fa
+
+# to run proteins
+/home/celphin/scratch/gffread/gffread -g DoctH0_Main.fasta FINAL_DoctH0.AED_0.6.sorted.gff3 -x Dry-octo-H0_cds.fa
 
 #-----------------------------------
 # Prep reference

@@ -136,6 +136,11 @@ more .command.log
 
 # check various output file sizes - maybe not completing due to short on memory
 
+# final
+# -rw-r-----. 1 celphin celphin 11112756284 Nov 24 10:49 Asian1_F112573_1_val_1_bismark_bt2_pe.bam
+# -rw-r-----. 1 celphin celphin  9762814771 Nov 24 23:29 C_ALAS0C_18_229_1_val_1_bismark_bt2_pe.bam
+
+#--------------------
 # -rw-r----- 1 celphin celphin  9661453352 Nov 14 16:37 Asian1_F112573_1_val_1_bismark_bt2_pe.bam
 # -rw-r----- 1 celphin celphin 10596301569 Nov 14 16:36 C_ALAS0C_10_246_1_val_1_bismark_bt2_pe.bam
 # -rw-r----- 1 celphin celphin  7331628014 Nov 14 16:38 C_ALAS0C_12_256_1_val_1_bismark_bt2_pe.bam
