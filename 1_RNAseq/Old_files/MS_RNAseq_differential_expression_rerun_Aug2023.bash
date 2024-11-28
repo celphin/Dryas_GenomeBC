@@ -8,6 +8,9 @@
 # try differential expression analysis - plotting
 # EdgeR
 
+tmux new-session -s RNA
+tmux attach-session -t RNA
+
 # copy data to shared folder for Marie
 #---------------------------------
 # https://github.com/owensgl/biol525D/tree/master/Topic_6
@@ -36,7 +39,7 @@ R
 
 #paste it in here (i.e. replace my path with yours):
 #setwd ("/scratch/msandler/RNAseq_analysis")
-setwd ("/home/celphin/projects/def-rieseber/Dryas_shared_data/MS_RNAseq_DERs/")
+setwd ("/home/celphin/projects/rrg-rieseber-ac/rpp-rieseber/celphin/Dryas/RNAseq_analysis/")
 
 #find your working directory:
 getwd()
@@ -44,9 +47,10 @@ getwd()
 #load the libraries you will need 
 library(edgeR)
 library(gplots)
+library(stringr)
 
 #read in the data
-mydata <- read.table("/home/celphin/projects/def-rieseber/Dryas_shared_data/CE_RNAseq_raw_data/gene_names_expression_table1.txt", header=TRUE)
+mydata <- read.table("./RNA_site_tables/gene_names_expression_table1.txt", header=TRUE)
 
 CDS <- mydata[,1]
 exp_data <- mydata[,c(2:length(mydata))]
@@ -54,51 +58,113 @@ exp_data <- mydata[,c(2:length(mydata))]
 #extract and turn the column names into a factor
 treat <- as.factor (sapply (strsplit(colnames(exp_data),split = "_"),"[[",1))
 site <- as.factor (sapply (strsplit(colnames(exp_data),split = "_"),"[[",2))
+mixed<- paste0(treat, "_", site)
 
 treat_site <- paste0(as.character(site), as.character(treat))
 treat_site <- as.factor(treat_site)
 
 #make a DGElist object out of the data
-list1 <- DGEList (counts = exp_data, group = treat)
+dge <- DGEList (counts = exp_data, genes=rownames(exp_data))
 
 #calculate the normalization factors to adjust the effective library size relative to other libraries in the dataset (norm.factor that minimizes log fold change among samples)
-list1 <- calcNormFactors (list1)
+dge <- calcNormFactors (dge)
 
 #----------------------
 # also see https://rpubs.com/jrgonzalezISGlobal/enrichment
+# https://bioinformatics-core-shared-training.github.io/cruk-bioinf-sschool/Day3/rnaSeq_DE.pdf
 
 # filter and see dimensions
 keep.exprs <- filterByExpr(dge)
 dge.filt <- dge[keep.exprs,]
 dim(dge.filt)
+# 15856    58
+
+dge.filt$samples$group <-  as.factor(str_extract(rownames(dge.filt$samples), "^[WC]"))
+dge.filt$samples$site <-  as.factor(str_extract(rownames(dge.filt$samples), "(?<=_)[A-Za-z]+"))
 
 # plot
-mm <- model.matrix( ~ group, data=dge.filt$samples)
-v <- voom(dge.filt, design = mm, plot = TRUE)
+designMat <- model.matrix( ~ group+site, data=dge.filt$samples)
 
-fit <- lmFit(v, mm)
+png("./plots/voom_mean_variance_trend.png", width = 700, height = 500)
+v <- voom(dge.filt, design = designMat, plot = TRUE)
+dev.off()
+
+fit <- lmFit(v, designMat)
 fit <- eBayes(fit)
 topTable(fit)
 
+                            # logFC  AveExpr         t      P.Value adj.P.Val
+# Do1_02_a00003G01059V1.1 -0.3736246 5.783677 -4.585718 2.418313e-05 0.2272247
+# Do1_05_a00001G00678V1.1  0.4868721 4.996119  4.132682 1.152688e-04 0.5415327
+# Do1_05_a00001G01393V1.1 -0.2364523 5.309064 -4.022222 1.668231e-04 0.6269878
+# Do1_01_a00004G01253V1.1 -0.3654033 2.920314 -4.754991 1.326829e-05 0.2272247
+# Do1_01_a00001G00911V1.1  0.6073389 4.125502  4.154200 1.072021e-04 0.5415327
+# Do1_03_a00002G01021V1.1 -0.3666808 6.127259 -3.616250 6.219597e-04 0.8243400
+# Do1_04_a00001G00236V1.1 -0.6364836 4.384837 -3.744945 4.129610e-04 0.8243400
+# Do1_04_a00001G02342V1.1  0.2748636 4.832356  3.649093 5.606347e-04 0.8243400
+# Do1_01_a00001G00364V1.1 -0.3931061 5.075336 -3.503560 8.847180e-04 0.8243400
+# Do1_04_a00001G01745V1.1 -0.2929932 6.026556 -3.402461 1.207479e-03 0.8243400
+                                 # B
+# Do1_02_a00003G01059V1.1 -0.1606955
+# Do1_05_a00001G00678V1.1 -1.0265966
+# Do1_05_a00001G01393V1.1 -1.1399468
+# Do1_01_a00004G01253V1.1 -1.2243403
+# Do1_01_a00001G00911V1.1 -1.2939314
+# Do1_03_a00002G01021V1.1 -1.7415305
+# Do1_04_a00001G00236V1.1 -1.7825713
+# Do1_04_a00001G02342V1.1 -1.8051183
+# Do1_01_a00001G00364V1.1 -1.9829141
+# Do1_04_a00001G01745V1.1 -2.0717539
+
 tt <- topTable(fit, n=Inf)
-mask <- tt$adj.P.Val < 0.05 &
-        abs(tt$logFC) > log2(2)
+mask <- tt$adj.P.Val < 0.05 & abs(tt$logFC) > log2(2)
 deGenes <- rownames(tt[mask, ])
 head(deGenes)
+# character(0)
 
 length(deGenes)
+# 0
 
 geneUniverse <- rownames(tt)
 length(geneUniverse)
+# 18792
 
-#----------------------
-#calculate the counts per million
-cpm.list1 <- cpm(list1)
+#---------------------
+dge <- estimateGLMCommonDisp(dge, design=designMat)
+dge <- estimateGLMTrendedDisp(dge, design=designMat)
+dge <- estimateGLMTagwiseDisp(dge, design=designMat)
 
-#filter out the genes with less than 1 cpm in 6 or fewer libraries (a somewhat arbitrary choice). 
-#Genes are usually dropped if they can't possibly be expressed in all the samples for any of the conditions.
-list2 <- list1[rowSums(cpm.list1 > 1) >= 6,]
-cpm.list2 <- cpm.list1[rowSums(cpm.list1 > 1) >= 6,]
+png("./plots/Biological_coeff_variation.png", width = 700, height = 500)
+plotBCV(dge)
+dev.off()
+
+# We can now find our differentially expressed genes. After fitting the model, we can use the topTags() 
+# function to explore the results, and set theresholds to identify subsets of differentially expressed genes
+fit <- glmFit(dge, designMat)
+lrt <- glmLRT(fit, coef=4)
+edgeR_result <- topTags(lrt)
+#?topTags
+toptags_Warming <- topTags(lrt,n=15000)
+save(toptags_Warming, file='edgeR_TopTags.RData') #We will need this later
+
+# Finally, we can plot the log-fold changes of all the genes, and the highlight those that are differentially expressed
+#?decideTests
+deGenes <- decideTestsDGE(lrt, p=0.001)
+deGenes <- rownames(lrt)[as.logical(deGenes)]
+
+png("./plots/Plot_smear.png", width = 700, height = 500)
+plotSmear(lrt, de.tags=deGenes)
+abline(h=c(-1, 1), col=2)
+dev.off()
+
+#----------------
+# plot deGenes 
+
+DE_genes <- edgeR_result$table  # Extract the result table
+DE_genes <- DE_genes[DE_genes$FDR < 0.05 & abs(DE_genes$logFC) > 1, ]
+
+
+[which(dge.filt$genes$genes==DE_genes#genes)]
 
 #generate a multi-dimensional scaling plot
 col_treat <- as.character (treat)
@@ -115,39 +181,74 @@ col_site [col_treat == "Swed"] <- 18 # diamond
 #col_treat [col_treat == "L"] <- "yellow"
 
 #plot the MDS graph
-jpeg("./plots/W_C_RNA_MDS.jpg", width = 700, height = 500)
-plotMDS (list2, col = col_treat)
+png("./plots/W_C_RNA_MDS.png", width = 700, height = 500)
+plotMDS (filtered_dge, col = col_treat)
 dev.off()
 
-jpeg("./plots/Site_RNA_MDS.jpg", width = 700, height = 500)
-plotMDS (list2, col = col_treat, pch=col_site)
+png("./plots/Site_RNA_MDS.png", width = 700, height = 500)
+plotMDS (filtered_dge, col = col_treat, pch=col_site)
+dev.off()
+
+
+##################################
+# https://bioinformatics-core-shared-training.github.io/cruk-bioinf-sschool/Day3/rnaSeq_DE.pdf
+
+#calculate the counts per million
+cpm.dge <- cpm(dge)
+
+#filter out the genes with less than 1 cpm in 6 or fewer libraries (a somewhat arbitrary choice). 
+#Genes are usually dropped if they can't possibly be expressed in all the samples for any of the conditions.
+filtered_dge <- dge[rowSums(cpm.dge > 1) >= 6,]
+cpm.filtered_dge <- cpm.dge[rowSums(cpm.dge > 1) >= 6,]
+
+#generate a multi-dimensional scaling plot
+col_treat <- as.character (treat)
+col_treat [col_treat == "C"] <- "blue"
+col_treat [col_treat == "W"] <- "red"
+
+col_site <- as.character (site)
+col_site [col_treat == "Alex"] <- 15 # square
+col_site [col_treat == "Norw"] <- 16 # circle
+col_site [col_treat == "Alas"] <- 17 # triangle
+col_site [col_treat == "Swed"] <- 18 # diamond
+
+#col_treat [col_treat == "H"] <- "green"
+#col_treat [col_treat == "L"] <- "yellow"
+
+#plot the MDS graph
+png("./plots/W_C_RNA_MDS.png", width = 700, height = 500)
+plotMDS (filtered_dge, col = col_treat)
+dev.off()
+
+png("./plots/Site_RNA_MDS.png", width = 700, height = 500)
+plotMDS (filtered_dge, col = col_treat, pch=col_site)
 dev.off()
 
 #Set the model to use. This one includes the intercept, but other models can be specified that omit the intercept or that have more complex designs. See EdgeR manual for details.
 design <- model.matrix (~treat_site)
 
 #fit the common + tagwise dispersion models
-list2 <- estimateGLMCommonDisp (list2, design)
-list2 <- estimateGLMTagwiseDisp (list2, design)
+filtered_dge <- estimateGLMCommonDisp (filtered_dge, design)
+filtered_dge <- estimateGLMTagwiseDisp (filtered_dge, design)
 
 #fit a GLM to the data using the tagwise dispersion estimate
-glm.list2 <- glmFit (list2, design, dispersion = list2$tagwise.dispersion)
-lrt.list2 <- glmLRT (glm.list2)
+glm.filtered_dge <- glmFit (filtered_dge, design, dispersion = filtered_dge$tagwise.dispersion)
+lrt.filtered_dge <- glmLRT (glm.filtered_dge)
 
 #get the topTags out of the model
-#top <- topTags (lrt.list2, n = 1000)$table
-#top <- topTags (lrt.list2, n = 200)$table
-top <- topTags (lrt.list2, n = 2000)$table # p-value all < 5e-02 
+#top <- topTags (lrt.filtered_dge, n = 1000)$table
+#top <- topTags (lrt.filtered_dge, n = 200)$table
+top <- topTags (lrt.filtered_dge, n = 2000)$table # p-value all < 5e-02 
 
 #------------------
 # gets the DERs and their information here
 
-fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
+fdr<-p.adjust(lrt.filtered_dge$table$PValue, method='fdr')
 
-dim(lrt.list2$table[fdr<0.05,])
-length(lrt.list2$table$PValue[lrt.list2$table$PValue<0.05])
+dim(lrt.filtered_dge$table[fdr<0.05,])
+length(lrt.filtered_dge$table$PValue[lrt.filtered_dge$table$PValue<0.05])
 
-lrt.list3 <- cbind(lrt.list2$table, fdr)
+lrt.list3 <- cbind(lrt.filtered_dge$table, fdr)
 
 DERs_FDR <- lrt.list3[lrt.list3$fdr<0.05,]
 
@@ -191,7 +292,7 @@ write.table(DERs_FDR, file = "./RNA_DERs_Oct2023_W_C_Total.txt", quote = FALSE, 
 install.packages("statmod")
 library(statmod)
 design <- model.matrix (~0+treat_site)
-fit <- glmQLFit(list2, design, robust=TRUE)
+fit <- glmQLFit(filtered_dge, design, robust=TRUE)
 head(fit$coefficients)
 
 #-----
@@ -275,9 +376,9 @@ plotMD(tr)
 
 #----------------------------------
 #make a heatmap by getting the counts per million from each gene and turning them relative proportions (columns add up to 1)
-sub1 <- colSums (cpm.list2)
-sub2 <- matrix (rep(sub1,nrow (cpm.list2)), c (nrow (cpm.list2),ncol(cpm.list2)),byrow = TRUE)
-sub3 <- cpm.list2 / sub2
+sub1 <- colSums (cpm.filtered_dge)
+sub2 <- matrix (rep(sub1,nrow (cpm.filtered_dge)), c (nrow (cpm.filtered_dge),ncol(cpm.filtered_dge)),byrow = TRUE)
+sub3 <- cpm.filtered_dge / sub2
 
 #subset this matrix to just get the genes from above
 names1 <- row.names (sub3)
@@ -315,11 +416,11 @@ col_order <- c("C_Alas_16",   "C_Alas_1",    "C_Alas_20",   "C_Alas_5",  "W_Alas
 
 heatmap2 <- heatmap1[, col_order]
 
-jpeg("./plots/W_C_RNA_heatmap.jpg", width = 3200, height = 1000)
+png("./plots/W_C_RNA_heatmap.png", width = 3200, height = 1000)
 heatmap.2 (heatmap2, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(heatmap2), labRow = rownames(heatmap2), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=2, cexCol=2)
 dev.off()
 
-jpeg("./plots/W_C_RNA_heatmap_legend.jpg", width = 1000, height = 800)
+png("./plots/W_C_RNA_heatmap_legend.png", width = 1000, height = 800)
 heatmap.2 (heatmap2, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap2), labRow = rownames(heatmap2), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
 
@@ -358,18 +459,18 @@ treat_site <- paste0(as.character(site), as.character(treat))
 treat_site <- as.factor(treat_site)
 
 #make a DGElist object out of the data
-list1 <- DGEList (counts = exp_data, group = treat)
+dge <- DGEList (counts = exp_data, group = treat)
 
 #calculate the normalization factors to adjust the effective library size relative to other libraries in the dataset (norm.factor that minimizes log fold change among samples)
-list1 <- calcNormFactors (list1)
+dge <- calcNormFactors (dge)
 
 #calculate the counts per million
-cpm.list1 <- cpm(list1)
+cpm.dge <- cpm(dge)
 
 #filter out the genes with less than 1 cpm in 6 or fewer libraries (a somewhat arbitrary choice). 
 #Genes are usually dropped if they can't possibly be expressed in all the samples for any of the conditions.
-list2 <- list1[rowSums(cpm.list1 > 1) >= 6,]
-cpm.list2 <- cpm.list1[rowSums(cpm.list1 > 1) >= 6,]
+filtered_dge <- dge[rowSums(cpm.dge > 1) >= 6,]
+cpm.filtered_dge <- cpm.dge[rowSums(cpm.dge > 1) >= 6,]
 
 #generate a multi-dimensional scaling plot
 col_treat <- as.character (treat)
@@ -386,35 +487,35 @@ col_site [col_treat == "Swed"] <- 18 # diamond
 #col_treat [col_treat == "L"] <- "yellow"
 
 #plot the MDS graph
-jpeg("./plots/Alex_W_C_RNA_MDS.jpg", width = 700, height = 500)
-plotMDS (list2, col = col_treat)
+png("./plots/Alex_W_C_RNA_MDS.png", width = 700, height = 500)
+plotMDS (filtered_dge, col = col_treat)
 dev.off()
 
 #Set the model to use. This one includes the intercept, but other models can be specified that omit the intercept or that have more complex designs. See EdgeR manual for details.
 design <- model.matrix (~treat)
 
 #fit the common + tagwise dispersion models
-list2 <- estimateGLMCommonDisp (list2, design)
-list2 <- estimateGLMTagwiseDisp (list2, design)
+filtered_dge <- estimateGLMCommonDisp (filtered_dge, design)
+filtered_dge <- estimateGLMTagwiseDisp (filtered_dge, design)
 
 #fit a GLM to the data using the tagwise dispersion estimate
-glm.list2 <- glmFit (list2, design, dispersion = list2$tagwise.dispersion)
-lrt.list2 <- glmLRT (glm.list2)
+glm.filtered_dge <- glmFit (filtered_dge, design, dispersion = filtered_dge$tagwise.dispersion)
+lrt.filtered_dge <- glmLRT (glm.filtered_dge)
 
 #get the topTags out of the model
-#top <- topTags (lrt.list2, n = 1000)$table
-#top <- topTags (lrt.list2, n = 200)$table
-top <- topTags (lrt.list2, n = 500)$table # p-value all < 5e-02, v2
+#top <- topTags (lrt.filtered_dge, n = 1000)$table
+#top <- topTags (lrt.filtered_dge, n = 200)$table
+top <- topTags (lrt.filtered_dge, n = 500)$table # p-value all < 5e-02, v2
 
-fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
+fdr<-p.adjust(lrt.filtered_dge$table$PValue, method='fdr')
 
-dim(lrt.list2$table[fdr<0.05,])
-length(lrt.list2$table$PValue[lrt.list2$table$PValue<0.05])
+dim(lrt.filtered_dge$table[fdr<0.05,])
+length(lrt.filtered_dge$table$PValue[lrt.filtered_dge$table$PValue<0.05])
 
 #make a heatmap by getting the counts per million from each gene and turning them relative proportions (columns add up to 1)
-sub1 <- colSums (cpm.list2)
-sub2 <- matrix (rep(sub1,nrow (cpm.list2)), c (nrow (cpm.list2),ncol(cpm.list2)),byrow = TRUE)
-sub3 <- cpm.list2 / sub2
+sub1 <- colSums (cpm.filtered_dge)
+sub2 <- matrix (rep(sub1,nrow (cpm.filtered_dge)), c (nrow (cpm.filtered_dge),ncol(cpm.filtered_dge)),byrow = TRUE)
+sub3 <- cpm.filtered_dge / sub2
 
 #subset this matrix to just get the genes from above
 names1 <- row.names (sub3)
@@ -431,11 +532,11 @@ heatmap1 <- sub3[index2,]
 col_order <- c("C_Alex_11",  "C_Alex_21",   "C_Alex_22",   "C_Alex_23",   "C_Alex_24",   "C_Alex_2",  "C_Alex_6",    "C_Alex_7",    "W_Alex_11",   "W_Alex_1",    "W_Alex_21",   "W_Alex_22",  "W_Alex_6")
 heatmap2 <- heatmap1[, col_order]
 
-jpeg("./plots/Alex_W_C_RNA_heatmap2.jpg", width = 3200, height = 2500)
+png("./plots/Alex_W_C_RNA_heatmap2.png", width = 3200, height = 2500)
 heatmap.2 (heatmap1, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(8), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=3, cexCol=6)
 dev.off()
 
-jpeg("./plots/Alex_W_C_RNA_heatmap_legend2.jpg", width = 1000, height = 800)
+png("./plots/Alex_W_C_RNA_heatmap_legend2.png", width = 1000, height = 800)
 heatmap.2 (heatmap1, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
 
@@ -474,18 +575,18 @@ treat_site <- paste0(as.character(site), as.character(treat))
 treat_site <- as.factor(treat_site)
 
 #make a DGElist object out of the data
-list1 <- DGEList (counts = exp_data, group = treat)
+dge <- DGEList (counts = exp_data, group = treat)
 
 #calculate the normalization factors to adjust the effective library size relative to other libraries in the dataset (norm.factor that minimizes log fold change among samples)
-list1 <- calcNormFactors (list1)
+dge <- calcNormFactors (dge)
 
 #calculate the counts per million
-cpm.list1 <- cpm(list1)
+cpm.dge <- cpm(dge)
 
 #filter out the genes with less than 1 cpm in 6 or fewer libraries (a somewhat arbitrary choice). 
 #Genes are usually dropped if they can't possibly be expressed in all the samples for any of the conditions.
-list2 <- list1[rowSums(cpm.list1 > 1) >= 6,]
-cpm.list2 <- cpm.list1[rowSums(cpm.list1 > 1) >= 6,]
+filtered_dge <- dge[rowSums(cpm.dge > 1) >= 6,]
+cpm.filtered_dge <- cpm.dge[rowSums(cpm.dge > 1) >= 6,]
 
 #generate a multi-dimensional scaling plot
 col_treat <- as.character (treat)
@@ -502,8 +603,8 @@ col_site [col_treat == "Swed"] <- 18 # diamond
 #col_treat [col_treat == "L"] <- "yellow"
 
 #plot the MDS graph
-jpeg("./plots/Norway_W_C_RNA_MDS.jpg", width = 700, height = 500)
-plotMDS (list2, col = col_treat)
+png("./plots/Norway_W_C_RNA_MDS.png", width = 700, height = 500)
+plotMDS (filtered_dge, col = col_treat)
 dev.off()
 
 
@@ -511,27 +612,27 @@ dev.off()
 design <- model.matrix (~treat)
 
 #fit the common + tagwise dispersion models
-list2 <- estimateGLMCommonDisp (list2, design)
-list2 <- estimateGLMTagwiseDisp (list2, design)
+filtered_dge <- estimateGLMCommonDisp (filtered_dge, design)
+filtered_dge <- estimateGLMTagwiseDisp (filtered_dge, design)
 
 #fit a GLM to the data using the tagwise dispersion estimate
-glm.list2 <- glmFit (list2, design, dispersion = list2$tagwise.dispersion)
-lrt.list2 <- glmLRT (glm.list2)
+glm.filtered_dge <- glmFit (filtered_dge, design, dispersion = filtered_dge$tagwise.dispersion)
+lrt.filtered_dge <- glmLRT (glm.filtered_dge)
 
 #get the topTags out of the model
-#top <- topTags (lrt.list2, n = 1000)$table
-#top <- topTags (lrt.list2, n = 200)$table
-top <- topTags (lrt.list2, n = 500)$table # p-value all < 5e-02, v2
+#top <- topTags (lrt.filtered_dge, n = 1000)$table
+#top <- topTags (lrt.filtered_dge, n = 200)$table
+top <- topTags (lrt.filtered_dge, n = 500)$table # p-value all < 5e-02, v2
 
-fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
+fdr<-p.adjust(lrt.filtered_dge$table$PValue, method='fdr')
 
-dim(lrt.list2$table[fdr<0.05,])
-length(lrt.list2$table$PValue[lrt.list2$table$PValue<0.05])
+dim(lrt.filtered_dge$table[fdr<0.05,])
+length(lrt.filtered_dge$table$PValue[lrt.filtered_dge$table$PValue<0.05])
 
 #make a heatmap by getting the counts per million from each gene and turning them relative proportions (columns add up to 1)
-sub1 <- colSums (cpm.list2)
-sub2 <- matrix (rep(sub1,nrow (cpm.list2)), c (nrow (cpm.list2),ncol(cpm.list2)),byrow = TRUE)
-sub3 <- cpm.list2 / sub2
+sub1 <- colSums (cpm.filtered_dge)
+sub2 <- matrix (rep(sub1,nrow (cpm.filtered_dge)), c (nrow (cpm.filtered_dge),ncol(cpm.filtered_dge)),byrow = TRUE)
+sub3 <- cpm.filtered_dge / sub2
 
 #subset this matrix to just get the genes from above
 names1 <- row.names (sub3)
@@ -548,11 +649,11 @@ heatmap1 <- sub3[index2,]
 col_order <- c("C_Norw_10",   "C_Norw_1",    "C_Norw_3_B",  "C_Norw_5",    "C_Norw_6",    "C_Norw_7",    "W_Norw_10_B", "W_Norw_2",    "W_Norw_3_B",  "W_Norw_4_B", "W_Norw_6",    "W_Norw_7")
 heatmap2 <- heatmap1[, col_order]
 
-jpeg("./plots/Norway_W_C_RNA_heatmap2.jpg", width = 3200, height = 2500)
+png("./plots/Norway_W_C_RNA_heatmap2.png", width = 3200, height = 2500)
 heatmap.2 (heatmap1, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(6), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=3, cexCol=6)
 dev.off()
 
-jpeg("./plots/Norway_W_C_RNA_heatmap_legend2.jpg", width = 1000, height = 800)
+png("./plots/Norway_W_C_RNA_heatmap_legend2.png", width = 1000, height = 800)
 heatmap.2 (heatmap1, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
 
@@ -592,18 +693,18 @@ treat_site <- paste0(as.character(site), as.character(treat))
 treat_site <- as.factor(treat_site)
 
 #make a DGElist object out of the data
-list1 <- DGEList (counts = exp_data, group = treat)
+dge <- DGEList (counts = exp_data, group = treat)
 
 #calculate the normalization factors to adjust the effective library size relative to other libraries in the dataset (norm.factor that minimizes log fold change among samples)
-list1 <- calcNormFactors (list1)
+dge <- calcNormFactors (dge)
 
 #calculate the counts per million
-cpm.list1 <- cpm(list1)
+cpm.dge <- cpm(dge)
 
 #filter out the genes with less than 1 cpm in 6 or fewer libraries (a somewhat arbitrary choice). 
 #Genes are usually dropped if they can't possibly be expressed in all the samples for any of the conditions.
-list2 <- list1[rowSums(cpm.list1 > 1) >= 6,]
-cpm.list2 <- cpm.list1[rowSums(cpm.list1 > 1) >= 6,]
+filtered_dge <- dge[rowSums(cpm.dge > 1) >= 6,]
+cpm.filtered_dge <- cpm.dge[rowSums(cpm.dge > 1) >= 6,]
 
 #generate a multi-dimensional scaling plot
 col_treat <- as.character (treat)
@@ -620,8 +721,8 @@ col_site [col_treat == "Swed"] <- 18 # diamond
 #col_treat [col_treat == "L"] <- "yellow"
 
 #plot the MDS graph
-jpeg("./plots/Alaska_W_C_RNA_MDS.jpg", width = 700, height = 500)
-plotMDS (list2, col = col_treat)
+png("./plots/Alaska_W_C_RNA_MDS.png", width = 700, height = 500)
+plotMDS (filtered_dge, col = col_treat)
 dev.off()
 
 
@@ -629,27 +730,27 @@ dev.off()
 design <- model.matrix (~treat)
 
 #fit the common + tagwise dispersion models
-list2 <- estimateGLMCommonDisp (list2, design)
-list2 <- estimateGLMTagwiseDisp (list2, design)
+filtered_dge <- estimateGLMCommonDisp (filtered_dge, design)
+filtered_dge <- estimateGLMTagwiseDisp (filtered_dge, design)
 
 #fit a GLM to the data using the tagwise dispersion estimate
-glm.list2 <- glmFit (list2, design, dispersion = list2$tagwise.dispersion)
-lrt.list2 <- glmLRT (glm.list2)
+glm.filtered_dge <- glmFit (filtered_dge, design, dispersion = filtered_dge$tagwise.dispersion)
+lrt.filtered_dge <- glmLRT (glm.filtered_dge)
 
 #get the topTags out of the model
-#top <- topTags (lrt.list2, n = 1000)$table
-#top <- topTags (lrt.list2, n = 200)$table
-top <- topTags (lrt.list2, n = 500)$table # p-value all < 5e-02, v2
+#top <- topTags (lrt.filtered_dge, n = 1000)$table
+#top <- topTags (lrt.filtered_dge, n = 200)$table
+top <- topTags (lrt.filtered_dge, n = 500)$table # p-value all < 5e-02, v2
 
-fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
+fdr<-p.adjust(lrt.filtered_dge$table$PValue, method='fdr')
 
-dim(lrt.list2$table[fdr<0.05,])
-length(lrt.list2$table$PValue[lrt.list2$table$PValue<0.05])
+dim(lrt.filtered_dge$table[fdr<0.05,])
+length(lrt.filtered_dge$table$PValue[lrt.filtered_dge$table$PValue<0.05])
 
 #make a heatmap by getting the counts per million from each gene and turning them relative proportions (columns add up to 1)
-sub1 <- colSums (cpm.list2)
-sub2 <- matrix (rep(sub1,nrow (cpm.list2)), c (nrow (cpm.list2),ncol(cpm.list2)),byrow = TRUE)
-sub3 <- cpm.list2 / sub2
+sub1 <- colSums (cpm.filtered_dge)
+sub2 <- matrix (rep(sub1,nrow (cpm.filtered_dge)), c (nrow (cpm.filtered_dge),ncol(cpm.filtered_dge)),byrow = TRUE)
+sub3 <- cpm.filtered_dge / sub2
 
 #subset this matrix to just get the genes from above
 names1 <- row.names (sub3)
@@ -666,11 +767,11 @@ heatmap1 <- sub3[index2,]
 col_order <- c("C_Alas_16",   "C_Alas_1",    "C_Alas_20",   "C_Alas_5",  "W_Alas_15",   "W_Alas_1",    "W_Alas_2",    "W_Alas_3",    "W_Alas_5",  "W_Alas_9",  "W_Alas_12",   "W_Alas_13")
 heatmap2 <- heatmap1[, col_order]
 
-jpeg("./plots/Alaska_W_C_RNA_heatmap2.jpg", width = 3200, height = 2500)
+png("./plots/Alaska_W_C_RNA_heatmap2.png", width = 3200, height = 2500)
 heatmap.2 (heatmap1, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(4), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=3, cexCol=6)
 dev.off()
 
-jpeg("./plots/Alaska_W_C_RNA_heatmap_legend2.jpg", width = 1000, height = 800)
+png("./plots/Alaska_W_C_RNA_heatmap_legend2.png", width = 1000, height = 800)
 heatmap.2 (heatmap1, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
 
@@ -708,18 +809,18 @@ treat_site <- paste0(as.character(site), as.character(treat))
 treat_site <- as.factor(treat_site)
 
 #make a DGElist object out of the data
-list1 <- DGEList (counts = exp_data, group = treat)
+dge <- DGEList (counts = exp_data, group = treat)
 
 #calculate the normalization factors to adjust the effective library size relative to other libraries in the dataset (norm.factor that minimizes log fold change among samples)
-list1 <- calcNormFactors (list1)
+dge <- calcNormFactors (dge)
 
 #calculate the counts per million
-cpm.list1 <- cpm(list1)
+cpm.dge <- cpm(dge)
 
 #filter out the genes with less than 1 cpm in 6 or fewer libraries (a somewhat arbitrary choice). 
 #Genes are usually dropped if they can't possibly be expressed in all the samples for any of the conditions.
-list2 <- list1[rowSums(cpm.list1 > 1) >= 6,]
-cpm.list2 <- cpm.list1[rowSums(cpm.list1 > 1) >= 6,]
+filtered_dge <- dge[rowSums(cpm.dge > 1) >= 6,]
+cpm.filtered_dge <- cpm.dge[rowSums(cpm.dge > 1) >= 6,]
 
 #generate a multi-dimensional scaling plot
 col_treat <- as.character (treat)
@@ -736,39 +837,39 @@ col_site [col_treat == "Swed"] <- 18 # diamond
 #col_treat [col_treat == "L"] <- "yellow"
 
 #plot the MDS graph
-jpeg("./plots/Sweden_W_C_RNA_MDS.jpg", width = 700, height = 500)
-plotMDS (list2, col = col_treat)
+png("./plots/Sweden_W_C_RNA_MDS.png", width = 700, height = 500)
+plotMDS (filtered_dge, col = col_treat)
 dev.off()
 
-jpeg("./plots/Sweden_Site_RNA_MDS.jpg", width = 700, height = 500)
-plotMDS (list2, col = col_treat, pch=col_site)
+png("./plots/Sweden_Site_RNA_MDS.png", width = 700, height = 500)
+plotMDS (filtered_dge, col = col_treat, pch=col_site)
 dev.off()
 
 #Set the model to use. This one includes the intercept, but other models can be specified that omit the intercept or that have more complex designs. See EdgeR manual for details.
 design <- model.matrix (~treat)
 
 #fit the common + tagwise dispersion models
-list2 <- estimateGLMCommonDisp (list2, design)
-list2 <- estimateGLMTagwiseDisp (list2, design)
+filtered_dge <- estimateGLMCommonDisp (filtered_dge, design)
+filtered_dge <- estimateGLMTagwiseDisp (filtered_dge, design)
 
 #fit a GLM to the data using the tagwise dispersion estimate
-glm.list2 <- glmFit (list2, design, dispersion = list2$tagwise.dispersion)
-lrt.list2 <- glmLRT (glm.list2)
+glm.filtered_dge <- glmFit (filtered_dge, design, dispersion = filtered_dge$tagwise.dispersion)
+lrt.filtered_dge <- glmLRT (glm.filtered_dge)
 
 #get the topTags out of the model
-#top <- topTags (lrt.list2, n = 1000)$table
-#top <- topTags (lrt.list2, n = 200)$table
-top <- topTags (lrt.list2, n = 500)$table # p-value all < 5e-02, v2
+#top <- topTags (lrt.filtered_dge, n = 1000)$table
+#top <- topTags (lrt.filtered_dge, n = 200)$table
+top <- topTags (lrt.filtered_dge, n = 500)$table # p-value all < 5e-02, v2
 
-fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
+fdr<-p.adjust(lrt.filtered_dge$table$PValue, method='fdr')
 
-dim(lrt.list2$table[fdr<0.05,])
-length(lrt.list2$table$PValue[lrt.list2$table$PValue<0.05])
+dim(lrt.filtered_dge$table[fdr<0.05,])
+length(lrt.filtered_dge$table$PValue[lrt.filtered_dge$table$PValue<0.05])
 
 #make a heatmap by getting the counts per million from each gene and turning them relative proportions (columns add up to 1)
-sub1 <- colSums (cpm.list2)
-sub2 <- matrix (rep(sub1,nrow (cpm.list2)), c (nrow (cpm.list2),ncol(cpm.list2)),byrow = TRUE)
-sub3 <- cpm.list2 / sub2
+sub1 <- colSums (cpm.filtered_dge)
+sub2 <- matrix (rep(sub1,nrow (cpm.filtered_dge)), c (nrow (cpm.filtered_dge),ncol(cpm.filtered_dge)),byrow = TRUE)
+sub3 <- cpm.filtered_dge / sub2
 
 #subset this matrix to just get the genes from above
 names1 <- row.names (sub3)
@@ -785,17 +886,17 @@ heatmap1 <- sub3[index2,]
 col_order <- c("C_Swed_15",   "C_Swed_16",   "C_Swed_2", "C_Swed_11",   "C_Swed_3",    "C_Swed_5",    "C_Swed_8",   "W_Swed_10",   "W_Swed_13",   "W_Swed_14",   "W_Swed_16",   "W_Swed_17",  "W_Swed_2",    "W_Swed_5",    "W_Swed_6", "C_Seed_1",    "C_Seed_2", "C_Seed_3", "W_Seed_1",    "W_Seed_2",    "W_Seed_3")
 heatmap2 <- heatmap1[, col_order]
 
-jpeg("./plots/Sweden_W_C_RNA_heatmap2.jpg", width = 3200, height = 2500)
+png("./plots/Sweden_W_C_RNA_heatmap2.png", width = 3200, height = 2500)
 heatmap.2 (heatmap1, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(7), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=3, cexCol=6)
 dev.off()
 
-jpeg("./plots/Sweden_W_C_RNA_heatmap_legend2.jpg", width = 1000, height = 800)
+png("./plots/Sweden_W_C_RNA_heatmap_legend2.png", width = 1000, height = 800)
 heatmap.2 (heatmap1, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
 
 subdat1<- exp_data["Do1_01_a00001G00358V1.1",]
 
-jpeg("W_C_Sweden_RNA_Do1_01_a00001G00358V1.1.jpg", width = 1000, height = 700)
+png("W_C_Sweden_RNA_Do1_01_a00001G00358V1.1.png", width = 1000, height = 700)
 stripchart(log10(as.numeric (subdat1)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "", main="Parent RNAseq Do1_01_a00001G00358V1", pch=16, cex=4, cex.main=1, cex.axis=2, cex.lab=2)
 dev.off()
 
@@ -833,18 +934,18 @@ treat_site <- paste0(as.character(site), as.character(treat))
 treat_site <- as.factor(treat_site)
 
 #make a DGElist object out of the data
-list1 <- DGEList (counts = exp_data, group = treat)
+dge <- DGEList (counts = exp_data, group = treat)
 
 #calculate the normalization factors to adjust the effective library size relative to other libraries in the dataset (norm.factor that minimizes log fold change among samples)
-list1 <- calcNormFactors (list1)
+dge <- calcNormFactors (dge)
 
 #calculate the counts per million
-cpm.list1 <- cpm(list1)
+cpm.dge <- cpm(dge)
 
 #filter out the genes with less than 1 cpm in 6 or fewer libraries (a somewhat arbitrary choice). 
 #Genes are usually dropped if they can't possibly be expressed in all the samples for any of the conditions.
-list2 <- list1[rowSums(cpm.list1 > 1) >= 6,]
-cpm.list2 <- cpm.list1[rowSums(cpm.list1 > 1) >= 6,]
+filtered_dge <- dge[rowSums(cpm.dge > 1) >= 6,]
+cpm.filtered_dge <- cpm.dge[rowSums(cpm.dge > 1) >= 6,]
 
 #generate a multi-dimensional scaling plot
 col_treat <- as.character (treat)
@@ -861,35 +962,35 @@ col_site [col_treat == "Swed"] <- 18 # diamond
 #col_treat [col_treat == "L"] <- "yellow"
 
 #plot the MDS graph
-jpeg("./plots/Seed_W_C_RNA_MDS.jpg", width = 700, height = 500)
-plotMDS (list2, col = col_treat)
+png("./plots/Seed_W_C_RNA_MDS.png", width = 700, height = 500)
+plotMDS (filtered_dge, col = col_treat)
 dev.off()
 
 #Set the model to use. This one includes the intercept, but other models can be specified that omit the intercept or that have more complex designs. See EdgeR manual for details.
 design <- model.matrix (~treat)
 
 #fit the common + tagwise dispersion models
-list2 <- estimateGLMCommonDisp (list2, design)
-list2 <- estimateGLMTagwiseDisp (list2, design)
+filtered_dge <- estimateGLMCommonDisp (filtered_dge, design)
+filtered_dge <- estimateGLMTagwiseDisp (filtered_dge, design)
 
 #fit a GLM to the data using the tagwise dispersion estimate
-glm.list2 <- glmFit (list2, design, dispersion = list2$tagwise.dispersion)
-lrt.list2 <- glmLRT (glm.list2)
+glm.filtered_dge <- glmFit (filtered_dge, design, dispersion = filtered_dge$tagwise.dispersion)
+lrt.filtered_dge <- glmLRT (glm.filtered_dge)
 
 #get the topTags out of the model
-#top <- topTags (lrt.list2, n = 1000)$table
-#top <- topTags (lrt.list2, n = 200)$table
-top <- topTags (lrt.list2, n = 500)$table # p-value all < 5e-02, v2
+#top <- topTags (lrt.filtered_dge, n = 1000)$table
+#top <- topTags (lrt.filtered_dge, n = 200)$table
+top <- topTags (lrt.filtered_dge, n = 500)$table # p-value all < 5e-02, v2
 
-fdr<-p.adjust(lrt.list2$table$PValue, method='fdr')
+fdr<-p.adjust(lrt.filtered_dge$table$PValue, method='fdr')
 
-dim(lrt.list2$table[fdr<0.05,])
-length(lrt.list2$table$PValue[lrt.list2$table$PValue<0.05])
+dim(lrt.filtered_dge$table[fdr<0.05,])
+length(lrt.filtered_dge$table$PValue[lrt.filtered_dge$table$PValue<0.05])
 
 #make a heatmap by getting the counts per million from each gene and turning them relative proportions (columns add up to 1)
-sub1 <- colSums (cpm.list2)
-sub2 <- matrix (rep(sub1,nrow (cpm.list2)), c (nrow (cpm.list2),ncol(cpm.list2)),byrow = TRUE)
-sub3 <- cpm.list2 / sub2
+sub1 <- colSums (cpm.filtered_dge)
+sub2 <- matrix (rep(sub1,nrow (cpm.filtered_dge)), c (nrow (cpm.filtered_dge),ncol(cpm.filtered_dge)),byrow = TRUE)
+sub3 <- cpm.filtered_dge / sub2
 
 #subset this matrix to just get the genes from above
 names1 <- row.names (sub3)
@@ -906,17 +1007,17 @@ heatmap1 <- sub3[index2,]
 col_order <- c("C_Swed_15",   "C_Swed_16",   "C_Swed_2", "C_Swed_11",   "C_Swed_3",    "C_Swed_5",    "C_Swed_8",   "W_Swed_10",   "W_Swed_13",   "W_Swed_14",   "W_Swed_16",   "W_Swed_17",  "W_Swed_2",    "W_Swed_5",    "W_Swed_6", "C_Seed_1",    "C_Seed_2", "C_Seed_3", "W_Seed_1",    "W_Seed_2",    "W_Seed_3")
 heatmap2 <- heatmap1[, col_order]
 
-jpeg("./plots/Seed_W_C_RNA_heatmap2.jpg", width = 3200, height = 2500)
+png("./plots/Seed_W_C_RNA_heatmap2.png", width = 3200, height = 2500)
 heatmap.2 (heatmap1, scale = "row", trace = "none", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(20,70), sepcolor = "white", sepwidth = 0.1, cexRow=2, cexCol=2)
 dev.off()
 
-jpeg("./plots/Seed_W_C_RNA_heatmap_legend2.jpg", width = 1000, height = 800)
+png("./plots/Seed_W_C_RNA_heatmap_legend2.png", width = 1000, height = 800)
 heatmap.2 (heatmap1, scale = "row", trace = "none", notecex=3, notecol="black", tracecol="black", Colv = FALSE, labCol = colnames(heatmap1), labRow = rownames(heatmap1), col='rainbow', dendrogram = "none", colsep =c(5), margins =c(0.2, 0.2), sepcolor = "white", sepwidth = 0.1, cexRow=6, cexCol=6)
 dev.off()
 
 subdat1seed <- exp_data["Do1_01_a00001G00358V1.1",]
 
-jpeg("W_C_RNA_Seed_Do1_01_a00001G00358V1.1.jpg", width = 1000, height = 700)
+png("W_C_RNA_Seed_Do1_01_a00001G00358V1.1.png", width = 1000, height = 700)
 stripchart (log10(as.numeric (subdat1seed)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "",  main="Seedling RNAseq Do1_01_a00001G00358V1", pch=16, cex=4, cex.main=1, cex.axis=2, cex.lab=2)
 dev.off()
 
@@ -933,7 +1034,7 @@ write.table(heatmap2, file = "./RNA_DER_May2023_W_C_Seedlings.txt", quote = FALS
 #heatmap_ordered_df <- heatmap1_df[order(heatmap1_df$C_L11),]
 #heatmap_ordered <- as.matrix(heatmap_ordered_df)
 
-#jpeg("W_C_RNA_heatmap_ordered.jpg", width = 1500, height = 700)
+#png("W_C_RNA_heatmap_ordered.png", width = 1500, height = 700)
 #heatmap.2 (heatmap_ordered, trace = "none", scale = "row", Rowv = FALSE, Colv = FALSE, labCol = colnames(heatmap_ordered), cexCol = 1, dendrogram = "none", labRow = rownames(heatmap_ordered), colsep =c(5), sepcolor = "white", sepwidth = 0.03)
 #dev.off()
 
@@ -944,7 +1045,7 @@ write.table(heatmap2, file = "./RNA_DER_May2023_W_C_Seedlings.txt", quote = FALS
 #plot the individual expression values from a single gene:
 
 subdat1<- exp_data["Do1_01_a00001G00358V1.1",]
-jpeg("W_C_Sweden_RNA_Do1_01_a00001G00358V1.1.jpg", width = 1000, height = 700)
+png("W_C_Sweden_RNA_Do1_01_a00001G00358V1.1.png", width = 1000, height = 700)
 stripchart(log10(as.numeric (subdat1)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "", main="Parent RNAseq Do1_01_a00001G00358V1", pch=16, cex=4, cex.main=1, cex.axis=2, cex.lab=2)
 dev.off()
 
@@ -959,7 +1060,7 @@ dev.off()
 #-----------
 subdat1seed <- exp_data["Do1_01_a00001G00358V1.1",]
 
-jpeg("W_C_RNA_Seed_Do1_01_a00001G00358V1.1.jpg", width = 1000, height = 700)
+png("W_C_RNA_Seed_Do1_01_a00001G00358V1.1.png", width = 1000, height = 700)
 stripchart (log10(as.numeric (subdat1seed)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "",  main="Seedling RNAseq Do1_01_a00001G00358V1", pch=16, cex=4, cex.main=1, cex.axis=2, cex.lab=2)
 dev.off()
 
@@ -975,7 +1076,7 @@ dev.off()
 #plot the individual expression values from a single gene:
 subdat1 <- exp_data["Do1_05_a00001G00328V1.1",]
 
-jpeg("W_C_RNA_Do1_05_a00001G00328V1.1.jpg", width = 700, height = 500)
+png("W_C_RNA_Do1_05_a00001G00328V1.1.png", width = 700, height = 500)
 stripchart (log10(as.numeric (subdat1)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "Log10 Expression count", pch=16)
 dev.off()
 #----------------------------------
@@ -983,7 +1084,7 @@ dev.off()
 #plot the individual expression values from a single gene:
 subdat1 <- exp_data["Do1_02_a00003G00097V1.1",]
 
-jpeg("W_C_RNA_Do1_02_a00003G00097V1.1.jpg", width = 700, height = 500)
+png("W_C_RNA_Do1_02_a00003G00097V1.1.png", width = 700, height = 500)
 stripchart (log10(as.numeric (subdat1)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "Log10 Expression count", pch=16)
 dev.off()
 
@@ -992,7 +1093,7 @@ dev.off()
 #plot the individual expression values from a single gene:
 subdat1 <- exp_data["Do1_06_a00002G00149V1.1",]
 
-jpeg("W_C_RNA_Do1_06_a00002G00149V1.1.jpg", width = 700, height = 500)
+png("W_C_RNA_Do1_06_a00002G00149V1.1.png", width = 700, height = 500)
 stripchart (log10(as.numeric (subdat1)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "Log10 Expression count", pch=16)
 dev.off()
 #----------------------------------
@@ -1000,25 +1101,25 @@ dev.off()
 #plot the individual expression values from a single gene:
 subdat1 <- exp_data["Do1_01_a00001G02208V1.1",]
 
-jpeg("W_C_RNA_Do1_01_a00001G02208V1.1.jpg", width = 700, height = 500)
+png("W_C_RNA_Do1_01_a00001G02208V1.1.png", width = 700, height = 500)
 stripchart (log10(as.numeric (subdat1)) ~ treat, vertical = T, xlim = c (0.5,2.5), method = "jitter", ylab = "Log10 Expression count", pch=16)
 dev.off()
 
 ###################################
 # on local machine
 cd /home/Owner/Desktop
-scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/plots/*jpg .
+scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/plots/*png .
 scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/output/*pdf .
-scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/RNA_heatmap_ordered.jpg .
+scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/RNA_heatmap_ordered.png .
 scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/Reference_genomes/annotation/Dryas_octopetala_H1.xlsx .
 scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/Dryas_octopetala_H1.supercontigs.fa .
 scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/Dryas_octopetala_H1.gff3 .
 
 mkdir LAT_DMRs
 scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs/LAT_DMRs* .
-scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/*RNA_Do1_01_a00001G00358V1.1.jpg .
-scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/*RNA_Do1_05_a00001G00328V1.1.jpg .
-scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/W_C_*jpg .
+scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/*RNA_Do1_01_a00001G00358V1.1.png .
+scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/*RNA_Do1_05_a00001G00328V1.1.png .
+scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/W_C_*png .
 scp -v celphin@cedar.computecanada.ca:/home/celphin/projects/rpp-rieseber/celphin/Other/biol525d.tar.gz
 
 ###############################

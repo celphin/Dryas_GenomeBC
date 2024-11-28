@@ -255,11 +255,34 @@ nextflow run nf-core-methylseq_2.7.1/2_7_1/  -profile singularity,narval --max_m
 # [-        ] NFCORE_METHYLSEQ:METHYLSEQ:PRESEQ_LCEXTRAP     -
 # [-        ] NFCORE_METHYLSEQ:METHYLSEQ:MULTIQC             -
 
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:CAT_FASTQ         -
+# [b4/23fe1c] NFC…LSEQ:METHYLSEQ:FASTQC (W_WILL5W_421_154) | 131 of 131, cached: 131 ✔
+# [75/0151c8] NFC…:METHYLSEQ:TRIMGALORE (W_WILL5W_421_154) | 131 of 131, cached: 131 ✔
+# [af/b8213e] NFC…:BISMARK:BISMARK_ALIGN (W_WILL1W_403_67) | 131 of 131 ✔
+# [35/ad22d6] NFC…:SAMTOOLS_SORT_ALIGNED (W_WILL1W_403_67) | 129 of 174, failed: 43, retries: 43[a1/552079] NFC…RK:BISMARK_DEDUPLICATE (W_WILL1W_403_67) | 5 of 131
+# [35/d0e8f1] NFC…K_METHYLATIONEXTRACTOR (C_ALAS0C_12_256) | 0 of 5
+# [-        ] NFC…HYLSEQ:BISMARK:BISMARK_COVERAGE2CYTOSINE -
+# [-        ] NFC…THYLSEQ:METHYLSEQ:BISMARK:BISMARK_REPORT -
+# [-        ] NFC…HYLSEQ:METHYLSEQ:BISMARK:BISMARK_SUMMARY -
+# [ba/b97c56] NFC…OOLS_SORT_DEDUPLICATED (C_ALAS0C_12_256) | 0 of 5
+# [-        ] NFC…LSEQ:BISMARK:SAMTOOLS_INDEX_DEDUPLICATED -
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:QUALIMAP_BAMQC    -
+# [a3/5b7617] NFC…THYLSEQ:PRESEQ_LCEXTRAP (C_LATJ_00C_187) | 81 of 90, failed: 4, retries: 4
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:MULTIQC           -
 
 
 #---------------------------------
-# resume pipeline 
+# update 
+ narval {
+        process.clusterOptions = "--account def-henryg"
+        max_memory='249G'
+        max_cpu=64
+        max_time='168h'
+    }
 
+#---------------------------
+# resume pipeline 
+ 
 #Cedar1
 tmux new-session -s Dryas
 tmux attach-session -t Dryas
@@ -271,6 +294,10 @@ module load apptainer/1.3.4
 export NXF_SINGULARITY_CACHEDIR=/project/def-rieseber/NXF_SINGULARITY_CACHEDIR
 
 nextflow run nf-core-methylseq_2.7.1/2_7_1/  -profile singularity,narval --max_memory 200GB -resume
+
+
+
+
 
 
 #######################################
@@ -314,3 +341,21 @@ done
 for job_id in $(squeue -u celphin -t PD -o "%.18i %.10m" --noheader | awk '$2 == "120G" {print $1}'); do
   scontrol update JobId=$job_id MinMemoryNode=200000
 done
+
+for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == "12:00:00" {print $1}'); do
+  scontrol update JobId=$job_id TimeLimit=10:00:00
+done
+
+
+for job_id in $(squeue -u celphin -t PD --noheader| awk '{print $1}'); do
+  scontrol update JobId=$job_id Account=def-henryg
+done
+
+for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == "1:00:00" {print $1}'); do
+  scontrol update JobId=$job_id TimeLimit=2:50:00
+done
+
+scontrol update JobId=37188221 TimeLimit=1-00:00:00
+scontrol update JobId=37272312 TimeLimit=1-00:00:00
+
+

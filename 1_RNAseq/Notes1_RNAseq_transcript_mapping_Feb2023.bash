@@ -364,9 +364,29 @@ sbatch A_W23.sh
 sbatch A_W24.sh 
 sbatch A_W7.sh
 
+#-------------------
+# One file missing from Sweden control
+
+# C_Swed_11       C 48524807    1.0072030 Swed
+# C_Swed_15       C 28566218    1.1999730 Swed
+# C_Swed_16       C 36525563    0.9766828 Swed
+# C_Swed_2        C 26969173    0.9841007 Swed
+# C_Swed_3        C 30598183    0.9169950 Swed
+# C_Swed_5        C 27886076    0.8529297 Swed
+# C_Swed_8        C 41134348    0.9094533 Swed
+
+# W_Swed_10       W 26762989    0.8963871 Swed
+# W_Swed_13       W 27782753    0.9011100 Swed
+# W_Swed_14       W 31181735    0.9824736 Swed
+# W_Swed_16       W 33922119    1.3142965 Swed
+# W_Swed_17       W 25899744    0.9551626 Swed
+# W_Swed_2        W 20292633    0.9674916 Swed
+# W_Swed_5        W 29645655    0.8963638 Swed
+# W_Swed_6        W 23350216    1.2944918 Swed
+
 ##############################
-# Rename seedlings and Lat samples done in Sept 2022
-cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/June2022_output
+# Rename seedlings and Lat samples 
+cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/output
 
 rename W_L W_Swed_ *
 rename C_L C_Swed_ *
@@ -444,18 +464,18 @@ head gene_names_expression_table1.txt
 #------------------------------------------------------
 # run script on RSEM output on SE=seedlings only
 cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/RNA_site_tables
-ls ./output/*SE*genes.results > SE_list_to_add.txt
+ls ../output/*Seed*genes.results > SE_list_to_add.txt
 grep ">" ../reference/Dryas_octopetala_H1.transcript.fa | sed 's/>//' > gene_names.txt
 perl ./add_RSEM_data_to_table.pl SE_list_to_add.txt gene_names.txt _SE_expression_table.txt
 
 # edit header line for R
-more gene_names_SE_expression_table.txt
-sequence ./output/C_SE1 ./output/C_SE2 ./output/C_SE3 ./output/W_SE1 ./output/W_SE2 ./output/W_SE3
+head gene_names_SE_expression_table.txt
+#sequence ./output/C_SE1 ./output/C_SE2 ./output/C_SE3 ./output/W_SE1 ./output/W_SE2 ./output/W_SE3
 
 # remove ./output/ from header
-sed 's/\.\.\/output\///g' gene_names_SE_expression_table.txt
-less gene_names_SE_expression_table.txt
-sequence C_SE1 C_SE2 C_SE3 W_SE1 W_SE2 W_SE3
+sed 's/\.\.\/output\///g' gene_names_SE_expression_table.txt > gene_names_SE_expression_table1.txt
+head gene_names_SE_expression_table1.txt
+#sequence C_Seed_1 C_Seed_2 C_Seed_3 W_Seed_1 W_Seed_2 W_Seed_3
 
 # needs at least 3 samples per type to check
 
@@ -467,7 +487,6 @@ cd /home/celphin/projects/rpp-rieseber/celphin/Dryas/RNAseq_analysis/RNA_site_ta
 cp gene_names_SE_expression_table.txt gene_names_SE_L_H_expression_table.txt
 
 # remove ./output/ from header
-sed 's/\.\/output\///g' gene_names_SE_L_H_expression_table.txt
 nano gene_names_SE_L_H_expression_table.txt
 
 sequence L_C_SE1 L_C_SE2 H_C_SE3 L_W_SE1 H_W_SE2 H_W_SE3
