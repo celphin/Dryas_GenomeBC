@@ -560,4 +560,122 @@ barplot(t(as.matrix(ordered5[,c(4:7)])), col=map_colours_5g, border=NA,
         names.arg=barNaming(ordered5$sample), las=2, cex.names=2, cex.axis=6)
 dev.off()
 
+###################################
+# Read in the FST data and plot along the genome
+
+FST_Nunavut_W_C <- read.table("./Data_filtered/Nunavut_W_C.weir.fst", header = TRUE)
+FST_Svalbard_W_C <- read.table("./Data_filtered/Svalbard_W_C.weir.fst", header = TRUE)
+FST_Sweden_W_C <- read.table("./Data_filtered/Sweden_W_C.weir.fst", header = TRUE)
+FST_Alaska_W_C <- read.table("./Data_filtered/Alaska_W_C.weir.fst", header = TRUE)
+
+
+# rolling mean
+bin_size=25
+FST_Nunavut_W_C$mean_FST <- zoo::rollapply(FST_Nunavut_W_C$WEIR_AND_COCKERHAM_FST, width = bin_size, FUN=mean, fill=NA, na.rm=TRUE)
+FST_Sweden_W_C$mean_FST <- zoo::rollapply(FST_Sweden_W_C$WEIR_AND_COCKERHAM_FST, width = bin_size, FUN=mean, fill=NA, na.rm=TRUE)
+FST_Alaska_W_C$mean_FST <- zoo::rollapply(FST_Alaska_W_C$WEIR_AND_COCKERHAM_FST, width = bin_size, FUN=mean, fill=NA, na.rm=TRUE)
+FST_Svalbard_W_C$mean_FST <- zoo::rollapply(FST_Svalbard_W_C$WEIR_AND_COCKERHAM_FST, width = bin_size, FUN=mean, fill=NA, na.rm=TRUE)
+
+chromosome_order <- c("DoctH0-1", "DoctH0-2", "DoctH0-3", "DoctH0-4", "DoctH0-5", "DoctH0-6", "DoctH0-7", "DoctH0-8", "DoctH0-9")
+
+# Ensure that 'CHROM' is a factor and set the order explicitly
+FST_Svalbard_W_C$CHROM <- factor(FST_Svalbard_W_C$CHROM, levels = chromosome_order)
+FST_Alaska_W_C$CHROM <- factor(FST_Alaska_W_C$CHROM,  levels = chromosome_order)
+FST_Sweden_W_C$CHROM <- factor(FST_Sweden_W_C$CHROM, levels = chromosome_order)
+FST_Nunavut_W_C$CHROM <- factor(FST_Nunavut_W_C$CHROM, levels = chromosome_order)
+
+# plot
+png("./plots/FST_Nunavut.png", width = 3000, height = 2700)
+FST_Nunavut_W_C %>%
+  ggplot(.,aes(x=POS,y=mean_FST)) +
+  geom_point(size=15)  +
+  theme_classic()+
+  facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
+  labs(y= "FST", x = "Genome_position")
+dev.off()
+
+png("./plots/FST_Alaska.png", width = 3000, height = 2700)
+FST_Alaska_W_C %>%
+  ggplot(.,aes(x=POS,y=mean_FST)) +
+  geom_point(size=15)  +
+  theme_classic()+
+  facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
+labs(y= "FST", x = "Genome_position")
+dev.off()
+
+png("./plots/FST_Sweden.png", width = 3000, height = 2700)
+FST_Sweden_W_C %>%
+  ggplot(.,aes(x=POS,y=mean_FST)) +
+  geom_point(size=15)  +
+  theme_classic()+
+  facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
+labs(y= "FST", x = "Genome_position")
+dev.off()
+
+png("./plots/FST_Svalbard.png", width = 3000, height = 2700)
+FST_Svalbard_W_C %>%
+  ggplot(.,aes(x=POS,y=mean_FST)) +
+  geom_point(size=15)  +
+  theme_classic()+
+  facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
+labs(y= "FST", x = "Genome_position")
+dev.off()
+
+#-------------------
+# Join
+FST_SVAL_SWED<- left_join(FST_Svalbard_W_C, FST_Sweden_W_C, by = c("CHROM", "POS"))
+png("./plots/FST_SVal_SWED.png", width = 3000, height = 2700)
+FST_SVAL_SWED %>%
+  ggplot(.,aes(x=mean_FST.x,y=mean_FST.y)) +
+  geom_point(size=15)  +
+  theme_classic()+
+  facet_wrap(~ CHROM, drop = TRUE)+
+  labs(y= "Sweden FST", x = "Svalbard FST")
+dev.off()
+
+FST_ALAS_SWED<- left_join(FST_Alaska_W_C, FST_Sweden_W_C, by = c("CHROM", "POS"))
+png("./plots/FST_ALAS_SWED.png", width = 3000, height = 2700)
+FST_ALAS_SWED %>%
+  ggplot(.,aes(x=mean_FST.x,y=mean_FST.y)) +
+  geom_point(size=15)  +
+  theme_classic()+
+  facet_wrap(~ CHROM, drop = TRUE)+
+  labs(y= "Sweden FST", x = "Alaska FST")
+dev.off()
+
+FST_ALAS_SVAL<- left_join(FST_Alaska_W_C, FST_Svalbard_W_C, by = c("CHROM", "POS"))
+png("./plots/FST_ALAS_SVAL.png", width = 3000, height = 2700)
+FST_ALAS_SVAL %>%
+  ggplot(.,aes(x=mean_FST.x,y=mean_FST.y)) +
+  geom_point(size=15)  +
+  theme_classic()+
+  facet_wrap(~ CHROM, drop = TRUE)+
+  labs(y= "Svalbard FST", x = "Alaska FST")
+dev.off()
+
+#------------------------
+
+FST_ALAS_SVAL<- left_join(FST_Alaska_W_C, FST_Svalbard_W_C, by = c("CHROM", "POS"))
+FST_ALAS_SVAL_SWED<- left_join(FST_ALAS_SVAL, FST_Sweden_W_C, by = c("CHROM", "POS"))
+
+FST_ALAS_SVAL_SWED[
+  !is.na(FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST.x) &
+    !is.na(FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST.y) &
+    !is.na(FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST) &
+    FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST.x > 0.009 &
+    FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST.y > 0.009 &
+    FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST > 0.009,
+]
+
+# CHROM      POS WEIR_AND_COCKERHAM_FST.x   mean_FST.x WEIR_AND_COCKERHAM_FST.y  mean_FST.y WEIR_AND_COCKERHAM_FST
+# 19559 DoctH0-3 12541693               0.11111100  0.012591571                0.1000000 -0.02332016               0.037037
+# 21626 DoctH0-3 26421871               0.02777780  0.038783267                0.0333333  0.01324404               0.037037
+# 23285 DoctH0-4 10177861               0.00900901 -0.002800126                0.2000000  0.09154359               0.071730
+# 37713 DoctH0-7  2195359               0.05555560  0.003472225                0.0285714  0.01978021               0.166667
+# mean_FST
+# 19559  0.013538368
+# 21626 -0.001535076
+# 23285  0.007437518
+# 37713  0.074173066
+
 
