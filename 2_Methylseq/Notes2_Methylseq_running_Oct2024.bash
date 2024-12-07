@@ -236,7 +236,8 @@ module load nextflow/24.04.4
 module load apptainer/1.3.4
 export NXF_SINGULARITY_CACHEDIR=/project/def-rieseber/NXF_SINGULARITY_CACHEDIR
 
-nextflow run nf-core-methylseq_2.7.1/2_7_1/  -profile singularity,narval --max_memory 200GB -resume
+nextflow run nf-core-methylseq_2.7.1/2_7_1/  -profile singularity,narval --max_memory 200GB -resume ceaa73c5-ac10-4639-97e5-b822
+1f81bd20
 
 # executor >  slurm (131)
 # [-        ] NFCORE_METHYLSEQ:METHYLSEQ:CAT_FASTQ           -
@@ -283,7 +284,7 @@ nextflow run nf-core-methylseq_2.7.1/2_7_1/  -profile singularity,narval --max_m
 #---------------------------
 # resume pipeline 
  
-#Cedar1
+#narval3
 tmux new-session -s Dryas
 tmux attach-session -t Dryas
 
@@ -293,11 +294,35 @@ module load nextflow/24.04.4
 module load apptainer/1.3.4
 export NXF_SINGULARITY_CACHEDIR=/project/def-rieseber/NXF_SINGULARITY_CACHEDIR
 
-nextflow run nf-core-methylseq_2.7.1/2_7_1/  -profile singularity,narval --max_memory 200GB -resume
+nextflow -trace nextflow run nf-core-methylseq_2.7.1/2_7_1/  -profile singularity,narval --max_memory 200GB -resume
 
 
+#####################################
+last reboot | head -1
+reboot   system boot  4.18.0-553.27.1. Fri Nov 29 10:03   still running
+
+# restart after reboot
+nextflow log
+2024-11-27 18:22:39     -               romantic_albattani      -       78f1f08d90      ceaa73c5-ac10-4639-97e5-b8221f81bd20   nextflow run nf-core-methylseq_2.7.1/2_7_1/ -profile singularity,narval --max_memory 200GB -resume
 
 
+nextflow run nf-core-methylseq_2.7.1/2_7_1/  -profile singularity,narval --max_memory 200GB -resume 
+
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:CAT_FASTQ                          -
+# [02/d40a0f] NFCORE_METHYLSEQ:METHYLSEQ:FASTQC (W_SVAL_0W_270)             | 131 of 131, cached: 131 ✔
+# [b7/c70cdb] NFCORE_METHYLSEQ:METHYLSEQ:TRIMGALORE (W_WILL7W_448_107)      | 131 of 131, cached: 131 ✔
+# [4d/78492b] NFC…HYLSEQ:METHYLSEQ:BISMARK:BISMARK_ALIGN (W_WILL5W_421_154) | 131 of 131 ✔
+# [4b/965668] NFC…METHYLSEQ:BISMARK:SAMTOOLS_SORT_ALIGNED (W_LATC3W_16_220) | 103 of 131
+# [9e/1dd831] NFC…EQ:METHYLSEQ:BISMARK:BISMARK_DEDUPLICATE (W_LATD4W_9_207) | 114 of 131
+# [e5/d569b4] NFC…:BISMARK:BISMARK_METHYLATIONEXTRACTOR (C_CASS10C_548_144) | 2 of 114
+# [b3/42b9e4] NFC…SEQ:BISMARK:BISMARK_COVERAGE2CYTOSINE (C_CASS10C_548_144) | 0 of 2
+# [27/97df95] NFC…LSEQ:METHYLSEQ:BISMARK:BISMARK_REPORT (C_CASS10C_548_144) | 0 of 2
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_SUMMARY            -
+# [f6/e5635f] NFC…YLSEQ:BISMARK:SAMTOOLS_SORT_DEDUPLICATED (W_LATD4W_9_207) | 0 of 114
+# [-        ] NFC…E_METHYLSEQ:METHYLSEQ:BISMARK:SAMTOOLS_INDEX_DEDUPLICATED -
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:QUALIMAP_BAMQC                     -
+# [f0/5b8e13] NFCORE_METHYLSEQ:METHYLSEQ:PRESEQ_LCEXTRAP (W_LATC3W_16_220)  | 87 of 109, failed: 6, retries: 6
+# [-        ] NFCORE_METHYLSEQ:METHYLSEQ:MULTIQC                            -
 
 
 #######################################
@@ -310,7 +335,7 @@ for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == 
 done
 
 for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == "7:00:00" {print $1}'); do
-  scontrol update JobId=$job_id TimeLimit=2:00:00
+  scontrol update JobId=$job_id TimeLimit=5:00:00
 done
 
 for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == "4-00:00:00" {print $1}'); do
@@ -322,7 +347,7 @@ for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == 
   scontrol update JobId=$job_id MinMemoryNode=72000
 done
 
-for job_id in $(squeue -u celphin -t PD -o "%.18i %.10m" --noheader | awk '$2 == "72000M" {print $1}'); do
+for job_id in $(squeue -u celphin -t PD -o "%.18i %.10m" --noheader | awk '{print $1}'); do
   scancel $job_id 
 done
 
@@ -355,7 +380,87 @@ for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == 
   scontrol update JobId=$job_id TimeLimit=2:50:00
 done
 
-scontrol update JobId=37188221 TimeLimit=1-00:00:00
-scontrol update JobId=37272312 TimeLimit=1-00:00:00
+
+scontrol update JobId=52993180 Account=def-cronk_cpu
+scontrol update JobId=52993177 Account=def-cronk_cpu
+scontrol update JobId=52993122 Account=def-cronk_cpu
+
+####################################
+# Narval3 
+
+executor >  slurm (1320)
+[-        ] NFCORE_METHYLSEQ:METHYLSEQ:CAT_FASTQ                          -
+[02/d40a0f] NFCORE_METHYLSEQ:METHYLSEQ:FASTQC (W_SVAL_0W_270)             | 131 of 131, cached: 131 ✔
+[b7/c70cdb] NFCORE_METHYLSEQ:METHYLSEQ:TRIMGALORE (W_WILL7W_448_107)      | 131 of 131, cached: 131 ✔
+[4d/78492b] NFC…HYLSEQ:METHYLSEQ:BISMARK:BISMARK_ALIGN (W_WILL5W_421_154) | 131 of 131 ✔
+[98/e5c745] NFC…ETHYLSEQ:BISMARK:SAMTOOLS_SORT_ALIGNED (W_WILL5W_421_154) | 131 of 131 ✔
+[29/8a2fe2] NFC…:METHYLSEQ:BISMARK:BISMARK_DEDUPLICATE (W_WILL5W_421_154) | 131 of 131 ✔
+[ac/91eb01] NFC…Q:BISMARK:BISMARK_METHYLATIONEXTRACTOR (W_WILL5W_421_154) | 131 of 131 ✔
+
+[72/f54d76] NFC…THYLSEQ:BISMARK:BISMARK_COVERAGE2CYTOSINE (W_DRY3W_15_69) | 98 of 131
+[61/1f2526] NFC…YLSEQ:METHYLSEQ:BISMARK:BISMARK_REPORT (W_FERT14W_6F_126) | 101 of 131
+[91/2f4265] NFCORE_METHYLSEQ:METHYLSEQ:BISMARK:BISMARK_SUMMARY            | 0 of 1
+[c8/baa24f] NFC…SEQ:BISMARK:SAMTOOLS_SORT_DEDUPLICATED (W_WILL5W_421_154) | 130 of 131
+[a0/1dd6ee] NFC…EQ:BISMARK:SAMTOOLS_INDEX_DEDUPLICATED (W_WILL5W_421_154) | 121 of 130
+[a2/c34bc3] NFCORE_METHYLSEQ:METHYLSEQ:QUALIMAP_BAMQC (W_WILL5W_421_154)  | 121 of 130
+
+[29/94a735] NFCORE_METHYLSEQ:METHYLSEQ:PRESEQ_LCEXTRAP (C_ALAS0C_13_254)  | 141 of 142, failed: 12, retries: 11
+[-        ] NFCORE_METHYLSEQ:METHYLSEQ:MULTIQC                            -
+
+# Will not resume properly ...
+
+# need to fix issues by hand if using these data
 
 
+############################################
+
+ERROR ~ Error executing process > 'NFCORE_METHYLSEQ:METHYLSEQ:PRESEQ_LCEXTRAP (C_ALAS0C_13_254)'
+
+Caused by:
+  Process `NFCORE_METHYLSEQ:METHYLSEQ:PRESEQ_LCEXTRAP (C_ALAS0C_13_254)` terminated with an error exit status (
+1)
+
+
+Command executed:
+
+  preseq \
+      lc_extrap \
+       \
+      -pe \
+      -output C_ALAS0C_13_254.lc_extrap.txt \
+      C_ALAS0C_13_254.sorted.bam
+  cp .command.err C_ALAS0C_13_254.command.log
+
+
+  cat <<-END_VERSIONS > versions.yml
+  "NFCORE_METHYLSEQ:METHYLSEQ:PRESEQ_LCEXTRAP":
+      preseq: $(echo $(preseq 2>&1) | sed 's/^.*Version: //; s/Usage:.*$//')
+  END_VERSIONS
+
+Command exit status:
+  1
+
+Command output:
+  (empty)
+
+Command error:
+  INFO:    Environment variable SINGULARITYENV_TMPDIR is set, but APPTAINERENV_TMPDIR is preferred
+  INFO:    Environment variable SINGULARITYENV_NXF_DEBUG is set, but APPTAINERENV_NXF_DEBUG is preferred
+  INFO:    Environment variable SINGULARITYENV_NXF_TASK_WORKDIR is set, but APPTAINERENV_NXF_TASK_WORKDIR is preferred
+  ERROR:        max count before zero is less than min required count (4) duplicates removed
+
+Work dir:
+  /lustre07/scratch/celphin/Dryas/methylseq/work/29/94a735e1eebe5ea80ee97e858375f3
+  
+Tip: you can try to figure out what's wrong by changing to the process work dir and showing the script file nam
+ed `.command.sh`
+
+ -- Check '.nextflow.log' file for details
+ERROR ~ Pipeline failed. Please refer to troubleshooting docs: https://nf-co.re/docs/usage/troubleshooting
+
+ -- Check '.nextflow.log' file for details
+ERROR ~ /tmp/nxf-12721852390157287516/sort.index (No such file or directory)
+
+ -- Check '.nextflow.log' file for details
+-[nf-core/methylseq] Pipeline completed with errors-
+WARN: Killing running tasks (84)

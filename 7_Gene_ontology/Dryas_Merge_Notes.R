@@ -1,9 +1,16 @@
-#October 2023
-#module load r/4.2.1
-#export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.2.1/
+##############################
+# Merge DMR and RNAseq files
+# October 2023
+##############################
+#cd /home/celphin/scratch/Dryas/MS_Dryas_Merged_Data/original_data
+
+# module load r/4.2.1
+# export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.2.1/
+# R
+
 #Need some memory for Wild_Lat data:
 #salloc -c1 --time 7:00:00 --mem 120000m --account def-rieseber
-#In R
+
 #To do:    
     #Add instructions on how to preprocess files \
     #RNA merge 
@@ -34,12 +41,12 @@ process_gff3 <- function(file_name) {
     dryas_genes$Gene <- sub("^ID=", "", dryas_genes$Gene)
     #write.table(dryas_genes, "Dryas_Genes.csv", sep = "\t", quote = FALSE, row.names = FALSE)
     return(dryas_genes)
-
-
 }
+
 dryas_genes <- process_gff3("Dryas_octopetala_H1.gff3")
 print(head(dryas_genes))
 #Should have start, end, gene
+
 #####################################################################
 #Read cleaned blast file:
     #Turn into: Scaffold, Ext_Start, Ext_End, Gene, Origin
@@ -61,17 +68,21 @@ Phenology_blast <- read_blast("original_data/cleaned_blast_ref_Mat_Sen.out")
 #Seedlings:
 Seedling_W_C_blast <- read_blast("original_data/cleaned_blast_ref_SE_W_C.out")
 Seedling_L_H_blast <- read_blast("original_data/cleaned_blast_ref_SE_L_H.out")
+
 #Site Specific
 Alaska_W_C_blast <- read_blast("original_data/cleaned_blast_ref_Alaska_W_C.out") 
 Svalbard_W_C_blast <- read_blast("original_data/cleaned_blast_ref_Svalbard_W_C.out")
 Nunavut_W_C_blast <- read_blast("original_data/cleaned_blast_ref_Nunavut_W_C.out")
 Sweden_W_C_blast <- read_blast("original_data/cleaned_blast_ref_Sweden_W_C.out")
+
 #Wild
 Wild_W_C_blast <- read_blast("original_data/cleaned_blast_ref_Wild_W_C.out")
 Parent_W_C_blast <- read_blast("original_data/cleaned_blast_ref_Parent_W_C.out")
+
 #Wild_DO_DI_blast <- read.blast("original_data/cleaned_blast_ref_Wild_Species_DO_DI.out") #Missing blast output
 Wild_L_H_blast <-read_blast("original_data/cleaned_blast_ref_Wild_Lat_L_H.out")
 print("All blast files loaded")
+
 
 ###########################################################################
 #Merge metilene:

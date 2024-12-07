@@ -15,7 +15,6 @@
     #Filters metilene output
     #Adjust categories/dir names
 ########################################
-#Warming vs control DMRS
 
 cd scratch
 mkdir Seedling_Metilene

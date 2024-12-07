@@ -16,8 +16,6 @@
     #Adjust categories/dir names
 ########################################
 
-#Warming vs control DMRS
-
 cd scratch
 mkdir Phenology_Metilene
 cd Phenology_Metilene
@@ -40,7 +38,7 @@ module load bedtools/2.30.0
 #Input directories:
     #input_dir=${h1}_${h2}_input_files 
     #in_metilene="metilene_"$h1"_"$h2".input"
-    #methylseq_output_dir="/home/msandler/projects/def-rieseber/Dryas_shared_data/MS_Phenology_metilene_input_bedGraphs"
+    #methylseq_output_dir="/home/msandler/projects/def-rieseber/Dryas_shared_data/Dryas/CE_Phenology_metilene_input_bedGraphs"
 #change copy process because Senesence bedgraphs don't have deduplicated:
     #Under: cp -r ${methylseq_output_dir}/*.deduplicated.bedGraph ./${input_dir}
     #Add:   cp -r ${methylseq_output_dir}/Sen_*.bedGraph ./${input_dir}
@@ -89,5 +87,4 @@ sh metilene_filter_qval.sh 150 5 4 0.9 1e-5
 sh metilene_filter_qval.sh 70 5 0.7 0.7 0.001
 
 ####################################################################
-#Site specific DMRS:
 

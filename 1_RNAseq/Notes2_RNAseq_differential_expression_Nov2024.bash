@@ -8,6 +8,7 @@
 # try differential expression analysis - plotting
 # EdgeR
 
+# Cedar1
 tmux new-session -s RNA
 tmux attach-session -t RNA
 
@@ -957,7 +958,7 @@ print(
     geom_boxplot(position = "dodge") +  # Use geom_boxplot instead of geom_bar
     labs(title = "Treatment Values by Site and Treatment Type", 
          x = "Site", y = "Treatment Value") +
-    scale_fill_manual(values = c("W" = "orange", "C" = "skyblue")) +  # Customize colors for W and C
+    scale_fill_manual(values = c("W" = "red", "C" = "skyblue")) +  # Customize colors for W and C
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
 )
@@ -975,7 +976,7 @@ print(
     geom_boxplot(position = "dodge") +  # Use geom_boxplot instead of geom_bar
     labs(title = "Treatment Values by Site and Treatment Type", 
          x = "Site", y = "Treatment Value") +
-    scale_fill_manual(values = c("W" = "orange", "C" = "skyblue")) +  # Customize colors for W and C
+    scale_fill_manual(values = c("W" = "red", "C" = "skyblue")) +  # Customize colors for W and C
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
 )
@@ -992,7 +993,7 @@ print(
     geom_boxplot(position = "dodge") +  # Use geom_boxplot instead of geom_bar
     labs(title = "Treatment Values by Site and Treatment Type", 
          x = "Site", y = "Treatment Value") +
-    scale_fill_manual(values = c("W" = "orange", "C" = "skyblue")) +  # Customize colors for W and C
+    scale_fill_manual(values = c("W" = "red", "C" = "skyblue")) +  # Customize colors for W and C
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
 )
@@ -1006,10 +1007,11 @@ data$Do1_03_a00002G01336V1.1 <- as.numeric(data$Do1_03_a00002G01336V1.1)
 png("./plots/W_C_RNA_Do1_03_a00002G01336V1.1.png", width = 1000, height = 700)
 print(
   ggplot(data, aes(x = site, y = Do1_03_a00002G01336V1.1, fill = treatment_type)) +
+    geom_point(size=3)+
     geom_boxplot(position = "dodge") +  # Use geom_boxplot instead of geom_bar
     labs(title = "Treatment Values by Site and Treatment Type", 
          x = "Site", y = "Treatment Value") +
-    scale_fill_manual(values = c("W" = "orange", "C" = "skyblue")) +  # Customize colors for W and C
+    scale_fill_manual(values = c("W" = "red", "C" = "skyblue")) +  # Customize colors for W and C
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
 )
@@ -1026,7 +1028,7 @@ print(
     geom_boxplot(position = "dodge") +  # Use geom_boxplot instead of geom_bar
     labs(title = "Treatment Values by Site and Treatment Type", 
          x = "Site", y = "Treatment Value") +
-    scale_fill_manual(values = c("W" = "orange", "C" = "skyblue")) +  # Customize colors for W and C
+    scale_fill_manual(values = c("W" = "red", "C" = "skyblue")) +  # Customize colors for W and C
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
 )
@@ -1043,7 +1045,7 @@ print(
     geom_boxplot(position = "dodge") +  # Use geom_boxplot instead of geom_bar
     labs(title = "Treatment Values by Site and Treatment Type", 
          x = "Site", y = "Treatment Value") +
-    scale_fill_manual(values = c("W" = "orange", "C" = "skyblue")) +  # Customize colors for W and C
+    scale_fill_manual(values = c("W" = "red", "C" = "skyblue")) +  # Customize colors for W and C
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
 )
@@ -1061,7 +1063,7 @@ print(
     geom_boxplot(position = "dodge") +  # Use geom_boxplot instead of geom_bar
     labs(title = "Treatment Values by Site and Treatment Type", 
          x = "Site", y = "Treatment Value") +
-    scale_fill_manual(values = c("W" = "orange", "C" = "skyblue")) +  # Customize colors for W and C
+    scale_fill_manual(values = c("W" = "red", "C" = "skyblue")) +  # Customize colors for W and C
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
 )
@@ -1079,7 +1081,7 @@ print(
     geom_boxplot(position = "dodge") +  # Use geom_boxplot instead of geom_bar
     labs(title = "Treatment Values by Site and Treatment Type", 
          x = "Site", y = "Treatment Value") +
-    scale_fill_manual(values = c("W" = "orange", "C" = "skyblue")) +  # Customize colors for W and C
+    scale_fill_manual(values = c("W" = "red", "C" = "skyblue")) +  # Customize colors for W and C
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
 )
@@ -1101,7 +1103,7 @@ print(
     geom_boxplot(position = "dodge") +  # Use geom_boxplot instead of geom_bar
     labs(title = "Treatment Values by Site and Treatment Type", 
          x = "Site", y = "Treatment Value") +
-    scale_fill_manual(values = c("W" = "orange", "C" = "skyblue")) +  # Customize colors for W and C
+    scale_fill_manual(values = c("W" = "red", "C" = "skyblue")) +  # Customize colors for W and C
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
 )
@@ -1117,7 +1119,7 @@ print(
     geom_boxplot(position = "dodge") +  # Use geom_boxplot instead of geom_bar
     labs(title = "Treatment Values by Site and Treatment Type", 
          x = "Site", y = "Treatment Value") +
-    scale_fill_manual(values = c("W" = "orange", "C" = "skyblue")) +  # Customize colors for W and C
+    scale_fill_manual(values = c("W" = "red", "C" = "skyblue")) +  # Customize colors for W and C
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
 )
@@ -1134,7 +1136,7 @@ print(
     geom_boxplot(position = "dodge") +  # Use geom_boxplot instead of geom_bar
     labs(title = "Treatment Values by Site and Treatment Type", 
          x = "Site", y = "Treatment Value") +
-    scale_fill_manual(values = c("W" = "orange", "C" = "skyblue")) +  # Customize colors for W and C
+    scale_fill_manual(values = c("W" = "red", "C" = "skyblue")) +  # Customize colors for W and C
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
 )
