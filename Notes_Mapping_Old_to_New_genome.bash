@@ -150,6 +150,9 @@ cp /home/celphin/scratch/Dryas/CHG_CHH/data/bedgraph/C_*.bedGraph .
 cp /home/celphin/scratch/Dryas/MS_Dryas_Merged_Data/original_data/Dryas_octopetala_H1.gff3 . 
 cp /home/celphin/scratch/Oxyria/EDTA/Dryas_octopetala_H1.supercontigs.fa.mod.EDTA.TEanno.gff3 .
 
+cp /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/*_CHH.bedGraph ./CHH/
+
+cp /home/celphin/scratch/Dryas/BS-Snper/pop_gen/Dryas_filtered_biasSNPs.vcf .
 
 #---------------------
 # Map to RagTag reference
@@ -233,18 +236,24 @@ CrossMap bed ../Dryas_RagTag_Old.chain ./Bedgraphs_Intersected_Subtracted/inters
 CrossMap bed ../Dryas_RagTag_Old.chain ./Bedgraphs_Intersected_Subtracted/total_subtract_W_C_Mat_Sen.bedGraph ./Bedgraphs_Intersected_Subtracted/RagTag_total_subtract_W_C_Mat_Sen.bedGraph
 CrossMap bed ../Dryas_RagTag_Old.chain ./Bedgraphs_Intersected_Subtracted/intersect_SE_W_C_SE_L_H.bedGraph ./Bedgraphs_Intersected_Subtracted/RagTag_intersect_SE_W_C_SE_L_H.bedGraph
 
+
+# CHH DMRs
+CrossMap bed ../Dryas_RagTag_Old.chain ./CHH/Alaska_CHH_W_C_CHH.bedGraph ./CHH/RagTag_Alaska_CHH_W_C_CHH.bedGraph
+CrossMap bed ../Dryas_RagTag_Old.chain ./CHH/Svalbard_CHH_W_C_CHH.bedGraph ./CHH/RagTag_Svalbard_CHH_W_C_CHH.bedGraph
+CrossMap bed ../Dryas_RagTag_Old.chain ./CHH/Nunavut_CHH_W_C_CHH.bedGraph ./CHH/RagTag_Nunavut_CHH_W_C_CHH.bedGraph
+CrossMap bed ../Dryas_RagTag_Old.chain ./CHH/Sweden_CHH_W_C_CHH.bedGraph ./CHH/RagTag_Sweden_CHH_W_C_CHH.bedGraph
+
+CrossMap bed ../Dryas_RagTag_Old.chain ./CHH/ALEX_SVAL_ALAS_Sites_intersect_DMRs_CHH.bedGraph ./CHH/RagTag_ALEX_SVAL_ALAS_Sites_intersect_DMRs_CHH.bedGraph
+CrossMap bed ../Dryas_RagTag_Old.chain ./CHH/ALEX_SVAL_SWED_Sites_intersect_DMRs_CHH.bedGraph ./CHH/RagTag_ALEX_SVAL_SWED_Sites_intersect_DMRs_CHH.bedGraph
+CrossMap bed ../Dryas_RagTag_Old.chain ./CHH/ALEX_SWED_ALAS_Sites_intersect_DMRs_CHH.bedGraph ./CHH/RagTag_ALEX_SWED_ALAS_Sites_intersect_DMRs_CHH.bedGraph
+CrossMap bed ../Dryas_RagTag_Old.chain ./CHH/ALL_Sites_intersect_DMRs_CHH.bedGraph ./CHH/RagTag_ALL_Sites_intersect_DMRs_CHH.bedGraph
+CrossMap bed ../Dryas_RagTag_Old.chain ./CHH/SVAL_SWED_ALAS_Sites_intersect_DMRs_CHH.bedGraph ./CHH/RagTag_SVAL_SWED_ALAS_Sites_intersect_DMRs_CHH.bedGraph
+
 # SNPs
-CrossMap vcf ../Dryas_RagTag_Old.chain <vcffile> <outfile>
-
-
-
-
-
-
-
-
-
-
+CrossMap vcf ../Dryas_RagTag_Old.chain Dryas_filtered_biasSNPs.vcf ../OldRagtagDryOcto.fasta RagTag_Dryas_filtered_biasSNPs.vcf
+# 2024-12-07 09:36:22 [INFO]  Total entries: 77866
+# 2024-12-07 09:36:22 [INFO]  Failed to map: 77866
+# SNPs called on the old Newest Ref!
 
 
 #---------------------------------------------

@@ -497,23 +497,79 @@ sed 's/\.deduplicated\.sorted\.bam//g' Total_Dryas_Newref_rename.vcf > Total_Dry
 
 # bcftools query -l Total_Dryas_Newref_rename.vcf
 
+###################################
+# Filter out SNPs with high heterozygosity as expected for false positives based on:
+# https://onlinelibrary.wiley.com/doi/full/10.1111/1755-0998.13493
+
+sed 's/DoctH0-//g' Total_Dryas_Newref_rename1.vcf > Total_Dryas_Newref_modified.vcf
+
+# convert the vcf file to Plink
+vcftools --vcf Total_Dryas_Newref_modified.vcf --plink --out TotalRawSNPs_plink
+
+# find SNPs heterozygous in all or 90% of individuals 
+plink --file TotalRawSNPs_plink --hardy --chr-set 27 --out TotalRawSNPs_hardy
+
+more TotalRawSNPs_hardy.hwe
+
+# find SNPs with high heterozygosity
+mawk '$7 > 0.4' TotalRawSNPs_hardy.hwe | cut -f1 > HighHetSNPs_40.txt 
+mawk '$7 > 0.5' TotalRawSNPs_hardy.hwe | cut -f1 > HighHetSNPs_50.txt 
+mawk '$7 > 0.6' TotalRawSNPs_hardy.hwe | cut -f1 > HighHetSNPs_60.txt 
+mawk '$7 > 0.7' TotalRawSNPs_hardy.hwe | cut -f1 > HighHetSNPs_70.txt 
+mawk '$7 > 0.8' TotalRawSNPs_hardy.hwe | cut -f1 > HighHetSNPs_80.txt
+mawk '$7 > 0.9' TotalRawSNPs_hardy.hwe | cut -f1 > HighHetSNPs_90.txt
+
+# Dryas
+wc -l HighHetSNPs_40.txt
+#9817521 HighHetSNPs_40.txt
+wc -l HighHetSNPs_50.txt
+#9264446 HighHetSNPs_50.txt
+ wc -l HighHetSNPs_60.txt
+#9018610 HighHetSNPs_60.txt
+wc -l HighHetSNPs_70.txt
+#8617841 HighHetSNPs_70.txt
+ wc -l HighHetSNPs_80.txt
+#8138873 HighHetSNPs_80.txt
+ wc -l HighHetSNPs_90.txt
+#7689536 HighHetSNPs_90.txt
+
+
+# Cassiope
+wc -l HighHetSNPs_40.txt
+#5939 HighHetSNPs_40.txt
+wc -l HighHetSNPs_50.txt
+#3902 HighHetSNPs_50.txt
+wc -l HighHetSNPs_60.txt
+#3009 HighHetSNPs_60.txt
+wc -l HighHetSNPs_70.txt
+#2362 HighHetSNPs_70.txt
+wc -l HighHetSNPs_80.txt
+#1710 HighHetSNPs_80.txt
+wc -l HighHetSNPs_90.txt
+#1094 HighHetSNPs_90.txt
+
+# get list of SNP IDs
+awk '{print $2}' HighHetSNPs_60.txt > HighHetSNPs_60_list
+#more HighHetSNPs_60_list
+
+
+sed 's/:/\t/g' HighHetSNPs_60_list > HighHetSNPs_60_list.txt
+#more HighHetSNPs_60_list.txt
+
+# add DoctH0- to start of all chromosomes again
+sed 's/^/DoctH0-/' HighHetSNPs_60_list.txt > HighHetSNPs_60_list1.txt
+
+# filter out this list of SNPs that are 60% het across all populations
+vcftools --vcf Total_Dryas_Newref_rename1.vcf --exclude-positions HighHetSNPs_60_list1.txt --recode --recode-INFO-all --out TotalRawSNPs_rmhet
+
+# After filtering, kept 5 841 964 out of a possible 14860573 Sites
+
 
 #-----------------------------
 # all individuals
 # filter for quality, indels, biallelic, missing in less than 90%, monomorphic, LD, and minor allele count of 10
-vcftools --vcf Total_Dryas_Newref_rename1.vcf \
---minGQ 30 \
---remove-indels \
---max-alleles 2 \
---max-missing 0.90 \
---min-alleles 2 \
---thin 1000 \
---mac 4 \
---recode --recode-INFO-all --out Dryas_filtered
-# After filtering, kept 130 out of 130 Individuals
-# After filtering, kept 134 905 out of a possible 14860573 Sites
 
-vcftools --vcf Total_Dryas_Newref_rename1.vcf \
+vcftools --vcf TotalRawSNPs_rmhet.recode.vcf \
 --minGQ 30 \
 --remove-indels \
 --max-alleles 2 \
@@ -523,7 +579,18 @@ vcftools --vcf Total_Dryas_Newref_rename1.vcf \
 --mac 10 \
 --recode --recode-INFO-all --out Dryas_filtered1
 # After filtering, kept 130 out of 130 Individuals
-# After filtering, kept 69002 out of a possible 14860573 Sites
+# After filtering, kept 57 593 out of a possible 5 841 964 Sites
+
+vcftools --vcf TotalRawSNPs_rmhet.recode.vcf \
+--minGQ 30 \
+--remove-indels \
+--max-alleles 2 \
+--max-missing 0.70 \
+--min-alleles 2 \
+--thin 1000 \
+--mac 10 \
+--recode --recode-INFO-all --out Dryas_filtered2
+# After filtering, kept 130 out of 130 Individuals
 
 # Warning: Expected at least 2 parts in INFO entry: ID=DP4,Number=4,Type=Integer,Description="Number of high-quality ref-forward , ref-reverse, alt-forward and alt-reverse bases">
 # Warning: Expected at least 2 parts in INFO entry: ID=DP4,Number=4,Type=Integer,Description="Number of high-quality ref-forward , ref-reverse, alt-forward and alt-reverse bases">
@@ -536,7 +603,7 @@ vcftools --vcf Total_Dryas_Newref_rename1.vcf \
 ################################
 
 #list the amount of missing data per individual - find indivdiuals with no reads mapped
-vcftools --vcf Dryas_filtered1.recode.vcf --missing-indv --out Dryas_filtered
+vcftools --vcf Dryas_filtered2.recode.vcf --missing-indv --out Dryas_filtered
 
 #filter out the individuals with greater than 40% missing SNPs 
 #mawk '$5 > 0.40' Dryas_filtered.imiss | cut -f1 > lowDP.indv
@@ -554,6 +621,17 @@ vcftools --vcf Dryas_filtered1.recode.vcf --missing-indv --out Dryas_filtered
 # vcftools --vcf ../Dryas_filtered1.recode.vcf  --keep W_Sweden.txt  --keep C_Sweden.txt --recode --recode-INFO-all --out Sweden_W_C
 # vcftools --vcf Dryas_filtered_baseline.recode.vcf --missing-indv --out Dryas_filtered_baseline
 
+##############################
+# Filter to exclude C->T, G->A, T->C, G->A SNPs
+# https://onlinelibrary.wiley.com/doi/full/10.1111/1755-0998.13493
+# Figure 3
+
+bcftools view -v snps -e '((REF="C" & ALT="T") | (REF="G" & ALT="A") | (REF="T" & ALT="C") | (REF="G" & ALT="A"))' Dryas_filtered2.recode.vcf -o Dryas_filtered_biasSNPs.vcf
+
+vcftools --vcf Dryas_filtered_biasSNPs.vcf --missing-indv --out Dryas_filtered_biasSNPs
+
+# After filtering, kept 130 out of 130 Individuals
+# After filtering, kept 77866 out of a possible 77866 Sites
 
 ################################
 # Run FST across the genome comparing warming and control at each site
@@ -570,8 +648,7 @@ mkdir FST
 
 cd /home/celphin/scratch/Dryas/BS-Snper/pop_gen/FST
 
-bcftools query -l ../Dryas_filtered1.recode.vcf > sample_names.txt
-
+bcftools query -l ../Dryas_filtered_biasSNPs.vcf > sample_names.txt
 
 grep "W_" sample_names.txt > W_total.txt
 grep "C_" sample_names.txt > C_total.txt 
@@ -593,22 +670,59 @@ grep "C_" sample_names.txt | grep SVAL  > C_Svalbard.txt
 
 
 # per site
-vcftools --vcf ../Dryas_filtered1.recode.vcf --weir-fst-pop C_Sweden.txt --weir-fst-pop W_Sweden.txt --out Sweden_W_C
+vcftools --vcf ../Dryas_filtered_biasSNPs.vcf --weir-fst-pop C_Sweden.txt --weir-fst-pop W_Sweden.txt --out Sweden_W_C
 # Weir and Cockerham mean Fst estimate: 0.025475
 # Weir and Cockerham weighted Fst estimate: 0.022149
 # After filtering, kept 69002 out of a possible 69002 Sites
 
-vcftools --vcf ../Dryas_filtered1.recode.vcf --weir-fst-pop C_Nunavut.txt --weir-fst-pop W_Nunavut.txt --out Nunavut_W_C
+# Weir and Cockerham mean Fst estimate: 0.031472
+# Weir and Cockerham weighted Fst estimate: 0.02881
+
+# Weir and Cockerham mean Fst estimate: 0.051379
+# Weir and Cockerham weighted Fst estimate: 0.058577
+
+# Weir and Cockerham mean Fst estimate: 0.052195
+# Weir and Cockerham weighted Fst estimate: 0.059416
+
+vcftools --vcf ../Dryas_filtered_biasSNPs.vcf --weir-fst-pop C_Nunavut.txt --weir-fst-pop W_Nunavut.txt --out Nunavut_W_C
 # Weir and Cockerham mean Fst estimate: -8.8324e-05
 # Weir and Cockerham weighted Fst estimate: -1.5928e-05
 
-vcftools --vcf ../Dryas_filtered1.recode.vcf --weir-fst-pop C_Alaska.txt --weir-fst-pop W_Alaska.txt --out Alaska_W_C
+# Weir and Cockerham mean Fst estimate: -0.00011731
+# Weir and Cockerham weighted Fst estimate: -4.4253e-05
+
+# Weir and Cockerham mean Fst estimate: -0.00064099
+# Weir and Cockerham weighted Fst estimate: -0.00093628
+
+# Weir and Cockerham mean Fst estimate: -0.00076344
+# Weir and Cockerham weighted Fst estimate: -0.0010731
+
+
+vcftools --vcf ../Dryas_filtered_biasSNPs.vcf --weir-fst-pop C_Alaska.txt --weir-fst-pop W_Alaska.txt --out Alaska_W_C
 # Weir and Cockerham mean Fst estimate: 0.0037262
 # Weir and Cockerham weighted Fst estimate: 0.0022836
 
-vcftools --vcf ../Dryas_filtered1.recode.vcf --weir-fst-pop C_Svalbard.txt --weir-fst-pop W_Svalbard.txt --out Svalbard_W_C
+# Weir and Cockerham mean Fst estimate: 0.0049634
+# Weir and Cockerham weighted Fst estimate: 0.0033927
+
+# Weir and Cockerham mean Fst estimate: 0.010534
+# Weir and Cockerham weighted Fst estimate: 0.015819
+
+# Weir and Cockerham mean Fst estimate: 0.010095
+# Weir and Cockerham weighted Fst estimate: 0.015601
+
+vcftools --vcf ../Dryas_filtered_biasSNPs.vcf --weir-fst-pop C_Svalbard.txt --weir-fst-pop W_Svalbard.txt --out Svalbard_W_C
 # Weir and Cockerham mean Fst estimate: -0.00095487
 # Weir and Cockerham weighted Fst estimate: 0.00030414
+
+# Weir and Cockerham mean Fst estimate: -0.00095104
+# Weir and Cockerham weighted Fst estimate: 0.00060074
+
+# Weir and Cockerham mean Fst estimate: -0.0010164
+# Weir and Cockerham weighted Fst estimate: 0.0016438
+
+# Weir and Cockerham mean Fst estimate: -0.0011695
+# Weir and Cockerham weighted Fst estimate: 0.0014633
 
 # --fst-window-size and --fst-window-step
 
@@ -624,16 +738,17 @@ salloc -c40 --time 02:50:00 --mem 187G --account def-cronk
 
 # make Plink file to be able to run Admixture
 mkdir Admixture_Dryas_Baseline
-cp Dryas_filtered1.recode.vcf Admixture_Dryas_Baseline
+cp Dryas_filtered_biasSNPs.vcf Admixture_Dryas_Baseline
 cd Admixture_Dryas_Baseline
 
-sed 's/DoctH0-//g' Dryas_filtered1.recode.vcf > Dryas_filtered_modified.vcf
+sed 's/DoctH0-//g' Dryas_filtered_biasSNPs.vcf > Dryas_filtered_modified.vcf
 
 # convert the vcf file to Plink
 vcftools --vcf Dryas_filtered_modified.vcf --plink --out Dryas_filtered
 
 #MAKE A BED FILE 
 plink --file Dryas_filtered --allow-no-sex --chr-set 27 --make-bed --out Dryas_filtered
+# 77866 variants and 130 samples pass filters and QC.
 
 # Unsupervised analysis K from 1 to 9 and 5 replicates
 
@@ -650,8 +765,6 @@ for K in 1 2 3 4 5 6 7 8 9 10; \
 do admixture --cv=10 -s time -j48 -C 0.0000000001  Dryas_filtered.bed $K | tee log${K}.out; done
 
 #to get the CV errors and see which K value is the best model
-cd /home/celphin/scratch/Dryas/BS-Snper/pop_gen/Admixture_Dryas_Baseline/
-cd /home/celphin/scratch/Dryas/BS-Snper/pop_gen/Admixture_Dryas_Baseline/Take1
 cd /home/celphin/scratch/Dryas/BS-Snper/pop_gen/Admixture_Dryas_Baseline/Take1
 grep -h CV ./log*out
 
@@ -714,8 +827,8 @@ BiocManager::install("SNPRelate")
 
 library(SNPRelate)
 
-snpgdsVCF2GDS("./Dryas_filtered1.recode.vcf",
-              "./Dryas_filtered1_total.recode.gds",
+snpgdsVCF2GDS("./Dryas_filtered_biasSNPs.vcf",
+              "./Dryas_filtered_biasSNPs.gds",
               method="biallelic.only")
 
 # Start file conversion from VCF to SNP GDS ...
@@ -733,35 +846,6 @@ snpgdsVCF2GDS("./Dryas_filtered1.recode.vcf",
     # # of fragments: 20
 
 
-#################################
-# Explore CT SNPs and methylation
-# https://yaaminiv.github.io/WGBS-Analysis-Part28/
-
-
-#Intersect VCF with SNP locations and CG motif track
-#BEDtools output has C/T and non-C/T SNPs
-#Use grep to isolate C/T SNPs (tab between C and T required)
-
-intersectBed \
--u \
--a /Volumes/web/spartina/project-gigas-oa-meth/output/BS-Snper/out/SNP-results.vcf \
--b CGmotif.bedGraph \
-| grep "C T" \
-> /Volumes/web/spartina/project-gigas-oa-meth/output/BS-Snper/out/CT-SNPs.tab
-
-
-# for each sample
-for f in zr3616*vcf
-do
-    /Users/Shared/bioinformatics/bedtools2/bin/intersectBed \
-    -u \
-    -a ${f} \
-    -b /Users/yaamini/Documents/project-gigas-oa-meth/genome-feature-files/cgigas_uk_roslin_v1_fuzznuc_CGmotif.gff \
-    | grep "C	T" \
-    > ${f}_CT-SNPs.tab
-    head ${f}_CT-SNPs.tab
-    wc -l ${f}_CT-SNPs.tab
-done
 
 
 #######################################

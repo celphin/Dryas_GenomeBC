@@ -81,19 +81,19 @@ library(ggplot2)
 setwd("~/GitHub/Dryas_GenomeBC/9_SNP_calling")
 
 #Load the gds file - for PCA
-genofile <- snpgdsOpen("./Data_filtered/Dryas_filtered1_total.recode.gds")
+genofile <- snpgdsOpen("./Data_rmbiased/Dryas_filtered_biasSNPs.gds")
 
 # load list of samples in filtered vcf
-samples_imiss <- read.table("./Data_filtered/Dryas_filtered.imiss", header = TRUE)
+samples_imiss <- read.table("./Data_rmbiased/Dryas_filtered_biasSNPs.imiss", header = TRUE)
 
 # load in Admixture data - code setup for 5 populations
-Admix_tbl=read.table("./Data_filtered/Dryas_filtered.4.Q")
+Admix_tbl=read.table("./Data_rmbiased/Dryas_filtered.4.Q")
 
 # load detailed information about all 371 individuals
-#sample_information  <- read.csv("./Data_filtered/M_caridnalis_genomics_meta_data.csv", header = TRUE)
+#sample_information  <- read.csv("./Data_rmbiased/M_caridnalis_genomics_meta_data.csv", header = TRUE)
 
 # Population lat long
-#pop_lat_long <- read.csv("./Data_filtered/56_pop_lat.csv", header = TRUE)
+#pop_lat_long <- read.csv("./Data_rmbiased/56_pop_lat.csv", header = TRUE)
 
 # PopStats
 #Het_data <- read.table("./Data_filtered/PopStats/Het_data_by_pop.txt", header = TRUE)
@@ -127,8 +127,8 @@ pca <- pca5
 #Here's the percent variance explained for each eigenvector
 pc.percent <- pca$varprop*100
 round(pc.percent, 2)
-# pca5: 10.50  4.76  3.94  3.23  2.92  2.63  2.31  1.91  1.61  1.60  1.48  1.45  1.39  1.32  1.29  1.28
-# pca0: 10.50  4.76  3.94  3.23  2.92  2.63  2.31  1.91  1.61  1.60  1.48  1.45  1.39  1.32  1.29  1.28
+# pca5: 11.29  4.73  3.71  3.22  2.90  2.62  2.48  2.00  1.84  1.74  1.67  1.60  1.53  1.52  1.45  1.40
+# pca0: 10.32  4.56  3.95  3.52  2.97  2.56  2.27  2.14  1.87  1.84  1.67  1.62  1.59  1.49  1.42  1.37
 
 #Make a dataframe of your PCA results
 PCA_tab <- data.frame(sample = pca$sample.id,
@@ -305,7 +305,7 @@ All_samples_data %>%
         axis.text=element_text(size=60 ,face="bold"),
         axis.title=element_text(size=60,face="bold")) +
   #guides(colour = guide_legend(override.aes = list(size=60)))+
-  scale_colour_manual(values =c("deepskyblue", "yellow",  "green", "red", "black", "orange", "purple"))+
+  scale_colour_manual(values =c("grey","deepskyblue",  "green",  "black", "orange", "red","purple"))+
   labs(y= "PC2", x = "PC1")
 dev.off()
 
@@ -320,11 +320,12 @@ All_samples_data %>%
         axis.text=element_text(size=60 ,face="bold"),
         axis.title=element_text(size=60,face="bold")) +
   #guides(colour = guide_legend(override.aes = list(size=60)))+
-  scale_colour_manual(values =c( "grey","deepskyblue",  "green",  "black", "orange", "purple","red"))+
+  scale_colour_manual(values =c( "grey","deepskyblue",  "green",  "black", "orange", "red","purple"))+
   labs(y= "PC3", x = "PC1")
 dev.off()
 #--------------------------------
-W_C_samples_data <- All_samples_data[c(which(All_samples_data$Treatment.x==" W"),which(All_samples_data$Treatment.x==" C")),]
+W_C_samples_data <- All_samples_data[c(which(All_samples_data$Treatment.x=="W"),which(All_samples_data$Treatment.x=="C")),]
+
 png("./plots/PCA_PC1_PC2_maf0_W_C.png", width = 3000, height = 2700)
 W_C_samples_data %>%
   ggplot(.,aes(x=PC1,y=PC2)) +
@@ -472,13 +473,12 @@ summary(model)
 # You can also get a detailed result using:
 summary(model, test = "Wilks")  # Wilks' Lambda test is commonly used
 
-# Df  Pillai approx F num Df den Df    Pr(>F)
-# Treatment.x  1 0.16676    3.035      6     91  0.009437 **
-#   Site_Alex    3 2.78641  202.207     18    279 < 2.2e-16 ***
+# Df  Pillai approx F num Df den Df  Pr(>F)
+# Treatment.x  1 0.12852    2.237      6     91 0.04652 *
+#   Site_Alex    3 2.73980  163.205     18    279 < 2e-16 ***
 #   Residuals   96
 # ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
 #--------------------------
 # Which PC is significant?
 
@@ -489,9 +489,9 @@ anova_model <- aov(PC6 ~ Treatment.x+Site_Alex, data = W_C_samples_data)
 summary(anova_model)
 
 # Treatment pvals
-# PC1: 0.0161 *
-# PC3: 0.000135 ***
-# PC4: 0.0739 .
+# PC1: 0.0249 *
+# PC3: 0.00932 **
+# PC5: 0.00880 **
 
 
 png("./plots/PCA_PC1_PC3_maf0_W_C.png", width = 3000, height = 2700)
@@ -508,6 +508,19 @@ W_C_samples_data %>%
   labs(y= "PC3", x = "PC1")
 dev.off()
 
+png("./plots/PCA_PC5_PC3_maf0_W_C.png", width = 3000, height = 2700)
+W_C_samples_data %>%
+  ggplot(.,aes(x=PC5,y=PC3)) +
+  geom_point(aes(color = Treatment.x), size=20)  +
+  geom_text(aes(label = Site.x), color = "black", fontface = 2, size = 25.4/72.27*20)+
+  theme_classic()+
+  theme(legend.text = element_text(color = "black", size = 50),
+        axis.text=element_text(size=60 ,face="bold"),
+        axis.title=element_text(size=60,face="bold")) +
+  #guides(colour = guide_legend(override.aes = list(size=60)))+
+  scale_colour_manual(values =c("deepskyblue",  "red"))+
+  labs(y= "PC3", x = "PC5")
+dev.off()
 
 
 ############################################
@@ -539,11 +552,11 @@ barNaming <- function(vec) {
 #ordered4 = mergedAdmixTable[order(mergedAdmixTable$Site),]
 
 ordered0 = mergedAdmixTable[order(mergedAdmixTable$Site),]
-ordered1 = ordered0[order(ordered0$V4),]
-ordered2 = ordered1[order(ordered1$V1),]
-ordered3 = ordered2[order(ordered2$V2),]
+ordered1 = ordered0[order(ordered0$V1),]
+ordered2 = ordered1[order(ordered1$V2),]
+ordered3 = ordered2[order(ordered2$V4),]
 ordered4 = ordered3[order(ordered3$V3),]
-ordered5 = ordered4[order(ordered4$Site),]
+ordered5 = ordered4#[order(ordered4$Site),]
 
 
 #ordered4 = mergedAdmixTable[order(mergedAdmixTable$Latitude.x),]
@@ -587,7 +600,7 @@ FST_Nunavut_W_C$CHROM <- factor(FST_Nunavut_W_C$CHROM, levels = chromosome_order
 # plot
 png("./plots/FST_Nunavut.png", width = 3000, height = 2700)
 FST_Nunavut_W_C %>%
-  ggplot(.,aes(x=POS,y=mean_FST)) +
+  ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
   geom_point(size=15)  +
   theme_classic()+
   facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
@@ -596,7 +609,7 @@ dev.off()
 
 png("./plots/FST_Alaska.png", width = 3000, height = 2700)
 FST_Alaska_W_C %>%
-  ggplot(.,aes(x=POS,y=mean_FST)) +
+  ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
   geom_point(size=15)  +
   theme_classic()+
   facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
@@ -605,7 +618,7 @@ dev.off()
 
 png("./plots/FST_Sweden.png", width = 3000, height = 2700)
 FST_Sweden_W_C %>%
-  ggplot(.,aes(x=POS,y=mean_FST)) +
+  ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
   geom_point(size=15)  +
   theme_classic()+
   facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
@@ -614,7 +627,7 @@ dev.off()
 
 png("./plots/FST_Svalbard.png", width = 3000, height = 2700)
 FST_Svalbard_W_C %>%
-  ggplot(.,aes(x=POS,y=mean_FST)) +
+  ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
   geom_point(size=15)  +
   theme_classic()+
   facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
@@ -677,5 +690,8 @@ FST_ALAS_SVAL_SWED[
 # 21626 -0.001535076
 # 23285  0.007437518
 # 37713  0.074173066
+
+
+
 
 

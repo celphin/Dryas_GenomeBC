@@ -373,7 +373,7 @@ done
 
 
 for job_id in $(squeue -u celphin -t PD --noheader| awk '{print $1}'); do
-  scontrol update JobId=$job_id Account=def-henryg
+  scontrol update JobId=$job_id Account=def-henryg_cpu
 done
 
 for job_id in $(squeue -u celphin -t PD -o "%.18i %.10l" --noheader| awk '$2 == "1:00:00" {print $1}'); do

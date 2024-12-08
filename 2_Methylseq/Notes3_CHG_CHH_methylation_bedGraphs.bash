@@ -196,32 +196,62 @@ module load StdEnv/2023 minimap2/2.28 samtools/1.20 perl/5.36.1
 # Change to the directory where your files are located
 cd /home/celphin/scratch/Dryas/CHG_CHH/seedling_data
 
-gunzip *.gz
+#gunzip *.gz
 
 FILES=$(ls *bismark_bt2_pe.deduplicated.txt)
 echo ${FILES}
 
-cd /home/celphin/scratch/Dryas/CHG_CHH/
 for file in ${FILES}
 do
 output_name=$(echo ${file} | awk -F 'Non_CpG_context_|_R1_val_1_bismark_bt2_pe.deduplicated.txt' '{print $2}' | sed 's/_/./g')
 
+echo $file
+echo $output_name
+
 cat << EOF > CHH_${output_name}.sh
 #!/bin/bash
 #SBATCH --account=def-cronk
-#SBATCH --time=0-5:00:00
+#SBATCH --time=0-7:00:00
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=120000M
+#SBATCH --mem=200000M
 
 module load StdEnv/2023 minimap2/2.28 samtools/1.20 perl/5.36.1
 
-cd /home/celphin/scratch/Dryas/CHG_CHH/data
+cd /home/celphin/scratch/Dryas/CHG_CHH/seedling_data
 /home/celphin/scratch/Dryas/CHG_CHH/Bismark/bismark2bedGraph --CX "$file" -o "$output_name"
 EOF
 
 sbatch CHH_${output_name}.sh
 
 done
+
+mv *bismark.cov.gz coverage/
+mv *.gz ../bedgraph
+
+cd ../bedgraph
+
+gunzip *.gz
+
+mkdir seedling
+mkdir Phenology
+mv SE* seedling/
+mv MatFl.* Phenology/
+cd Phenology/
+ls
+
+# MatFl.Cass.10W.60.544.F112581  MatFl.Fert.5C.97.1F.F112583   MatFl.Mead.1W.116.444.F112578
+# MatFl.Cass.4C.4.524.F112579    MatFl.Fert.6W.110.3F.F112584  MatFl.Will.3C.100.414.F112575
+# MatFl.Cass.5W.130.525.F112580  MatFl.Mead.1C.33.446.F112577  MatFl.Will.4W.13.417.F112576
+
+cp W1.F06.W1e5.CASS10W.544.60_CHH.bedGraph ./Phenology/Sen.CASS10W.544.60_CHH.bedGraph
+cp C1.B05.C1d1.CASS4C.524.4_CHH.bedGraph ./Phenology/Sen.CASS4C.524.4_CHH.bedGraph
+cp W1.A09.W1f10.CASS5W.525.130_CHH.bedGraph ./Phenology/Sen.CASS5W.525.130_CHH.bedGraph
+cp C1.G07.C1h7.FERT5C.1F.97_CHH.bedGraph ./Phenology/Sen.FERT5C.1F.97_CHH.bedGraph
+cp W1.B08.W1f8.FERT6W.3F.110_CHH.bedGraph ./Phenology/Sen.FERT6W.3F.110_CHH.bedGraph
+cp C1.H05.C1f3.MEAD1C.446.33_CHH.bedGraph ./Phenology/Sen.MEAD1C.446.33_CHH.bedGraph
+cp W1.E08.W1c9.MEAD1W.444.116_CHH.bedGraph ./Phenology/Sen.MEAD1W.444.116_CHH.bedGraph
+cp C1.H07.C1b8.WILL3C.414.100_CHH.bedGraph ./Phenology/Sen.WILL3C.414.100_CHH.bedGraph
+cp W1.C05.W1g1.WILL4W.417.13_CHH.bedGraph ./Phenology/Sen.WILL4W.417.13_CHH.bedGraph
 
 ##################################
 # Make average bedGraph file for each site_treatment
@@ -508,8 +538,11 @@ export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.4/
 
 
 sh metilene_filter_qval.sh 70 5 4 0.9 0.001
+# Wrote 2177 DMRs with adj. p-value<0.001, a minimum absolute difference>=0.9, a minimum length [CpG]>=10 and a minimum length [nt]>=0
 sh metilene_filter_qval.sh 150 5 4 0.9 1e-5
+# Wrote 1397 DMRs with adj. p-value<1e-5, a minimum absolute difference>=0.9, a minimum length [CpG]>=10 and a minimum length [nt]>=0
 sh metilene_filter_qval.sh 70 5 0.7 0.7 0.001
+# Wrote 2270 DMRs with adj. p-value<0.001, a minimum absolute difference>=0.7, a minimum length [CpG]>=10 and a minimum length [nt]>=0
 
 ###################################################################################
 #Sweden:
@@ -597,9 +630,11 @@ module load python
 export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.4/
 
 sh metilene_filter_qval.sh 70 5 4 0.9 0.001
+#  Wrote 3336 DMRs with adj. p-value<0.001, a minimum absolute difference>=0.9, a minimum length [CpG]>=10 and a minimum length [nt]>=0
 sh metilene_filter_qval.sh 150 5 4 0.9 1e-5
+# Wrote 2206 DMRs with adj. p-value<1e-5, a minimum absolute difference>=0.9, a minimum length [CpG]>=10 and a minimum length [nt]>=0
 sh metilene_filter_qval.sh 70 5 0.7 0.7 0.001
-
+# Wrote 3737 DMRs with adj. p-value<0.001, a minimum absolute difference>=0.7, a minimum length [CpG]>=10 and a minimum length [nt]>=0
 
 
 #################################################################################
@@ -706,6 +741,12 @@ bedtools intersect -u -a Nunavut_CHH_W_C.bedGraph -b Svalbard_CHH_W_C.bedGraph| 
 
 #Bedtools intersect all but Nunavut
 bedtools intersect -u -a Svalbard_CHH_W_C.bedGraph -b Sweden_CHH_W_C.bedGraph | bedtools intersect -u -a stdin -b Alaska_CHH_W_C.bedGraph > SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph
+# Do1_01_a00001   7699414 7699600 -8.213185
+# Do1_02_a00001   8510664 8510827 12.079776
+# Do1_02_a00004   6400235 6400478 8.718939
+# Do1_04_a00005   405319  405494  -5.244285
+# Do1_06_a00001   1983414 1983677 4.578070
+# Do1_06_a00001   6538326 6538612 4.997452
 
 #Bedtools intersect all but Svalbard
 bedtools intersect -u -a Nunavut_CHH_W_C.bedGraph -b Sweden_CHH_W_C.bedGraph | bedtools intersect -u -a stdin -b Alaska_CHH_W_C.bedGraph > ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph
@@ -715,6 +756,17 @@ bedtools intersect -u -a Nunavut_CHH_W_C.bedGraph -b Svalbard_CHH_W_C.bedGraph| 
 
 #Bedtools intersect all but Alaska
 bedtools intersect -u -a Nunavut_CHH_W_C.bedGraph -b Svalbard_CHH_W_C.bedGraph| bedtools intersect -u -a stdin -b Sweden_CHH_W_C.bedGraph > ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph
+
+wc -l ALL_Sites_intersect_DMRs.bedgraph
+# 6
+wc -l SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph
+# 37
+wc -l ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph
+# 19
+wc -l ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph
+#20
+wc -l ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph
+# 26
 
 ###############################
 # Phenology
@@ -726,32 +778,64 @@ cp /home/celphin/scratch/Dryas/MS_scripts/metilene*.sh .
 tmux new-session -s Phenology_DMRS
 tmux attach-session -t Phenology_DMRS
 
+# copy and rename the Sen 
+
+# MatFl.Cass.4C.4.524.F112579    
+# MatFl.Will.3C.100.414.F112575    
+# MatFl.Fert.5C.97.1F.F112583 
+# MatFl.Cass.5W.130.525.F112580  
+# MatFl.Will.4W.13.417.F112576     
+# MatFl.Fert.6W.110.3F.F112584 
+# MatFl.Mead.1C.33.446.F112577   
+# Sen.FERT5C.1F.97_CHH.bedGraph
+# Sen.FERT6W.3F.110_CHH.bedGraph
+# Sen.CASS10W.544.60_CHH.bedGraph  
+# Sen.MEAD1W.444.116_CHH.bedGraph
+# Sen.CASS4C.524.4_CHH.bedGraph    
+# Sen.WILL3C.414.100_CHH.bedGraph
+# Sen.CASS5W.525.130_CHH.bedGraph  
+# Sen.WILL4W.417.13_CHH.bedGraph
+# Sen.MEAD1C.446.33_CHH.bedGraph
+
+cd /home/celphin/scratch/Dryas/CHG_CHH/bedgraph/Phenology
+# add bedGraph
+for file in MatFl*; do
+  if [ -f "$file" ]; then
+    mv -- "$file" "$file.bedGraph"
+  fi
+done
 
 #----------------------------------------
 #Metilene input prep:
 
 #Phenology specific adjustments:
+nano  metilene_prep.sh
+
 #h1,h2: 
-h1="Mat", h2="Sen"
+h1="Mat"
+h2="Sen"
 #Input directories:
 input_dir=${h1}_${h2}_input_files 
 in_metilene="metilene_"$h1"_"$h2".input"
-methylseq_output_dir="/home/celphin/scratch/Dryas/CHG_CHH/bedgraph"
+methylseq_output_dir="/home/celphin/scratch/Dryas/CHG_CHH/bedgraph/Phenology"
+
+
 #change copy process because Senesence bedgraphs don't have deduplicated:
-    #Under: cp -r ${methylseq_output_dir}/*.deduplicated.bedGraph ./${input_dir}
-    #Add:   cp -r ${methylseq_output_dir}/Sen_*.bedGraph ./${input_dir}
+cp -r ${methylseq_output_dir}/*.bedGraph ./${input_dir}
+
 #Comment out rename for loops shown below (already with proper prefix)
     ##for bg in _*_${h1}*; do mv "$bg" "${h1}_${bg}"; done
     ##for bg in _*_${h2}*; do mv "$bg" "${h2}_${bg}"; done
 
-
 tmux new-session -s Phenology_DMRS
 tmux attach-session -t Phenology_DMRS
-salloc -c1 --time 7:00:00 --mem 120000m --account rpp-rieseber
+
+salloc -c1 --time 7:00:00 --mem 120000m --account def-cronk
 module load StdEnv/2020
 module load bedtools/2.30.0
+
 sh metilene_prep.sh 
-cd ..
+
 
 #----------------------------------------
 #Run metilene:
@@ -763,7 +847,7 @@ nano metilene_run.sh
 h1='W'
 h2='C'
 metilene_dir=/home/celphin/scratch/Dryas
-input_dir="/home/celphin/scratch/Dryas/CHG_CHH/Phenology_Metilene/Phenology_metilene_"$h1"_"$h2".input"
+input_dir="/home/celphin/scratch/Dryas/CHG_CHH/Phenology_Metilene"
 
 maxdist=$1
 mincpgs=$2
@@ -811,28 +895,46 @@ cp /home/celphin/scratch/Dryas/MS_scripts/metilene*.sh .
 tmux new-session -s Seedling_Warming_DMRS
 tmux attach-session -t Seedling_Warming_DMRS
 
+cd /home/celphin/scratch/Dryas/CHG_CHH/bedgraph/seedling
+
+rename SE C_SE SE.*.C.*
+rename SE W_SE SE.*.W.*
+
+# add bedGraph
+for file in MatFl*; do
+  if [ -f "$file" ]; then
+    mv -- "$file" "$file.bedGraph"
+  fi
+done
+cd /home/celphin/scratch/Dryas/CHG_CHH/Seedling_Metilene
+
 #----------------------------------------
 #Metilene input prep:
 
 #Seedling, Warming control specific adjustments:
+nano metilene_prep.sh
+
 #h1,h2: 
-h1="W", h2="C"
+h1="W"
+h2="C"
 #Input directories:
 input_dir=SE_${h1}_${h2}_input_files 
 in_metilene="SE_metilene_"$h1"_"$h2".input"
-methylseq_output_dir="/home/celphin/scratch/Dryas/CHG_CHH/bedgraph"
+methylseq_output_dir="/home/celphin/scratch/Dryas/CHG_CHH/bedgraph/seedling"
 
 #Copy Loop:
-cp ${methylseq_output_dir}/*SE*_CHH.bedGraph ./${input_dir}
-
-#Adjust rename for loop to be:
-    #for bg in SE_*_${h1}*; do mv "$bg" "${h1}_${bg}"; done
-    #for bg in SE_*_${h2}*; do mv "$bg" "${h2}_${bg}"; done
+cp ${methylseq_output_dir}/*SE* ./${input_dir}
 
 # make sbatch?
+salloc -c1 --time 7:00:00 --mem 120000m --account def-cronk
 module load StdEnv/2020
 module load bedtools/2.30.0
+cd /home/celphin/scratch/Dryas/CHG_CHH/Seedling_Metilene
 sh metilene_prep.sh 
+
+# bedtools: src/unionBedGraphs/unionBedGraphs.cpp:99: CHRPOS UnionBedGraphs::ConsumeNextCoordinate(): Assertion `!queue.empty()' failed.
+
+
 
 #----------------------------------------
 #Run metilene:
@@ -842,7 +944,7 @@ nano metilene_run.sh
 h1='W'
 h2='C'
 metilene_dir=/home/celphin/scratch/Dryas/metilene_v0.2-8
-input_dir="/home/celphin/scratch/Dryas/CHG_CHH/Seedling_Metilene/SE_metilene_"$h1"_"$h2".input"
+input_dir="/home/celphin/scratch/Dryas/CHG_CHH/Seedling_Metilene"
 
 maxdist=$1
 mincpgs=$2

@@ -1112,6 +1112,111 @@ echo "$file Exon"
 grep "Exon" "$file"1 | wc -l 
 done
 
+
+C_ALAS.bed.out Upstream
+2289973
+C_ALAS.bed.out Downstream
+2168574
+C_ALAS.bed.out Gene
+455329
+C_ALAS.bed.out Intergenic
+2112602
+C_ALAS.bed.out Intron
+345246
+C_ALAS.bed.out Exon
+616697
+
+W_ALAS.bed.out Upstream
+2286912
+W_ALAS.bed.out Downstream
+2167675
+W_ALAS.bed.out Gene
+455185
+W_ALAS.bed.out Intergenic
+2109663
+W_ALAS.bed.out Intron
+344930
+W_ALAS.bed.out Exon
+616584
+
+C_CASS.bed.out Upstream
+2199439
+C_CASS.bed.out Downstream
+2085879
+C_CASS.bed.out Gene
+443534
+C_CASS.bed.out Intergenic
+2016227
+C_CASS.bed.out Intron
+335206
+C_CASS.bed.out Exon
+600832
+
+W_CASS.bed.out Upstream
+2205728
+W_CASS.bed.out Downstream
+2090534
+W_CASS.bed.out Gene
+444737
+W_CASS.bed.out Intergenic
+2020280
+W_CASS.bed.out Intron
+335640
+W_CASS.bed.out Exon
+602243
+
+C_SVAL.bed.out Upstream
+2234769
+C_SVAL.bed.out Downstream
+2117720
+C_SVAL.bed.out Gene
+447938
+C_SVAL.bed.out Intergenic
+2046223
+C_SVAL.bed.out Intron
+337954
+C_SVAL.bed.out Exon
+605774
+
+W_SVAL.bed.out Upstream
+2236340
+W_SVAL.bed.out Downstream
+2117591
+W_SVAL.bed.out Gene
+447403
+W_SVAL.bed.out Intergenic
+2047804
+W_SVAL.bed.out Intron
+337803
+W_SVAL.bed.out Exon
+605763
+
+C_SwedC.bed.out Upstream
+2305128
+C_SwedC.bed.out Downstream
+2185527
+C_SwedC.bed.out Gene
+456789
+C_SwedC.bed.out Intergenic
+2124644
+C_SwedC.bed.out Intron
+345570
+C_SwedC.bed.out Exon
+618490
+
+W_SwedC.bed.out Upstream
+2301582
+W_SwedC.bed.out Downstream
+2182788
+W_SwedC.bed.out Gene
+455933
+W_SwedC.bed.out Intergenic
+2119497
+W_SwedC.bed.out Intron
+344963
+W_SwedC.bed.out Exon
+618103
+
 #--------------------------
 
 # Look at transposons
@@ -1119,7 +1224,7 @@ done
 
 module load StdEnv/2023 bedtools/2.31.0
 
-cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/sites/
 FILES=$(ls *.bed)
 echo ${FILES}
 
@@ -1135,6 +1240,23 @@ wc -l ${file}-All-TE.bed
 
 done
 
+wc -l *-All-TE.bed
+   3236318 C_ALAS.bed-All-TE.bed
+   3047802 C_CASS.bed-All-TE.bed
+   2985039 C_DRY.bed-All-TE.bed
+   2953495 C_FERT.bed-All-TE.bed
+   2991235 C_MEAD.bed-All-TE.bed
+   3116445 C_SVAL.bed-All-TE.bed
+   3273660 C_SwedC.bed-All-TE.bed
+   3003458 C_WILL.bed-All-TE.bed
+   3229154 W_ALAS.bed-All-TE.bed
+   3060867 W_CASS.bed-All-TE.bed
+   3002395 W_DRY.bed-All-TE.bed
+   2954913 W_FERT.bed-All-TE.bed
+   2966113 W_MEAD.bed-All-TE.bed
+   3120850 W_SVAL.bed-All-TE.bed
+   3266368 W_SwedC.bed-All-TE.bed
+   3007393 W_WILL.bed-All-TE.bed
 
 #-------------------------
 # could subet the TEs by type and rerun for each type
@@ -1190,3 +1312,593 @@ wc -l ${file}-${value}.bed
 
 done
 done
+
+
+
+#############################################
+# Run for CHH DMRs
+
+tmux new-session -s snpEff
+tmux attach-session -t snpEff
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH
+cp /home/celphin/scratch/Dryas/CHG_CHH/*.bedgraph .
+cp /home/celphin/scratch/Dryas/CHG_CHH/*.bedGraph .
+
+FILES=$(ls /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/*.bed*raph)
+echo ${FILES}
+
+for file in ${FILES}; do
+    # Run the command on the file and create the .bed file
+    grep -v track "$file" | awk '{print $1 "\t" $2 "\t" $3}' > "${file%.bedGraph}.bed"
+    echo "Processed $file"
+done
+
+# run SNPEff
+salloc -c1 --time 3:00:00 --mem 120000m --account def-cronk
+
+module load StdEnv/2023 java/21.0.1
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/
+FILES=$(ls /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/*.bed)
+echo ${FILES}
+
+cd /home/celphin/scratch/Dryas/snpEff
+
+for file in ${FILES}; do
+java -Xmx8g -jar snpEff.jar -i bed OldDoct "$file" > "$file".out
+echo "Processed $file"
+done
+
+
+# extract the immediate feature types and count them
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH
+FILES=$(ls *.out)
+echo ${FILES}
+
+for file in ${FILES}; do
+awk -F'[;:]' '{print $1 $2}' "$file" > "$file"1
+echo 
+echo "$file Upstream"
+grep "Upstream" "$file"1 | wc -l 
+echo "$file Downstream"
+grep "Downstream" "$file"1 | wc -l 
+echo "$file Gene"
+grep "Gene" "$file"1 | wc -l 
+echo "$file Intergenic"
+grep "Intergenic" "$file"1 | wc -l 
+echo "$file Intron"
+grep "Intron" "$file"1 | wc -l 
+echo "$file Exon"
+grep "Exon" "$file"1 | wc -l 
+done
+Alaska_CHH_W_C.bed.out Upstream
+654
+Alaska_CHH_W_C.bed.out Downstream
+494
+Alaska_CHH_W_C.bed.out Gene
+34
+Alaska_CHH_W_C.bed.out Intergenic
+679
+Alaska_CHH_W_C.bed.out Intron
+47
+Alaska_CHH_W_C.bed.out Exon
+28
+
+ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Upstream
+5
+ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Downstream
+9
+ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Gene
+1
+ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Intergenic
+6
+ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Intron
+0
+ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Exon
+0
+
+ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph.bed.out Upstream
+5
+ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph.bed.out Downstream
+6
+ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph.bed.out Gene
+4
+ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph.bed.out Intergenic
+10
+ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph.bed.out Intron
+1
+ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph.bed.out Exon
+1
+
+ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Upstream
+4
+ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Downstream
+7
+ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Gene
+1
+ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Intergenic
+7
+ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Intron
+1
+ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Exon
+0
+
+ALL_Sites_intersect_DMRs.bedgraph.bed.out Upstream
+1
+ALL_Sites_intersect_DMRs.bedgraph.bed.out Downstream
+3
+ALL_Sites_intersect_DMRs.bedgraph.bed.out Gene
+1
+ALL_Sites_intersect_DMRs.bedgraph.bed.out Intergenic
+2
+ALL_Sites_intersect_DMRs.bedgraph.bed.out Intron
+0
+ALL_Sites_intersect_DMRs.bedgraph.bed.out Exon
+0
+
+Nunavut_CHH_W_C.bed.out Upstream
+385
+Nunavut_CHH_W_C.bed.out Downstream
+309
+Nunavut_CHH_W_C.bed.out Gene
+19
+Nunavut_CHH_W_C.bed.out Intergenic
+425
+Nunavut_CHH_W_C.bed.out Intron
+33
+Nunavut_CHH_W_C.bed.out Exon
+15
+
+Svalbard_CHH_W_C.bed.out Upstream
+452
+Svalbard_CHH_W_C.bed.out Downstream
+370
+Svalbard_CHH_W_C.bed.out Gene
+30
+Svalbard_CHH_W_C.bed.out Intergenic
+473
+Svalbard_CHH_W_C.bed.out Intron
+44
+Svalbard_CHH_W_C.bed.out Exon
+29
+
+SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Upstream
+12
+SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Downstream
+13
+SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Gene
+1
+SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Intergenic
+12
+SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Intron
+0
+SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed.out Exon
+0
+
+Sweden_CHH_W_C.bed.out Upstream
+677
+Sweden_CHH_W_C.bed.out Downstream
+602
+Sweden_CHH_W_C.bed.out Gene
+36
+Sweden_CHH_W_C.bed.out Intergenic
+789
+Sweden_CHH_W_C.bed.out Intron
+70
+Sweden_CHH_W_C.bed.out Exon
+33
+
+####################
+
+# Explore intersection with Genes to get GO terms
+# https://pcingola.github.io/SnpEff/snpeff/commands/
+
+
+module load StdEnv/2023 java/21.0.1
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/
+FILES=$(ls /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/*.bed)
+echo ${FILES}
+
+cd /home/celphin/scratch/Dryas/snpEff
+
+for file in ${FILES}; do
+java -Xmx8g -jar snpEff.jar count -i "$file" OldDoct > "$file".out.txt
+echo "Processed $file"
+done
+
+
+
+####################
+
+# Look at transposons
+# https://github.com/RobertsLab/project-gigas-oa-meth/blob/master/code/10-Genomic-Location-of-DML.ipynb 
+
+module load StdEnv/2023 bedtools/2.31.0
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH
+FILES=$(ls *.bed)
+echo ${FILES}
+
+for file in ${FILES}; do
+intersectBed \
+-u \
+-a ${file} \
+-b /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 \
+> ${file}-All-TE.bed
+
+#head ${file}-All-TE.bed
+wc -l ${file}-All-TE.bed
+
+done
+
+# 1443 Alaska_CHH_W_C.bed-All-TE.bed
+# 18 ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed
+# 24 ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed
+# 18 ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed
+# 6 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed
+# 971 Nunavut_CHH_W_C.bed-All-TE.bed
+# 1107 Svalbard_CHH_W_C.bed-All-TE.bed
+# 34 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed
+# 1620 Sweden_CHH_W_C.bed-All-TE.bed
+
+wc -l *.bedGraph
+  1937 Alaska_CHH_W_C.bedGraph
+  1186 Nunavut_CHH_W_C.bedGraph
+  1397 Svalbard_CHH_W_C.bedGraph
+  2206 Sweden_CHH_W_C.bedGraph
+  
+  20 ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph
+  26 ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph
+  19 ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph
+   6 ALL_Sites_intersect_DMRs.bedgraph
+  37 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph
+
+#-------------------------
+# could subet the TEs by type and rerun for each type
+
+awk '{print $3}' /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 | sort | uniq
+
+# CACTA_TIR_transposon
+# Copia_LTR_retrotransposon
+# Gypsy_LTR_retrotransposon
+# hAT_TIR_transposon
+# helitron
+# identity
+# long_terminal_repeat
+# LTR_retrotransposon
+# Mutator_TIR_transposon
+# Nov
+# PIF_Harbinger_TIR_transposon
+# repeat_region
+# sequence_ontology
+# site
+# target_site_duplication
+# Tc1_Mariner_TIR_transposon
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH
+# Extract unique values from the third column (or any other column)
+unique_values=$(awk '{print $3}' /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 | sort | uniq)
+
+# Loop through each unique value and extract lines to a new file
+for value in $unique_values; do
+    grep "$value" /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 > "${value}.gff3"
+    echo "Extracted lines for $value into ${value}.gff3"
+done
+
+mkdir gff3
+mv *.gff3 gff3/
+
+#-----------------
+module load StdEnv/2023 bedtools/2.31.0
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/
+FILES=$(ls ./CHH/*.bed)
+echo ${FILES}
+
+for value in $unique_values; do
+for file in ${FILES}; do
+intersectBed \
+-u \
+-a ${file} \
+-b ./gff3/${value}.gff3 \
+> ${file}-${value}.bed
+
+wc -l ${file}-${value}.bed
+
+done
+done
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH
+wc -l *.bed-*.bed
+
+mkdir TEs
+mv *.bed-*.bed TEs
+
+
+
+################
+# CHH TE counts
+
+  1620 Sweden_CHH_W_C.bed-All-TE.bed
+   141 Sweden_CHH_W_C.bed-All-TE.bed-CACTA_TIR_transposon.bed
+   131 Sweden_CHH_W_C.bed-All-TE.bed-Copia_LTR_retrotransposon.bed
+   127 Sweden_CHH_W_C.bed-All-TE.bed-Gypsy_LTR_retrotransposon.bed
+   300 Sweden_CHH_W_C.bed-All-TE.bed-hAT_TIR_transposon.bed
+   118 Sweden_CHH_W_C.bed-All-TE.bed-helitron.bed
+    34 Sweden_CHH_W_C.bed-All-TE.bed-identity.bed
+    21 Sweden_CHH_W_C.bed-All-TE.bed-long_terminal_repeat.bed
+   553 Sweden_CHH_W_C.bed-All-TE.bed-LTR_retrotransposon.bed
+   714 Sweden_CHH_W_C.bed-All-TE.bed-Mutator_TIR_transposon.bed
+     0 Sweden_CHH_W_C.bed-All-TE.bed-Nov.bed
+   103 Sweden_CHH_W_C.bed-All-TE.bed-PIF_Harbinger_TIR_transposon.bed
+    34 Sweden_CHH_W_C.bed-All-TE.bed-repeat_region.bed
+     0 Sweden_CHH_W_C.bed-All-TE.bed-sequence_ontology.bed
+     1 Sweden_CHH_W_C.bed-All-TE.bed-site.bed
+     1 Sweden_CHH_W_C.bed-All-TE.bed-target_site_duplication.bed
+     3 Sweden_CHH_W_C.bed-All-TE.bed-Tc1_Mariner_TIR_transposon.bed
+
+  1107 Svalbard_CHH_W_C.bed-All-TE.bed
+    85 Svalbard_CHH_W_C.bed-CACTA_TIR_transposon.bed
+    54 Svalbard_CHH_W_C.bed-Copia_LTR_retrotransposon.bed
+    73 Svalbard_CHH_W_C.bed-Gypsy_LTR_retrotransposon.bed
+   201 Svalbard_CHH_W_C.bed-hAT_TIR_transposon.bed
+    61 Svalbard_CHH_W_C.bed-helitron.bed
+    18 Svalbard_CHH_W_C.bed-identity.bed
+     6 Svalbard_CHH_W_C.bed-long_terminal_repeat.bed
+   347 Svalbard_CHH_W_C.bed-LTR_retrotransposon.bed
+   541 Svalbard_CHH_W_C.bed-Mutator_TIR_transposon.bed
+     0 Svalbard_CHH_W_C.bed-Nov.bed
+    48 Svalbard_CHH_W_C.bed-PIF_Harbinger_TIR_transposon.bed
+    18 Svalbard_CHH_W_C.bed-repeat_region.bed
+     0 Svalbard_CHH_W_C.bed-sequence_ontology.bed
+     0 Svalbard_CHH_W_C.bed-site.bed
+     0 Svalbard_CHH_W_C.bed-target_site_duplication.bed
+     0 Svalbard_CHH_W_C.bed-Tc1_Mariner_TIR_transposon.bed
+
+   971 Nunavut_CHH_W_C.bed-All-TE.bed
+   105 Nunavut_CHH_W_C.bed-All-TE.bed-CACTA_TIR_transposon.bed
+    51 Nunavut_CHH_W_C.bed-All-TE.bed-Copia_LTR_retrotransposon.bed
+    66 Nunavut_CHH_W_C.bed-All-TE.bed-Gypsy_LTR_retrotransposon.bed
+   172 Nunavut_CHH_W_C.bed-All-TE.bed-hAT_TIR_transposon.bed
+    68 Nunavut_CHH_W_C.bed-All-TE.bed-helitron.bed
+     8 Nunavut_CHH_W_C.bed-All-TE.bed-identity.bed
+     1 Nunavut_CHH_W_C.bed-All-TE.bed-long_terminal_repeat.bed
+   328 Nunavut_CHH_W_C.bed-All-TE.bed-LTR_retrotransposon.bed
+   460 Nunavut_CHH_W_C.bed-All-TE.bed-Mutator_TIR_transposon.bed
+     0 Nunavut_CHH_W_C.bed-All-TE.bed-Nov.bed
+    54 Nunavut_CHH_W_C.bed-All-TE.bed-PIF_Harbinger_TIR_transposon.bed
+     8 Nunavut_CHH_W_C.bed-All-TE.bed-repeat_region.bed
+     0 Nunavut_CHH_W_C.bed-All-TE.bed-sequence_ontology.bed
+     0 Nunavut_CHH_W_C.bed-All-TE.bed-site.bed
+     0 Nunavut_CHH_W_C.bed-All-TE.bed-target_site_duplication.bed
+     0 Nunavut_CHH_W_C.bed-All-TE.bed-Tc1_Mariner_TIR_transposon.bed
+
+  1443 Alaska_CHH_W_C.bed-All-TE.bed
+   118 Alaska_CHH_W_C.bed-All-TE.bed-CACTA_TIR_transposon.bed
+   106 Alaska_CHH_W_C.bed-All-TE.bed-Copia_LTR_retrotransposon.bed
+   112 Alaska_CHH_W_C.bed-All-TE.bed-Gypsy_LTR_retrotransposon.bed
+   254 Alaska_CHH_W_C.bed-All-TE.bed-hAT_TIR_transposon.bed
+   102 Alaska_CHH_W_C.bed-All-TE.bed-helitron.bed
+    15 Alaska_CHH_W_C.bed-All-TE.bed-identity.bed
+     2 Alaska_CHH_W_C.bed-All-TE.bed-long_terminal_repeat.bed
+   495 Alaska_CHH_W_C.bed-All-TE.bed-LTR_retrotransposon.bed
+   662 Alaska_CHH_W_C.bed-All-TE.bed-Mutator_TIR_transposon.bed
+     0 Alaska_CHH_W_C.bed-All-TE.bed-Nov.bed
+    99 Alaska_CHH_W_C.bed-All-TE.bed-PIF_Harbinger_TIR_transposon.bed
+    15 Alaska_CHH_W_C.bed-All-TE.bed-repeat_region.bed
+     0 Alaska_CHH_W_C.bed-All-TE.bed-sequence_ontology.bed
+     1 Alaska_CHH_W_C.bed-All-TE.bed-site.bed
+     1 Alaska_CHH_W_C.bed-All-TE.bed-target_site_duplication.bed
+     6 Alaska_CHH_W_C.bed-All-TE.bed-Tc1_Mariner_TIR_transposon.bed
+
+
+
+
+##########################################
+
+    34 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed
+     1 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-CACTA_TIR_transposon.bed
+     2 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-Copia_LTR_retrotransposon.bed
+     4 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-Gypsy_LTR_retrotransposon.bed
+     6 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-hAT_TIR_transposon.bed
+     1 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-helitron.bed
+     0 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-identity.bed
+     0 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-long_terminal_repeat.bed
+    11 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-LTR_retrotransposon.bed
+    17 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-Mutator_TIR_transposon.bed
+     0 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-Nov.bed
+     2 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-PIF_Harbinger_TIR_transposon.bed
+     0 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-repeat_region.bed
+     0 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-sequence_ontology.bed
+     0 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-site.bed
+     0 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-target_site_duplication.bed
+     0 SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-Tc1_Mariner_TIR_transposon.bed
+
+     6 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-CACTA_TIR_transposon.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-Copia_LTR_retrotransposon.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-Gypsy_LTR_retrotransposon.bed
+     1 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-hAT_TIR_transposon.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-helitron.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-identity.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-long_terminal_repeat.bed
+     2 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-LTR_retrotransposon.bed
+     5 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-Mutator_TIR_transposon.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-Nov.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-PIF_Harbinger_TIR_transposon.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-repeat_region.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-sequence_ontology.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-site.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-target_site_duplication.bed
+     0 ALL_Sites_intersect_DMRs.bedgraph.bed-All-TE.bed-Tc1_Mariner_TIR_transposon.bed
+
+#---------------------------------------
+# CHH sites
+
+#############################################
+# Run for CHH general sites
+
+tmux new-session -s snpEff
+tmux attach-session -t snpEff
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/sites
+cp /home/celphin/scratch/Dryas/CHG_CHH/bedgraph/summary_files/*_CHH.bedGraph .
+
+FILES=$(ls /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/sites/*.bedGraph)
+echo ${FILES}
+
+for file in ${FILES}; do
+    # Run the command on the file and create the .bed file
+    grep -v track "$file" | awk '{print $1 "\t" $2 "\t" $3}' > "${file%.bedGraph}.bed"
+    echo "Processed $file"
+done
+
+salloc -c1 --time 3:00:00 --mem 120000m --account def-cronk
+
+# run SNPEff
+module load StdEnv/2023 java/21.0.1
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/sites/
+FILES=$(ls /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/sites/*.bed)
+echo ${FILES}
+
+cd /home/celphin/scratch/Dryas/snpEff
+
+for file in ${FILES}; do
+java -Xmx8g -jar snpEff.jar -i bed OldDoct "$file" > "$file".out
+echo "Processed $file"
+done
+
+
+# extract the immediate feature types and count them
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/sites
+FILES=$(ls *.out)
+echo ${FILES}
+
+for file in ${FILES}; do
+awk -F'[;:]' '{print $1 $2}' "$file" > "$file"1
+echo 
+echo "$file Upstream"
+grep "Upstream" "$file"1 | wc -l 
+echo "$file Downstream"
+grep "Downstream" "$file"1 | wc -l 
+echo "$file Gene"
+grep "Gene" "$file"1 | wc -l 
+echo "$file Intergenic"
+grep "Intergenic" "$file"1 | wc -l 
+echo "$file Intron"
+grep "Intron" "$file"1 | wc -l 
+echo "$file Exon"
+grep "Exon" "$file"1 | wc -l 
+done
+
+
+#--------------------------
+
+# Look at transposons
+# https://github.com/RobertsLab/project-gigas-oa-meth/blob/master/code/10-Genomic-Location-of-DML.ipynb 
+
+module load StdEnv/2023 bedtools/2.31.0
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/sites/
+FILES=$(ls *.bed)
+echo ${FILES}
+
+for file in ${FILES}; do
+intersectBed \
+-u \
+-a ${file} \
+-b /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 \
+> ${file}-All-TE.bed
+
+#head ${file}-All-TE.bed
+wc -l ${file}-All-TE.bed
+
+done
+
+# counts
+wc -l *-All-TE.bed
+
+22497295 C_ALAS_CHH.bed-All-TE.bed
+21583324 C_CASS_CHH.bed-All-TE.bed
+21250540 C_DRY_CHH.bed-All-TE.bed
+21065245 C_FERT_CHH.bed-All-TE.bed
+21267478 C_MEAD_CHH.bed-All-TE.bed
+21988895 C_SVAL_CHH.bed-All-TE.bed
+22741986 C_SwedC_CHH.bed-All-TE.bed
+21338862 C_WILL_CHH.bed-All-TE.bed
+22481158 W_ALAS_CHH.bed-All-TE.bed
+21642369 W_CASS_CHH.bed-All-TE.bed
+21358839 W_DRY_CHH.bed-All-TE.bed
+21093176 W_FERT_CHH.bed-All-TE.bed
+21129812 W_MEAD_CHH.bed-All-TE.bed
+22009967 W_SVAL_CHH.bed-All-TE.bed
+22702074 W_SwedC_CHH.bed-All-TE.bed
+21371084 W_WILL_CHH.bed-All-TE.bed
+
+# total
+wc -l *_CHH.bed
+
+
+
+
+#----------------------
+# Transposon types
+awk '{print $3}' /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 | sort | uniq
+
+# CACTA_TIR_transposon
+# Copia_LTR_retrotransposon
+# Gypsy_LTR_retrotransposon
+# hAT_TIR_transposon
+# helitron
+# identity
+# long_terminal_repeat
+# LTR_retrotransposon
+# Mutator_TIR_transposon
+# Nov
+# PIF_Harbinger_TIR_transposon
+# repeat_region
+# sequence_ontology
+# site
+# target_site_duplication
+# Tc1_Mariner_TIR_transposon
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/sites
+# Extract unique values from the third column (or any other column)
+unique_values=$(awk '{print $3}' /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 | sort | uniq)
+
+# Loop through each unique value and extract lines to a new file
+for value in $unique_values; do
+    grep "$value" /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 > "${value}.gff3"
+    echo "Extracted lines for $value into ${value}.gff3"
+done
+
+mkdir gff3
+mv *.gff3 gff3/
+
+#-----------------
+module load StdEnv/2023 bedtools/2.31.0
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/
+FILES=$(ls ./CHH/sites/*_CHH.bed-All-TE.bed)
+echo ${FILES}
+
+for value in $unique_values; do
+for file in ${FILES}; do
+intersectBed \
+-u \
+-a ${file} \
+-b ./gff3/${value}.gff3 \
+> ${file}-${value}.bed
+
+wc -l ${file}-${value}.bed
+
+done
+done
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/sites
+wc -l *.bed-*.bed
+
+mkdir TEs
+mv *.bed-*.bed TEs
+
+
