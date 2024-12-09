@@ -82,8 +82,76 @@ Total_data$mix <- as.factor(paste0( Total_data$Site, "_", Total_data$Treatment))
 
 Total_data$mix_chamber <- as.factor(paste0( Total_data$Site, "_", Total_data$Treatment, "_", Total_data$Chamber))
 
+# calculate %meth
+Total_data$percent_CpG <- (Total_data$Methylated.CpGs/(Total_data$Methylated.CpGs + Total_data$Unmethylated.CpGs))*100
+Total_data$percent_chg <- (Total_data$Methylated.CpGs/(Total_data$Methylated.chgs + Total_data$Unmethylated.chgs))*100
+Total_data$percent_CHH <- (Total_data$Methylated.CpGs/(Total_data$Methylated.CHHs + Total_data$Unmethylated.CHHs))*100
+Total_data$TotalCs <- (Total_data$Methylated.CHHs + Total_data$Unmethylated.CHHs)+(Total_data$Methylated.chgs + Total_data$Unmethylated.chgs)+(Total_data$Methylated.CpGs + Total_data$Unmethylated.CpGs)
+Total_data$TotalmCs <- Total_data$Methylated.CHHs+Total_data$Methylated.chgs+Total_data$Methylated.CpGs
+
+
+databySite <- group_by(Total_data, by=Treatment)
+#summarize
+
+
+sum_treatment_summary <- summarize(databySite,
+                                   Aligned.Reads = sum(Aligned.Reads, na.rm = TRUE),
+                                   Total.Reads = sum(Total.Reads, na.rm = TRUE),
+                                   Methylated.CpGs = sum(Methylated.CpGs, na.rm = TRUE),
+                                   Methylated.chgs = sum(Methylated.chgs, na.rm = TRUE),
+                                   Methylated.CHHs = sum(Methylated.CHHs, na.rm = TRUE),
+                                   Unmethylated.CpGs = sum(Unmethylated.CpGs, na.rm = TRUE),
+                                   Unmethylated.chgs = sum(Unmethylated.chgs, na.rm = TRUE),
+                                   Unmethylated.CHHs = sum(Unmethylated.CHHs, na.rm = TRUE),
+                                   percent_CpG = sum(percent_CpG, na.rm = TRUE),
+                                   percent_chg = sum(percent_chg, na.rm = TRUE),
+                                   percent_CHH = sum(percent_CHH, na.rm = TRUE),
+                                   Height = sum(Height, na.rm = TRUE),
+                                   Flwr_total = sum(Flwr_total, na.rm = TRUE),
+                                   Lf.Weight.2018 = sum(Weight.x, na.rm = TRUE),
+                                   Lf.hairs.field = sum(Lf.hairs, na.rm = TRUE),
+                                   Aphids = sum(Aphids, na.rm = TRUE),
+                                   Crystals.on.lv = sum(Crystals.on.lv, na.rm = TRUE),
+                                   Seed_count2018 = sum(X..seeds..all.seeds., na.rm = TRUE),
+                                   Seed_weight2018 = sum(weight.all.seeds..g.mg., na.rm = TRUE),
+                                   Dryas.seed.Ripeness = sum(Dryas.seed.Ripeness, na.rm = TRUE),
+                                   Seed_count2019 = sum(Number.of.Seeds, na.rm = TRUE),
+                                   Seed.weight2019 = sum(Seed.weight.mg, na.rm = TRUE),
+                                   Percent_germ2019 = sum(Percent_germ, na.rm = TRUE),
+                                   Numb.Lv = sum(Numb.Lv, na.rm = TRUE),
+                                   Hair.on.leaves = sum(Hair.on.leaves, na.rm = TRUE)
+)
+
+mean_treatment_summary <- summarize(databySite,
+                                    Aligned.Reads = mean(Aligned.Reads, na.rm = TRUE),
+                                    Total.Reads = mean(Total.Reads, na.rm = TRUE),
+                                    Methylated.CpGs = mean(Methylated.CpGs, na.rm = TRUE),
+                                    Methylated.chgs = mean(Methylated.chgs, na.rm = TRUE),
+                                    Methylated.CHHs = mean(Methylated.CHHs, na.rm = TRUE),
+                                    Unmethylated.CpGs = mean(Unmethylated.CpGs, na.rm = TRUE),
+                                    Unmethylated.chgs = mean(Unmethylated.chgs, na.rm = TRUE),
+                                    Unmethylated.CHHs = mean(Unmethylated.CHHs, na.rm = TRUE),
+                                    Height = mean(Height, na.rm = TRUE),
+                                    Flwr_total = mean(Flwr_total, na.rm = TRUE),
+                                    Lf.Weight.2018 = mean(Weight.x, na.rm = TRUE),
+                                    Lf.hairs.field = mean(Lf.hairs, na.rm = TRUE),
+                                    Aphids = mean(Aphids, na.rm = TRUE),
+                                    Crystals.on.lv = mean(Crystals.on.lv, na.rm = TRUE),
+                                    Seed_count2018 = mean(X..seeds..all.seeds., na.rm = TRUE),
+                                    Seed_weight2018 = mean(weight.all.seeds..g.mg., na.rm = TRUE),
+                                    Dryas.seed.Ripeness = mean(Dryas.seed.Ripeness, na.rm = TRUE),
+                                    Seed_count2019 = mean(Number.of.Seeds, na.rm = TRUE),
+                                    Seed.weight2019 = mean(Seed.weight.mg, na.rm = TRUE),
+                                    Percent_germ2019 = mean(Percent_germ, na.rm = TRUE),
+                                    Numb.Lv = mean(Numb.Lv, na.rm = TRUE),
+                                    Hair.on.leaves = mean(Hair.on.leaves, na.rm = TRUE)
+)
+write.table(mean_treatment_summary, "mean_treatment_summary.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
+
+
+#----------------
 #group
-databySite <- group_by(Total_data, by=mix_chamber)
+databySite <- group_by(Total_data, by=mix)
 #summarize
 
 
@@ -137,12 +205,13 @@ mean_Site_treatment_summary <- summarize(databySite,
                                         Hair.on.leaves = mean(Hair.on.leaves, na.rm = TRUE)
 )
 
+write.table(mean_Site_treatment_summary, "mean_Site_treatment_summary.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
 
 #---------------------------------
 #ggplot
 
 # remove the extra samples
-#Total_data <- Total_data[-c(101, 202:203),]
+Total_data <- Total_data[-c(101, 202:203),]
 
 
 # link Alex sites
@@ -158,6 +227,7 @@ library(ggplot2)
 # Define the trait
 traits <- c("Aligned.Reads", "Total.Reads", "Methylated.CpGs", "Methylated.chgs", "Methylated.CHHs",
             "Unmethylated.CpGs", "Unmethylated.chgs", "Unmethylated.CHHs",
+            "percent_CpG", "percent_chg", "percent_CHH",
             "Height", "Flwr_total", "Weight.x", "Lf.hairs",
             "Aphids", "Crystals.on.lv", "X..seeds..all.seeds.", "weight.all.seeds..g.mg.",
             "Dryas.seed.Ripeness", "Number.of.Seeds", "Seed.weight.mg",
@@ -234,6 +304,18 @@ summary(model, test = "Wilks")  # Wilks' Lambda test is commonly used
 # ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
+#--------------------
+# Fit the ANOVA model
+anova_model <- aov(Methylated.CpGs ~ Treatment +Site, data = Total_data)
+
+# Print the summary of the ANOVA
+summary(anova_model)
+
+# Df    Sum Sq   Mean Sq F value Pr(>F)
+# Treatment     1 9.954e+13 9.954e+13   3.605 0.0591 .
+# Site          7 3.184e+15 4.548e+14  16.473 <2e-16 ***
+#   Residuals   191 5.274e+15 2.761e+13
+
 #--------------------------
 # Fit the ANOVA model
 anova_model <- aov(Methylated.chgs ~ Treatment + Site, data = Total_data)
@@ -245,8 +327,7 @@ summary(anova_model)
 # Treatment     1 9.104e+13 9.104e+13   7.438  0.00698 **
 #   Site          7 1.295e+15 1.850e+14  15.113 1.17e-15 ***
 #   Residuals   191 2.338e+15 1.224e+13
-# ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
 #------------------------
 # Example data (replace with your own dataset)
 
@@ -260,22 +341,105 @@ summary(anova_model)
 # Treatment     1 6.243e+14 6.243e+14   5.855 0.01647 *
 #   Site          7 2.526e+15 3.609e+14   3.385 0.00198 **
 #   Residuals   191 2.036e+16 1.066e+14
-# ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+####################################
+# Test percentage specifically
+
+# Fit the MANOVA model
+model <- manova(cbind(percent_CpG,percent_chg, percent_CHH) ~ Treatment+Site, data = Total_data)
+
+# Print the summary of the MANOVA
+summary(model)
+
+# You can also get a detailed result using:
+summary(model, test = "Wilks")  # Wilks' Lambda test is commonly used
+
+# Df   Wilks approx F num Df den Df  Pr(>F)
+# Treatment   1 0.96888    3.051      2    190 0.04964 *
+#   Site        7 0.37351   17.270     14    380 < 2e-16 ***
+#   Residuals 191
+
 #--------------------------
 # Fit the ANOVA model
-anova_model <- aov(Methylated.CpGs ~ Treatment + Site, data = Total_data)
+anova_model <- aov(percent_CpG ~ Treatment + Site, data = Total_data)
 
 # Print the summary of the ANOVA
 summary(anova_model)
 
-# Df    Sum Sq   Mean Sq F value Pr(>F)
-# Treatment     1 9.954e+13 9.954e+13   3.605 0.0591 .
-# Site          7 3.184e+15 4.548e+14  16.473 <2e-16 ***
-#   Residuals   191 5.274e+15 2.761e+13
+# Df Sum Sq Mean Sq F value Pr(>F)
+# Treatment     1   15.0   14.98   4.305 0.0393 *
+#   Site          7 1723.2  246.18  70.741 <2e-16 ***
+#   Residuals   191  664.7    3.48
+
+#--------------------------
+# Fit the ANOVA model
+anova_model <- aov(percent_chg ~ Treatment + Site, data = Total_data)
+
+# Print the summary of the ANOVA
+summary(anova_model)
+
+# Df Sum Sq Mean Sq F value Pr(>F)
+# Treatment     1   6.64    6.64   4.763 0.0303 *
+#   Site          7 314.97   45.00  32.269 <2e-16 ***
+#   Residuals   191 266.33    1.39
+
+#------------------------
+# Example data (replace with your own dataset)
+
+# Fit the ANOVA model
+anova_model <- aov(percent_CHH ~ Treatment +Site, data = Total_data)
+
+# Print the summary of the ANOVA
+summary(anova_model)
+
+# Df Sum Sq Mean Sq F value Pr(>F)
+# Treatment     1  0.176  0.1762   3.735 0.0548 .
+# Site          7  8.560  1.2228  25.922 <2e-16 ***
+#   Residuals   191  9.010  0.0472
+
+###########################################
+
+# Fit the MANOVA model
+model <- manova(cbind(Unmethylated.CpGs, Unmethylated.chgs, Unmethylated.CHHs) ~ Treatment+Site, data = Total_data)
+
+# Print the summary of the MANOVA
+summary(model)
+
+# You can also get a detailed result using:
+summary(model, test = "Wilks")  # Wilks' Lambda test is commonly used
+
+# Df   Wilks approx F num Df den Df Pr(>F)
+# Treatment   1 0.97083   1.8927      3 189.00 0.1322
+# Site        7 0.19677  19.6995     21 543.26 <2e-16 ***
+#   Residuals 191
 # ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-####################################
+
+
+#---------------
+# Fit the ANOVA model
+anova_model <- aov(TotalmCs ~ Treatment +Site, data = Total_data)
+
+# Print the summary of the ANOVA
+summary(anova_model)
+# Treatment     1 1.981e+15 1.981e+15   6.830  0.00968 **
+#   Site          7 1.710e+16 2.443e+15   8.427 5.68e-09 ***
+#   Residuals   191 5.538e+16 2.900e+14
+# ---
+
+#------------------
+# Fit the ANOVA model
+anova_model <- aov(TotalCs ~ Treatment +Site, data = Total_data)
+
+# Print the summary of the ANOVA
+summary(anova_model)
+
+# Df    Sum Sq   Mean Sq F value   Pr(>F)
+# Treatment     1 2.041e+16 2.041e+16   0.780    0.378
+# Site          7 1.202e+18 1.717e+17   6.559 6.01e-07 ***
+#   Residuals   191 5.001e+18 2.618e+16
+#
+
 
 
 

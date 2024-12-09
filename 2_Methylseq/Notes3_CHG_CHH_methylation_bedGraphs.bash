@@ -226,6 +226,7 @@ sbatch CHH_${output_name}.sh
 done
 
 mv *bismark.cov.gz coverage/
+rename .gz .bedGraph.gz *.gz
 mv *.gz ../bedgraph
 
 cd ../bedgraph
@@ -234,10 +235,13 @@ gunzip *.gz
 
 mkdir seedling
 mkdir Phenology
+
 mv SE* seedling/
 mv MatFl.* Phenology/
 cd Phenology/
-ls
+
+# check files worked
+ls -la
 
 # MatFl.Cass.10W.60.544.F112581  MatFl.Fert.5C.97.1F.F112583   MatFl.Mead.1W.116.444.F112578
 # MatFl.Cass.4C.4.524.F112579    MatFl.Fert.6W.110.3F.F112584  MatFl.Will.3C.100.414.F112575
@@ -839,7 +843,6 @@ sh metilene_prep.sh
 
 #----------------------------------------
 #Run metilene:
-salloc -c32 --time 2:50:00 --mem 120000m --account rpp-rieseber
 
 #Phenology specific adjustments,
 nano metilene_run.sh
@@ -855,18 +858,24 @@ mindiff=$3
 
 output_name=Phenology_CHH_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
 in_metilene="Phenology_metilene_"$h1"_"$h2".input"
-threads=32
+threads=15
 
+#-------
+# remove the folder name from the metilene input file
+
+sed -i 's/Mat_Sen_input_files\///g'  metilene_Mat_Sen.input
 
 #metilene:
 # params: maxdist, mincpgs, mindiff
-salloc -c32 --time 7:00:00 --mem 120000m --account def-cronk
+salloc -c15 --time 7:00:00 --mem 200000m --account def-cronk
 
 module load StdEnv/2020
 module load bedtools/2.30.0 
 sh metilene_run.sh 70 5 4
 sh metilene_run.sh 150 5 4 
 sh metilene_run.sh 70 5 0.7
+# done
+
 #----------------------------------------------------
 #Filter based on qval
 #params: maxdist, mincpgs, mindiff, minmeandif, q-value
@@ -900,12 +909,7 @@ cd /home/celphin/scratch/Dryas/CHG_CHH/bedgraph/seedling
 rename SE C_SE SE.*.C.*
 rename SE W_SE SE.*.W.*
 
-# add bedGraph
-for file in MatFl*; do
-  if [ -f "$file" ]; then
-    mv -- "$file" "$file.bedGraph"
-  fi
-done
+
 cd /home/celphin/scratch/Dryas/CHG_CHH/Seedling_Metilene
 
 #----------------------------------------
@@ -932,9 +936,6 @@ module load bedtools/2.30.0
 cd /home/celphin/scratch/Dryas/CHG_CHH/Seedling_Metilene
 sh metilene_prep.sh 
 
-# bedtools: src/unionBedGraphs/unionBedGraphs.cpp:99: CHRPOS UnionBedGraphs::ConsumeNextCoordinate(): Assertion `!queue.empty()' failed.
-
-
 
 #----------------------------------------
 #Run metilene:
@@ -943,7 +944,7 @@ nano metilene_run.sh
 
 h1='W'
 h2='C'
-metilene_dir=/home/celphin/scratch/Dryas/metilene_v0.2-8
+metilene_dir=/home/celphin/scratch/Dryas
 input_dir="/home/celphin/scratch/Dryas/CHG_CHH/Seedling_Metilene"
 
 maxdist=$1
@@ -952,18 +953,22 @@ mindiff=$3
 
 output_name=SE_CHH_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
 in_metilene="SE_metilene_"$h1"_"$h2".input"
-threads=32
+threads=15
 
+# remove the folder name from the metilene input file
+
+sed -i 's/SE_W_C_input_files\///g' SE_metilene_W_C.input
 
 #metilene:
 # params: maxdist, mincpgs, mindiff
-salloc -c32 --time 7:00:00 --mem 120000m --account def-cronk
+salloc -c15 --time 7:00:00 --mem 200000m --account def-cronk
 
 module load StdEnv/2020
 module load bedtools/2.30.0 
 sh metilene_run.sh 70 5 4
 sh metilene_run.sh 150 5 4 
 sh metilene_run.sh 70 5 0.7
+# done
 
 #----------------------------------------------------
 #Filter based on qval

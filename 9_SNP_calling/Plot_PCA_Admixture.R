@@ -576,10 +576,10 @@ dev.off()
 ###################################
 # Read in the FST data and plot along the genome
 
-FST_Nunavut_W_C <- read.table("./Data_filtered/Nunavut_W_C.weir.fst", header = TRUE)
-FST_Svalbard_W_C <- read.table("./Data_filtered/Svalbard_W_C.weir.fst", header = TRUE)
-FST_Sweden_W_C <- read.table("./Data_filtered/Sweden_W_C.weir.fst", header = TRUE)
-FST_Alaska_W_C <- read.table("./Data_filtered/Alaska_W_C.weir.fst", header = TRUE)
+FST_Nunavut_W_C <- read.table("./Data_rmbiased/Nunavut_W_C.weir.fst", header = TRUE)
+FST_Svalbard_W_C <- read.table("./Data_rmbiased/Svalbard_W_C.weir.fst", header = TRUE)
+FST_Sweden_W_C <- read.table("./Data_rmbiased/Sweden_W_C.weir.fst", header = TRUE)
+FST_Alaska_W_C <- read.table("./Data_rmbiased/Alaska_W_C.weir.fst", header = TRUE)
 
 
 # rolling mean
@@ -600,16 +600,16 @@ FST_Nunavut_W_C$CHROM <- factor(FST_Nunavut_W_C$CHROM, levels = chromosome_order
 # plot
 png("./plots/FST_Nunavut.png", width = 3000, height = 2700)
 FST_Nunavut_W_C %>%
-  ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
+  ggplot(.,aes(x=POS,y=mean_FST)) +
   geom_point(size=15)  +
   theme_classic()+
   facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
-  labs(y= "FST", x = "Genome_position")
+labs(y= "FST", x = "Genome_position")
 dev.off()
 
 png("./plots/FST_Alaska.png", width = 3000, height = 2700)
 FST_Alaska_W_C %>%
-  ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
+  ggplot(.,aes(x=POS,y=mean_FST)) +
   geom_point(size=15)  +
   theme_classic()+
   facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
@@ -618,7 +618,7 @@ dev.off()
 
 png("./plots/FST_Sweden.png", width = 3000, height = 2700)
 FST_Sweden_W_C %>%
-  ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
+  ggplot(.,aes(x=POS,y=mean_FST)) +
   geom_point(size=15)  +
   theme_classic()+
   facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
@@ -626,6 +626,44 @@ labs(y= "FST", x = "Genome_position")
 dev.off()
 
 png("./plots/FST_Svalbard.png", width = 3000, height = 2700)
+FST_Svalbard_W_C %>%
+  ggplot(.,aes(x=POS,y=mean_FST)) +
+  geom_point(size=15)  +
+  theme_classic()+
+  facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
+labs(y= "FST", x = "Genome_position")
+dev.off()
+
+#-------------------
+# plot
+png("./plots/FST1_Nunavut.png", width = 3000, height = 2700)
+FST_Nunavut_W_C %>%
+  ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
+  geom_point(size=15)  +
+  theme_classic()+
+  facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
+  labs(y= "FST", x = "Genome_position")
+dev.off()
+
+png("./plots/FST1_Alaska.png", width = 3000, height = 2700)
+FST_Alaska_W_C %>%
+  ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
+  geom_point(size=15)  +
+  theme_classic()+
+  facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
+labs(y= "FST", x = "Genome_position")
+dev.off()
+
+png("./plots/FST1_Sweden.png", width = 3000, height = 2700)
+FST_Sweden_W_C %>%
+  ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
+  geom_point(size=15)  +
+  theme_classic()+
+  facet_wrap(~ CHROM, drop = TRUE, ncol = 1)
+labs(y= "FST", x = "Genome_position")
+dev.off()
+
+png("./plots/FST1_Svalbard.png", width = 3000, height = 2700)
 FST_Svalbard_W_C %>%
   ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
   geom_point(size=15)  +
@@ -675,23 +713,22 @@ FST_ALAS_SVAL_SWED[
   !is.na(FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST.x) &
     !is.na(FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST.y) &
     !is.na(FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST) &
-    FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST.x > 0.009 &
-    FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST.y > 0.009 &
-    FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST > 0.009,
+    FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST.x > 0.01 &
+    FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST.y > 0.01 &
+    FST_ALAS_SVAL_SWED$WEIR_AND_COCKERHAM_FST > 0.01,
 ]
 
-# CHROM      POS WEIR_AND_COCKERHAM_FST.x   mean_FST.x WEIR_AND_COCKERHAM_FST.y  mean_FST.y WEIR_AND_COCKERHAM_FST
-# 19559 DoctH0-3 12541693               0.11111100  0.012591571                0.1000000 -0.02332016               0.037037
-# 21626 DoctH0-3 26421871               0.02777780  0.038783267                0.0333333  0.01324404               0.037037
-# 23285 DoctH0-4 10177861               0.00900901 -0.002800126                0.2000000  0.09154359               0.071730
-# 37713 DoctH0-7  2195359               0.05555560  0.003472225                0.0285714  0.01978021               0.166667
+# CHROM      POS WEIR_AND_COCKERHAM_FST.x  mean_FST.x WEIR_AND_COCKERHAM_FST.y   mean_FST.y WEIR_AND_COCKERHAM_FST
+# 6370  DoctH0-2  2280352                0.0555556 0.015279046                0.0181818  0.013643487              0.1666670
+# 13790 DoctH0-3 12541693                0.1111110 0.008248637                0.1000000 -0.055504029              0.0370370
+# 14559 DoctH0-3 21495626                0.1666670 0.017875012                0.4000000  0.039116880              0.1111110
+# 14987 DoctH0-3 26421871                0.0277778 0.058142628                0.0333333  0.044383833              0.0370370
+# 25146 DoctH0-6  9705642                0.1111110 0.086419667                0.0285714 -0.006457144              0.2222220
+# 28851 DoctH0-7 10655266                0.0370370 0.011217039                0.0285714  0.017932880              0.0277778
 # mean_FST
-# 19559  0.013538368
-# 21626 -0.001535076
-# 23285  0.007437518
-# 37713  0.074173066
-
-
-
-
-
+# 6370  0.12934804
+# 13790 0.03779153
+# 14559 0.05476821
+# 14987 0.01712798
+# 25146 0.20750941
+# 28851 0.05656102
