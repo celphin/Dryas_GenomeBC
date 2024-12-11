@@ -847,8 +847,8 @@ sh metilene_prep.sh
 #Phenology specific adjustments,
 nano metilene_run.sh
 
-h1='W'
-h2='C'
+h1='Mat'
+h2='Sen'
 metilene_dir=/home/celphin/scratch/Dryas
 input_dir="/home/celphin/scratch/Dryas/CHG_CHH/Phenology_Metilene"
 
@@ -857,7 +857,7 @@ mincpgs=$2
 mindiff=$3
 
 output_name=Phenology_CHH_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
-in_metilene="Phenology_metilene_"$h1"_"$h2".input"
+in_metilene=metilene_Mat_Sen.input
 threads=15
 
 #-------
@@ -876,18 +876,25 @@ sh metilene_run.sh 150 5 4
 sh metilene_run.sh 70 5 0.7
 # done
 
-#----------------------------------------------------
+#-------------------------------------
 #Filter based on qval
 #params: maxdist, mincpgs, mindiff, minmeandif, q-value
-#h1="Mat", h2="Sen"
-#input_dir="/home/msandler/scratch/Phenology_Metilene/${h1}_${h2}_input_files"
-#outputname="$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
+
+nano  metilene_filter_qval.sh
+h1='Mat'
+h2='Sen'
+metilene_dir=/home/celphin/scratch/Dryas
+input_dir="/home/celphin/scratch/Dryas/CHG_CHH/Phenology_Metilene"
+outputname=Phenology_CHH_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
+
+# to run
 module load StdEnv/2023
 module load r/4.4.0
 module load gdal
 module load udunits
 module load python
-export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.4/
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.4/
+
 sh metilene_filter_qval.sh 70 5 4 0.9 0.001
 sh metilene_filter_qval.sh 150 5 4 0.9 1e-5
 sh metilene_filter_qval.sh 70 5 0.7 0.7 0.001
@@ -973,29 +980,40 @@ sh metilene_run.sh 70 5 0.7
 #----------------------------------------------------
 #Filter based on qval
 #params: maxdist, mincpgs, mindiff, minmeandif, q-value
-#h1="W", h2="C"
-#input_dir="/home/msandler/scratch/Seedling_Metilene/SE_${h1}_${h2}_input_files"
-#outputname=SE_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
+
+nano  metilene_filter_qval.sh
+h1="W" 
+h2="C"
+metilene_dir=/home/celphin/scratch/Dryas
+input_dir="/home/celphin/scratch/Dryas/CHG_CHH/Seedling_Metilene"
+outputname=Phenology_CHH_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
+
+# to run
 module load StdEnv/2023
 module load r/4.4.0
 module load gdal
 module load udunits
 module load python
-export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.4/
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.4/
+
 sh metilene_filter_qval.sh 70 5 4 0.9 0.001
+# Wrote 3951 DMRs with adj. p-value<0.001, a minimum absolute difference>=0.9, a minimum length [CpG]>=10 and a minimum length [nt]>=0
 sh metilene_filter_qval.sh 150 5 4 0.9 1e-5
+# Wrote 2356 DMRs with adj. p-value<1e-5, a minimum absolute difference>=0.9, a minimum length [CpG]>=10 and a minimum length [nt]>=0
 sh metilene_filter_qval.sh 70 5 0.7 0.7 0.001
+# Wrote 4008 DMRs with adj. p-value<0.001, a minimum absolute difference>=0.7, a minimum length [CpG]>=10 and a minimum length [nt]>=0
 
+############################
+# Intersect Seedlings
+
+cp Seedling_Metilene/SE_CHH_W_C_150_5_4_0.9_qval.1e-5.bedgraph SE_CHH_W_C.bedGraph
+cp Phenology_Metilene/Phenology_CHH_Mat_Sen_150_5_4_0.9_qval.1e-5.bedgraph Phenology_CHH_Mat_Sen.bedGraph
+
+#Bedtools intersect all 4
+module load StdEnv/2023 bedtools/2.31.0
+bedtools intersect -u -a SE_CHH_W_C.bedGraph -b Sweden_CHH_W_C.bedGraph > intersect_SE_Sweden_W_C_CHH.bedGraph
+# 191 intersect_SE_Sweden_W_C_CHH.bedGraph
+bedtools intersect -u -a Phenology_CHH_Mat_Sen.bedGraph -b Nunavut_CHH_W_C.bedGraph > intersect_Pheno_Nunavut_Mat_Sen_CHH.bedGraph
+# 631 intersect_Pheno_Nunavut_Mat_Sen_CHH.bedGraph
 
 #############################
-# Gene features of DMRs
-
-# SNPeff and Intersect with TEs
-
-
-
-
-#############################
-# Nearest gene and its function for DMRs
-
-# intersect with annotation

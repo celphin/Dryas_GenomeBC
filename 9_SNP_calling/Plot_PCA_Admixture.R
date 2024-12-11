@@ -295,7 +295,7 @@ Groups_summary_admix <- All_pop_data %>%
 
 # PCA = 27.00  5.62  2.63  1.63  1.50  1.26  1.02  0.93  0.93  0.85  0.82  0.77  0.73  0.73  0.68  0.67
 All_samples_data$Site.x <- as.factor(All_samples_data$Site.x)
-png("./plots/PCA_PC1_PC2_maf0.png", width = 3000, height = 2700)
+pdf("./plots/PCA_PC1_PC2_maf0.pdf", width = 100, height = 90)
 All_samples_data %>%
   ggplot(.,aes(x=PC1,y=PC2)) +
   geom_point(aes(color = Treatment.x), size=15)  +
@@ -310,7 +310,7 @@ All_samples_data %>%
 dev.off()
 
 All_samples_data$Site.x <- as.factor(All_samples_data$Site.x)
-png("./plots/PCA_PC1_PC3_maf0.png", width = 3000, height = 2700)
+pdf("./plots/PCA_PC1_PC3_maf0.pdf", width = 100, height = 90)
 All_samples_data %>%
   ggplot(.,aes(x=PC1,y=PC3)) +
   geom_point(aes(color = Treatment.x), size=15)  +
@@ -326,7 +326,7 @@ dev.off()
 #--------------------------------
 W_C_samples_data <- All_samples_data[c(which(All_samples_data$Treatment.x=="W"),which(All_samples_data$Treatment.x=="C")),]
 
-png("./plots/PCA_PC1_PC2_maf0_W_C.png", width = 3000, height = 2700)
+pdf("./plots/PCA_PC1_PC2_maf0_W_C.pdf", width = 100, height = 90)
 W_C_samples_data %>%
   ggplot(.,aes(x=PC1,y=PC2)) +
   geom_point(aes(color = Treatment.x), size=20)  +
@@ -343,7 +343,7 @@ dev.off()
 
 #-------------------------------
 
-png("./plots/PCA_PC2_PC3_maf0_W_C.png", width = 3000, height = 2700)
+pdf("./plots/PCA_PC2_PC3_maf0_W_C.pdf", width = 100, height = 90)
 W_C_samples_data %>%
   ggplot(.,aes(x=PC2,y=PC3)) +
   geom_point(aes(color = Treatment.x), size=20)  +
@@ -360,7 +360,7 @@ dev.off()
 
 #-------------------------------
 
-png("./plots/PCA_PC3_PC4_maf0_W_C.png", width = 3000, height = 2700)
+pdf("./plots/PCA_PC3_PC4_maf0_W_C.pdf", width = 100, height = 90)
 W_C_samples_data %>%
   ggplot(.,aes(x=PC3,y=PC4)) +
   geom_point(aes(color = Treatment.x), size=20)  +
@@ -377,7 +377,7 @@ dev.off()
 
 #-------------------------------
 
-png("./plots/PCA_PC5_PC6_maf0_W_C.png", width = 3000, height = 2700)
+pdf("./plots/PCA_PC5_PC6_maf0_W_C.pdf", width = 100, height = 90)
 W_C_samples_data %>%
   ggplot(.,aes(x=PC5,y=PC6)) +
   geom_point(aes(color = Treatment.x), size=20)  +
@@ -400,7 +400,7 @@ dev.off()
 W_C_samples_data$Site_Alex <- gsub("CAS|WIL|FER|MEA|DRY", "ALEX", W_C_samples_data$Site.x)
 W_C_samples_data$mix <- as.factor(paste0(W_C_samples_data$Site_Alex, "_", W_C_samples_data$Treatment.x))
 
-png("./plots/PCA_PC1_W_C_diff.png", width = 1000, height = 700)
+pdf("./plots/PCA_PC1_W_C_diff.pdf",width = 30, height = 20)
 
 # Create and save the plot
 print(
@@ -415,7 +415,7 @@ print(
 )
 dev.off()
 
-png("./plots/PCA_PC3_W_C_diff.png", width = 1000, height = 700)
+pdf("./plots/PCA_PC3_W_C_diff.pdf", width = 30, height = 20)
 
 # Create and save the plot
 print(
@@ -430,7 +430,7 @@ print(
 )
 dev.off()
 
-png("./plots/PCA_PC1_W_C_treat.png", width = 1000, height = 700)
+pdf("./plots/PCA_PC1_W_C_treat.pdf", width = 30, height = 20)
 
 # Create and save the plot
 print(
@@ -445,7 +445,7 @@ print(
 )
 dev.off()
 
-png("./plots/PCA_PC3_W_C_treat.png", width = 1000, height = 700)
+pdf("./plots/PCA_PC3_W_C_treat.pdf",  width = 30, height = 20)
 
 # Create and save the plot
 print(
@@ -494,7 +494,7 @@ summary(anova_model)
 # PC5: 0.00880 **
 
 
-png("./plots/PCA_PC1_PC3_maf0_W_C.png", width = 3000, height = 2700)
+pdf("./plots/PCA_PC1_PC3_maf0_W_C.pdf", width = 100, height = 90)
 W_C_samples_data %>%
   ggplot(.,aes(x=PC1,y=PC3)) +
   geom_point(aes(color = Treatment.x), size=20)  +
@@ -508,7 +508,7 @@ W_C_samples_data %>%
   labs(y= "PC3", x = "PC1")
 dev.off()
 
-png("./plots/PCA_PC5_PC3_maf0_W_C.png", width = 3000, height = 2700)
+pdf("./plots/PCA_PC5_PC3_maf0_W_C.pdf", width = 100, height = 90)
 W_C_samples_data %>%
   ggplot(.,aes(x=PC5,y=PC3)) +
   geom_point(aes(color = Treatment.x), size=20)  +
@@ -560,13 +560,13 @@ ordered5 = ordered4#[order(ordered4$Site),]
 
 
 #ordered4 = mergedAdmixTable[order(mergedAdmixTable$Latitude.x),]
-
-ordered5$Site <-  as.factor(ordered5$Site)
+ordered5$Site <-  as.factor(ordered4$Site)
+ordered5$Site <-  as.factor(ordered5$Treatment.x)
 
 #map_colours_5g <- c("deepskyblue", "yellow",  "green", "red")
 map_colours_5g <- c("green",  "yellow", "deepskyblue", "red")
 
-png("./plots/Site_Admix_4_bar.png", width = 6000, height = 2000)
+pdf("./plots/Site_Admix_4_bar.pdf", width = 90, height = 40)
 # bottom, left, top, and right
 par(mar=c(30,10,4,4))
 barplot(t(as.matrix(ordered5[,c(4:7)])), col=map_colours_5g, border=NA,
@@ -598,7 +598,7 @@ FST_Sweden_W_C$CHROM <- factor(FST_Sweden_W_C$CHROM, levels = chromosome_order)
 FST_Nunavut_W_C$CHROM <- factor(FST_Nunavut_W_C$CHROM, levels = chromosome_order)
 
 # plot
-png("./plots/FST_Nunavut.png", width = 3000, height = 2700)
+pdf("./plots/FST_Nunavut.pdf", width = 100, height = 90)
 FST_Nunavut_W_C %>%
   ggplot(.,aes(x=POS,y=mean_FST)) +
   geom_point(size=15)  +
@@ -607,7 +607,7 @@ FST_Nunavut_W_C %>%
 labs(y= "FST", x = "Genome_position")
 dev.off()
 
-png("./plots/FST_Alaska.png", width = 3000, height = 2700)
+pdf("./plots/FST_Alaska.pdf", width = 100, height = 90)
 FST_Alaska_W_C %>%
   ggplot(.,aes(x=POS,y=mean_FST)) +
   geom_point(size=15)  +
@@ -616,7 +616,7 @@ FST_Alaska_W_C %>%
 labs(y= "FST", x = "Genome_position")
 dev.off()
 
-png("./plots/FST_Sweden.png", width = 3000, height = 2700)
+pdf("./plots/FST_Sweden.pdf", width = 100, height = 90)
 FST_Sweden_W_C %>%
   ggplot(.,aes(x=POS,y=mean_FST)) +
   geom_point(size=15)  +
@@ -625,7 +625,7 @@ FST_Sweden_W_C %>%
 labs(y= "FST", x = "Genome_position")
 dev.off()
 
-png("./plots/FST_Svalbard.png", width = 3000, height = 2700)
+pdf("./plots/FST_Svalbard.pdf", width = 100, height = 90)
 FST_Svalbard_W_C %>%
   ggplot(.,aes(x=POS,y=mean_FST)) +
   geom_point(size=15)  +
@@ -636,7 +636,7 @@ dev.off()
 
 #-------------------
 # plot
-png("./plots/FST1_Nunavut.png", width = 3000, height = 2700)
+pdf("./plots/FST1_Nunavut.pdf", width = 100, height = 90)
 FST_Nunavut_W_C %>%
   ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
   geom_point(size=15)  +
@@ -645,7 +645,7 @@ FST_Nunavut_W_C %>%
   labs(y= "FST", x = "Genome_position")
 dev.off()
 
-png("./plots/FST1_Alaska.png", width = 3000, height = 2700)
+pdf("./plots/FST1_Alaska.pdf", width = 100, height = 90)
 FST_Alaska_W_C %>%
   ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
   geom_point(size=15)  +
@@ -654,7 +654,7 @@ FST_Alaska_W_C %>%
 labs(y= "FST", x = "Genome_position")
 dev.off()
 
-png("./plots/FST1_Sweden.png", width = 3000, height = 2700)
+pdf("./plots/FST1_Sweden.pdf", width = 100, height = 90)
 FST_Sweden_W_C %>%
   ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
   geom_point(size=15)  +
@@ -663,7 +663,7 @@ FST_Sweden_W_C %>%
 labs(y= "FST", x = "Genome_position")
 dev.off()
 
-png("./plots/FST1_Svalbard.png", width = 3000, height = 2700)
+pdf("./plots/FST1_Svalbard.pdf", width = 100, height = 90)
 FST_Svalbard_W_C %>%
   ggplot(.,aes(x=POS,y=WEIR_AND_COCKERHAM_FST)) +
   geom_point(size=15)  +
@@ -675,7 +675,7 @@ dev.off()
 #-------------------
 # Join
 FST_SVAL_SWED<- left_join(FST_Svalbard_W_C, FST_Sweden_W_C, by = c("CHROM", "POS"))
-png("./plots/FST_SVal_SWED.png", width = 3000, height = 2700)
+pdf("./plots/FST_SVal_SWED.pdf", width = 100, height = 90)
 FST_SVAL_SWED %>%
   ggplot(.,aes(x=mean_FST.x,y=mean_FST.y)) +
   geom_point(size=15)  +
@@ -685,7 +685,7 @@ FST_SVAL_SWED %>%
 dev.off()
 
 FST_ALAS_SWED<- left_join(FST_Alaska_W_C, FST_Sweden_W_C, by = c("CHROM", "POS"))
-png("./plots/FST_ALAS_SWED.png", width = 3000, height = 2700)
+pdf("./plots/FST_ALAS_SWED.pdf", width = 100, height = 90)
 FST_ALAS_SWED %>%
   ggplot(.,aes(x=mean_FST.x,y=mean_FST.y)) +
   geom_point(size=15)  +
@@ -695,7 +695,7 @@ FST_ALAS_SWED %>%
 dev.off()
 
 FST_ALAS_SVAL<- left_join(FST_Alaska_W_C, FST_Svalbard_W_C, by = c("CHROM", "POS"))
-png("./plots/FST_ALAS_SVAL.png", width = 3000, height = 2700)
+pdf("./plots/FST_ALAS_SVAL.pdf", width = 100, height = 90)
 FST_ALAS_SVAL %>%
   ggplot(.,aes(x=mean_FST.x,y=mean_FST.y)) +
   geom_point(size=15)  +

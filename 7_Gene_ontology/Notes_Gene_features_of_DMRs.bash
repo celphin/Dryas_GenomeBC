@@ -1298,7 +1298,7 @@ mv *.gff3 gff3/
 module load StdEnv/2023 bedtools/2.31.0
 
 cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/
-FILES=$(ls *.bed)
+FILES=$(ls *-All-TE.bed)
 echo ${FILES}
 
 for value in $unique_values; do
@@ -1314,6 +1314,26 @@ wc -l ${file}-${value}.bed
 done
 done
 
+#-----------------
+module load StdEnv/2023 bedtools/2.31.0
+unique_values=$(awk '{print $3}' /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 | sort | uniq)
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/
+FILES=$(ls ./sites/*-All-TE.bed)
+echo ${FILES}
+
+for value in $unique_values; do
+for file in ${FILES}; do
+intersectBed \
+-u \
+-a ${file} \
+-b ./gff3/${value}.gff3 \
+> ${file}-${value}.bed
+
+wc -l ${file}-${value}.bed
+
+done
+done
 
 
 #############################################
@@ -1882,6 +1902,7 @@ module load StdEnv/2023 bedtools/2.31.0
 cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/
 FILES=$(ls ./CHH/sites/*_CHH.bed-All-TE.bed)
 echo ${FILES}
+unique_values=$(awk '{print $3}' /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 | sort | uniq)
 
 for value in $unique_values; do
 for file in ${FILES}; do
@@ -1903,3 +1924,235 @@ mkdir TEs
 mv *.bed-*.bed TEs
 
 
+#################################
+# Look at seedling and phenology in CHH
+
+module load StdEnv/2023 bedtools/2.31.0
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH_Pheno_SE
+
+FILES=$(ls /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH_Pheno_SE/*.bedGraph)
+echo ${FILES}
+
+for file in ${FILES}; do
+    # Run the command on the file and create the .bed file
+    grep -v track "$file" | awk '{print $1 "\t" $2 "\t" $3}' > "${file%.bedGraph}.bed"
+    echo "Processed $file"
+done
+
+salloc -c1 --time 3:00:00 --mem 120000m --account def-cronk
+
+# run SNPEff
+module load StdEnv/2023 java/21.0.1
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH_Pheno_SE
+FILES=$(ls /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH_Pheno_SE/*.bed)
+echo ${FILES}
+
+cd /home/celphin/scratch/Dryas/snpEff
+
+for file in ${FILES}; do
+java -Xmx8g -jar snpEff.jar -i bed OldDoct "$file" > "$file".out
+echo "Processed $file"
+done
+
+
+# extract the immediate feature types and count them
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH_Pheno_SE
+FILES=$(ls *.out)
+echo ${FILES}
+
+for file in ${FILES}; do
+awk -F'[;:]' '{print $1 $2}' "$file" > "$file"1
+echo 
+echo "$file Upstream"
+grep "Upstream" "$file"1 | wc -l 
+echo "$file Downstream"
+grep "Downstream" "$file"1 | wc -l 
+echo "$file Gene"
+grep "Gene" "$file"1 | wc -l 
+echo "$file Intergenic"
+grep "Intergenic" "$file"1 | wc -l 
+echo "$file Intron"
+grep "Intron" "$file"1 | wc -l 
+echo "$file Exon"
+grep "Exon" "$file"1 | wc -l 
+done
+
+intersect_Pheno_Nunavut_Mat_Sen_CHH.bed.out Upstream
+181
+intersect_Pheno_Nunavut_Mat_Sen_CHH.bed.out Downstream
+161
+intersect_Pheno_Nunavut_Mat_Sen_CHH.bed.out Gene
+14
+intersect_Pheno_Nunavut_Mat_Sen_CHH.bed.out Intergenic
+250
+intersect_Pheno_Nunavut_Mat_Sen_CHH.bed.out Intron
+17
+intersect_Pheno_Nunavut_Mat_Sen_CHH.bed.out Exon
+8
+
+intersect_SE_Sweden_W_C_CHH.bed.out Upstream
+62
+intersect_SE_Sweden_W_C_CHH.bed.out Downstream
+50
+intersect_SE_Sweden_W_C_CHH.bed.out Gene
+2
+intersect_SE_Sweden_W_C_CHH.bed.out Intergenic
+70
+intersect_SE_Sweden_W_C_CHH.bed.out Intron
+6
+intersect_SE_Sweden_W_C_CHH.bed.out Exon
+2
+
+Phenology_CHH_Mat_Sen.bed.out Upstream
+3860
+Phenology_CHH_Mat_Sen.bed.out Downstream
+3186
+Phenology_CHH_Mat_Sen.bed.out Gene
+197
+Phenology_CHH_Mat_Sen.bed.out Intergenic
+4466
+Phenology_CHH_Mat_Sen.bed.out Intron
+341
+Phenology_CHH_Mat_Sen.bed.out Exon
+169
+
+SE_CHH_W_C.bed.out Upstream
+818
+SE_CHH_W_C.bed.out Downstream
+575
+SE_CHH_W_C.bed.out Gene
+31
+SE_CHH_W_C.bed.out Intergenic
+836
+SE_CHH_W_C.bed.out Intron
+61
+SE_CHH_W_C.bed.out Exon
+34
+
+#-------------------
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH_Pheno_SE
+FILES=$(ls *.bed)
+echo ${FILES}
+
+for file in ${FILES}; do
+intersectBed \
+-u \
+-a ${file} \
+-b /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 \
+> ${file}-All-TE.bed
+
+#head ${file}-All-TE.bed
+wc -l ${file}-All-TE.bed
+
+done
+
+# counts
+wc -l *-All-TE.bed
+563 intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed
+122 intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed
+10813 Phenology_CHH_Mat_Sen.bed-All-TE.bed
+1670 SE_CHH_W_C.bed-All-TE.bed
+
+#-----------------
+module load StdEnv/2023 bedtools/2.31.0
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/
+FILES=$(ls ./CHH_Pheno_SE/*-All-TE.bed)
+echo ${FILES}
+unique_values=$(awk '{print $3}' /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 | sort | uniq)
+
+for value in $unique_values; do
+for file in ${FILES}; do
+intersectBed \
+-u \
+-a ${file} \
+-b ./gff3/${value}.gff3 \
+> ${file}-${value}.bed
+
+wc -l ${file}-${value}.bed
+
+done
+done
+
+cd /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH_Pheno_SE
+wc -l *.bed-*.bed
+
+mkdir TEs
+mv *.bed-*.bed TEs
+
+65 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-CACTA_TIR_transposon.bed
+11 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-CACTA_TIR_transposon.bed
+1330 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-CACTA_TIR_transposon.bed
+166 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-CACTA_TIR_transposon.bed
+
+29 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-Copia_LTR_retrotransposon.bed
+13 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-Copia_LTR_retrotransposon.bed
+1017 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-Copia_LTR_retrotransposon.bed
+147 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-Copia_LTR_retrotransposon.bed
+
+44 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-Gypsy_LTR_retrotransposon.bed
+5 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-Gypsy_LTR_retrotransposon.bed
+676 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-Gypsy_LTR_retrotransposon.bed
+98 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-Gypsy_LTR_retrotransposon.bed
+
+
+115 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-hAT_TIR_transposon.bed
+27 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-hAT_TIR_transposon.bed
+2282 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-hAT_TIR_transposon.bed
+307 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-hAT_TIR_transposon.bed
+
+54 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-helitron.bed
+7 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-helitron.bed
+1101 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-helitron.bed
+154 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-helitron.bed
+
+6 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-identity.bed
+1 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-identity.bed
+169 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-identity.bed
+37 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-identity.bed
+
+1 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-long_terminal_repeat.bed
+1 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-long_terminal_repeat.bed
+61 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-long_terminal_repeat.bed
+15 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-long_terminal_repeat.bed
+
+231 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-LTR_retrotransposon.bed
+37 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-LTR_retrotransposon.bed
+4159 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-LTR_retrotransposon.bed
+548 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-LTR_retrotransposon.bed
+
+253 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-Mutator_TIR_transposon.bed
+60 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-Mutator_TIR_transposon.bed
+4244 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-Mutator_TIR_transposon.bed
+712 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-Mutator_TIR_transposon.bed
+
+32 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-PIF_Harbinger_TIR_transposon.bed
+4 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-PIF_Harbinger_TIR_transposon.bed
+712 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-PIF_Harbinger_TIR_transposon.bed
+98 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-PIF_Harbinger_TIR_transposon.bed
+
+6 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-repeat_region.bed
+1 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-repeat_region.bed
+169 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-repeat_region.bed
+37 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-repeat_region.bed
+
+0 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-sequence_ontology.bed
+0 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-sequence_ontology.bed
+0 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-sequence_ontology.bed
+0 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-sequence_ontology.bed
+
+0 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-site.bed
+0 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-site.bed
+10 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-site.bed
+1 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-site.bed
+
+0 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-target_site_duplication.bed
+0 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-target_site_duplication.bed
+10 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-target_site_duplication.bed
+1 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-target_site_duplication.bed
+
+0 ./CHH_Pheno_SE/intersect_Pheno_Nunavut_Mat_Sen_CHH.bed-All-TE.bed-Tc1_Mariner_TIR_transposon.bed
+0 ./CHH_Pheno_SE/intersect_SE_Sweden_W_C_CHH.bed-All-TE.bed-Tc1_Mariner_TIR_transposon.bed
+11 ./CHH_Pheno_SE/Phenology_CHH_Mat_Sen.bed-All-TE.bed-Tc1_Mariner_TIR_transposon.bed
+2 ./CHH_Pheno_SE/SE_CHH_W_C.bed-All-TE.bed-Tc1_Mariner_TIR_transposon.bed

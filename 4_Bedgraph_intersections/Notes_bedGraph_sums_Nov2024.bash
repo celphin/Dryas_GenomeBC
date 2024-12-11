@@ -105,3 +105,97 @@ awk 'OFS="\t" {sum=0; for (col=4; col<=NF; col++) sum += $col; print $1, $2, $3,
 
 bedtools unionbedg -i C*ALAS*.deduplicated.bedGraph > C_ALAS_total.bedGraph
 awk 'OFS="\t" {sum=0; for (col=4; col<=NF; col++) sum += $col; print $1, $2, $3, sum/(NF-4+1); }' C_ALAS_total.bedGraph > C_ALAS.bedGraph
+
+####################################
+# Total bedGraph intersections
+
+tmux new-session -s bedgraph
+tmux attach-session -t bedgraph
+
+mkdir /home/celphin/scratch/Dryas/DMR_bedGraph_files
+cd /home/celphin/scratch/Dryas/DMR_bedGraph_files
+
+# CHH methylation and DMRs
+cp /home/celphin/scratch/Dryas/CHG_CHH/*.bedGraph .
+
+# DMRs
+cp /home/celphin/scratch/Dryas/CrossMap/file_for_converting/BedGraphs_From_Metilene/*.bedGraph .
+cp /home/celphin/scratch/Dryas/CrossMap/file_for_converting/Bedgraphs_Intersected_Subtracted/*.bedGraph .
+cp /home/celphin/scratch/Dryas/CrossMap/file_for_converting/Bedgraphs_Intersected_Subtracted/*.bedgraph .
+
+
+#-------------------
+# test
+module load StdEnv/2023 bedtools/2.31.0
+
+#Bedtools intersect all but Svalbard
+bedtools intersect -u -a X.bedGraph -b Y.bedGraph  > X_Y_intersect.bedgraph
+
+
+#-------------------
+# Run on all
+
+nano intersect_bedGraph.sh
+
+#!/bin/bash
+
+# Set the directory containing the bedGraph files
+bedGraph_dir="/home/celphin/scratch/Dryas/DMR_bedGraph_files"  
+output_dir="/home/celphin/scratch/Dryas/DMR_bedGraph_files/intersections" 
+matrix_file="intersection_matrix.txt"  
+
+# Create the output directory if it doesn't exist
+mkdir -p "$output_dir"
+
+# Create an array of all bedGraph files in the directory
+bedGraph_files=($bedGraph_dir/*.bedGraph)
+
+# Initialize matrix as an empty string
+matrix=""
+
+# First, create the header row with file names (to be the column names in the matrix)
+header_row=""
+
+for ((i=0; i<${#bedGraph_files[@]}; i++)); do
+  header_row+=$(basename "${bedGraph_files[$i]}")$'\t'
+done
+
+# Remove the last tab from the header row
+header_row=${header_row%$'\t'}
+
+# Add the header to the matrix
+matrix+="$header_row"$'\n'
+
+# Loop over all pairs of bedGraph files
+for ((i=0; i<${#bedGraph_files[@]}; i++)); do
+  # Create a row for the i-th file (start with the file name)
+  row="$(basename "${bedGraph_files[$i]}")"
+
+  for ((j=0; j<${#bedGraph_files[@]}; j++)); do
+    # Get the file names
+    file1="${bedGraph_files[$i]}"
+    file2="${bedGraph_files[$j]}"
+
+    # If it's the diagonal (when i == j), we want to count the total number of lines in the file
+    if [ "$i" -eq "$j" ]; then
+      intersection_count=$(wc -l < "$file1")
+    else
+      # Otherwise, run bedtools intersect to get the intersection and the count
+      intersection_output="$output_dir/$(basename "$file1")_$(basename "$file2")_intersection.bed"
+      intersection_count=$(bedtools intersect -a "$file1" -b "$file2" -u > "$intersection_output"; wc -l < "$intersection_output")
+    fi
+
+    # Append the intersection count to the current row, separated by a tab
+    row+="$intersection_count"$'\t'
+  done
+
+  # Remove the last tab from the row and add it to the matrix
+  row=${row%$'\t'}
+  matrix+="$row"$'\n'
+done
+
+# Save the matrix to the file
+echo -e "$matrix" > "$matrix_file"
+
+# Print a message indicating the file was saved
+echo "Matrix saved to $matrix_file"
