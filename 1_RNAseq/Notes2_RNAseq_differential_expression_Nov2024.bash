@@ -372,9 +372,70 @@ plotSmear(lrt, de.tags=deGenes)
 abline(h=c(-1, 1), col=2)
 dev.off()
 
+#####################
+# Try glmm to include random effects (site)
+# https://myles-lewis.github.io/glmmSeq/articles/glmmSeq.html#metadata
+# https://myles-lewis.github.io/glmmSeq/
+
+install.packages("glmmSeq")
+
+library(glmmSeq)
+set.seed(1234)
+
+tpm <- dge.filt
+
+disp  <- setNames(edgeR::estimateDisp(tpm)$tagwise.dispersion, rownames(tpm))
+
+sizeFactors <- calcNormFactors(counts, method="TMM")
+
+results <- glmmSeq(~ treatment + (1 | site),
+                   countdata = tpm,
+                   metadata = metadata,
+                   dispersion = disp,
+                   progress = TRUE)
+
+names(attributes(results))
+
+stats <- summary(results)
+
+results1 <- glmmQvals(results)
+
+
+
+
+
+
+
+
+
+
 ##################################
 # Run for each site
+
+tmux new-session -s RNA
+tmux attach-session -t RNA
+
+# Cedar1
+cd /home/celphin/projects/rrg-rieseber-ac/rpp-rieseber/celphin/Dryas/RNAseq_analysis/
+
+# copy to Beluga scratch/
+cd /home/celphin/scratch/Dryas/RNAseq_analysis/
+
+
+# get R on server
+# open R
+module load StdEnv/2020
+module load r/4.2.1
+module load gdal
+module load udunits
+module load python
+#export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.2.1/
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.2.1/
+
+R
+
 setwd ("/home/celphin/projects/rrg-rieseber-ac/rpp-rieseber/celphin/Dryas/RNAseq_analysis/")
+setwd ("/home/celphin/scratch/Dryas/RNAseq_analysis/")
 
 #find your working directory:
 getwd()
@@ -410,6 +471,7 @@ designMat <- model.matrix( ~ 0 + treat_site, data=dge_norm$samples)
 keep.exprs <- filterByExpr(dge_norm, design = designMat)
 dge.filt <- dge_norm[keep.exprs,]
 dim(dge.filt)
+# [1] 24834    69
 
 # Dispersion
 dge.filt <- estimateGLMCommonDisp(dge.filt, design=designMat)
@@ -445,6 +507,14 @@ summary(decideTests(qlf, method="hierarchical", adjust.method="fdr", p.value=0.0
 Alaska_W_C_DERs <- lrt$table[which(!decideTests(lrt, method="hierarchical", adjust.method="fdr", p.value=0.05,lfc=1)==0),]
 write.table(Alaska_W_C_DERs, file = "./RNA_Alaska_W_C_DERs.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
 
+#----------------
+Alaska_W_C_DERs_updown <- as.data.frame(decideTests(lrt, method="hierarchical", adjust.method="fdr", p.value=0.05,lfc=0))
+Alaska_W_C_DERs_updown$Gene <- rownames(Alaska_W_C_DERs_updown)
+colnames(Alaska_W_C_DERs_updown) <- c("UpDown", "Gene")
+Alaska_W_C_DERs_updown0 <- Alaska_W_C_DERs_updown[-which(Alaska_W_C_DERs_updown$UpDown==0),]
+write.table(Alaska_W_C_DERs_updown0, file = "./RNA_Alaska_W_C_DERs_updown.txt", quote = FALSE, row.names=FALSE, col.names=TRUE, sep="\t")
+
+#-------------
 png("./plots/Plot_MD_Alaska.png", width = 700, height = 500)
 plotMD(lrt)
 dev.off()
@@ -478,6 +548,14 @@ summary(decideTests(qlf, method="hierarchical", adjust.method="fdr", p.value=0.0
 Norway_W_C_DERs <-  lrt$table[which(!decideTests(lrt, method="hierarchical", adjust.method="fdr", p.value=0.05,lfc=1)==0),]
 write.table(Norway_W_C_DERs, file = "./RNA_Norway_W_C_DERs.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
 
+#----------------
+Norway_W_C_DERs_updown <- as.data.frame(decideTests(lrt, method="hierarchical", adjust.method="fdr", p.value=0.05,lfc=0))
+Norway_W_C_DERs_updown$Gene <- rownames(Norway_W_C_DERs_updown)
+colnames(Norway_W_C_DERs_updown) <- c("UpDown", "Gene")
+Norway_W_C_DERs_updown0 <- Norway_W_C_DERs_updown[-which(Norway_W_C_DERs_updown$UpDown==0),]
+write.table(Norway_W_C_DERs_updown0, file = "./RNA_Norway_W_C_DERs_updown.txt", quote = FALSE, row.names=FALSE, col.names=TRUE, sep="\t")
+#----------------------
+
 png("./plots/Plot_MD_Norway.png", width = 700, height = 500)
 plotMD(lrt)
 dev.off()
@@ -510,6 +588,14 @@ summary(decideTests(qlf, method="hierarchical", adjust.method="fdr", p.value=0.0
 Sweden_W_C_DERs <-   lrt$table[which(!decideTests(lrt, method="hierarchical", adjust.method="fdr", p.value=0.05,lfc=1)==0),]
 write.table(Sweden_W_C_DERs, file = "./RNA_Sweden_W_C_DERs.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
 
+#----------------
+Sweden_W_C_DERs_updown <- as.data.frame(decideTests(lrt, method="hierarchical", adjust.method="fdr", p.value=0.05,lfc=0))
+Sweden_W_C_DERs_updown$Gene <- rownames(Sweden_W_C_DERs_updown)
+colnames(Sweden_W_C_DERs_updown) <- c("UpDown", "Gene")
+Sweden_W_C_DERs_updown0 <- Sweden_W_C_DERs_updown[-which(Sweden_W_C_DERs_updown$UpDown==0),]
+write.table(Sweden_W_C_DERs_updown0, file = "./RNA_Sweden_W_C_DERs_updown.txt", quote = FALSE, row.names=FALSE, col.names=TRUE, sep="\t")
+#----------------------
+
 png("./plots/Plot_MD_Swed.png", width = 700, height = 500)
 plotMD(lrt)
 dev.off()
@@ -539,6 +625,14 @@ summary(decideTests(qlf, method="hierarchical", adjust.method="fdr", p.value=0.0
 
 Alex_W_C_DERs <-  lrt$table[which(!decideTests(lrt, method="hierarchical", adjust.method="fdr", p.value=0.05,lfc=1)==0),]
 write.table(Alex_W_C_DERs, file = "./RNA_Alex_W_C_DERs.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
+
+#----------------
+Alex_W_C_DERs_updown <- as.data.frame(decideTests(lrt, method="hierarchical", adjust.method="fdr", p.value=0.05,lfc=0))
+Alex_W_C_DERs_updown$Gene <- rownames(Alex_W_C_DERs_updown)
+colnames(Alex_W_C_DERs_updown) <- c("UpDown", "Gene")
+Alex_W_C_DERs_updown0 <- Alex_W_C_DERs_updown[-which(Alex_W_C_DERs_updown$UpDown==0),]
+write.table(Alex_W_C_DERs_updown0, file = "./RNA_Alex_W_C_DERs_updown.txt", quote = FALSE, row.names=FALSE, col.names=TRUE, sep="\t")
+#----------------------
 
 png("./plots/Plot_MD_Alex.png", width = 700, height = 500)
 plotMD(lrt)
@@ -573,6 +667,14 @@ summary(decideTests(qlf, method="hierarchical", adjust.method="fdr", p.value=0.0
 
 Seedling_W_C_DERs <-  lrt$table[which(!decideTests(lrt, method="hierarchical", adjust.method="fdr", p.value=0.05,lfc=1)==0),]
 write.table(Seedling_W_C_DERs, file = "./RNA_Seedling_W_C_DERs.txt", quote = FALSE, row.names=TRUE, col.names=TRUE, sep="\t")
+
+#----------------
+Seedling_W_C_DERs_updown <- as.data.frame(decideTests(lrt, method="hierarchical", adjust.method="fdr", p.value=0.05,lfc=0))
+Seedling_W_C_DERs_updown$Gene <- rownames(Seedling_W_C_DERs_updown)
+colnames(Seedling_W_C_DERs_updown) <- c("UpDown", "Gene")
+Seedling_W_C_DERs_updown0 <- Seedling_W_C_DERs_updown[-which(Seedling_W_C_DERs_updown$UpDown==0),]
+write.table(Seedling_W_C_DERs_updown0, file = "./RNA_Seedling_W_C_DERs_updown.txt", quote = FALSE, row.names=FALSE, col.names=TRUE, sep="\t")
+#----------------------
 
 png("./plots/Plot_MD_Seedlings.png", width = 700, height = 500)
 plotMD(lrt)
@@ -1200,7 +1302,82 @@ grep -c ">" Dryas_octopetala_H1.transcript.fa
 # 16716 genes had 200 or more reads map in LAT
 
 ##########################################
+# Count the number of DEGs that overlap between sites and wtih seedlings
 
+# Extract the first column from both files
+cut -f1 RNA_Alaska_W_C_DERs.txt | sort > Alaska_first_column_sorted.txt
+cut -f1 RNA_Sweden_W_C_DERs.txt | sort > Swed_first_column_sorted.txt
+cut -f1 RNA_Seedling_W_C_DERs.txt | sort > SE_first_column_sorted.txt
+cut -f1 RNA_Alex_W_C_DERs.txt | sort > Alex_first_column_sorted.txt
+cut -f1 RNA_Norway_W_C_DERs.txt | sort > Norway_first_column_sorted.txt
+
+# Use 'comm' to find the common values and count them
+common_count=$(comm -12 Alaska_first_column_sorted.txt Swed_first_column_sorted.txt | wc -l)
+echo $common_count
+
+common_count=$(comm -12 SE_first_column_sorted.txt Swed_first_column_sorted.txt | wc -l)
+echo $common_count
+
+common_count=$(comm -12 Alex_first_column_sorted.txt Swed_first_column_sorted.txt | wc -l)
+echo $common_count
+
+common_count=$(comm -12 Norway_first_column_sorted.txt Swed_first_column_sorted.txt | wc -l)
+echo $common_count
+
+common_count=$(comm -12 SE_first_column_sorted.txt Alaska_first_column_sorted.txt | wc -l)
+echo $common_count
+
+common_count=$(comm -12 Alex_first_column_sorted.txt Alaska_first_column_sorted.txt | wc -l)
+echo $common_count
+
+common_count=$(comm -12 Norway_first_column_sorted.txt Alaska_first_column_sorted.txt | wc -l)
+echo $common_count
+
+
+# Swed/Seedling 2
+# Swed/Alaska 4
+# Alex Swed 1
+# Norway/Swed 3
+
+# SE/Alaska 1
+# Alex/Alas 2
+# Norw/Alas 1
+
+common_count=$(comm -12 Alaska_first_column_sorted.txt SE_first_column_sorted.txt | wc -l)
+echo $common_count
+
+common_count=$(comm -12 Swed_first_column_sorted.txt SE_first_column_sorted.txt | wc -l)
+echo $common_count
+
+common_count=$(comm -12 Alex_first_column_sorted.txt SE_first_column_sorted.txt | wc -l)
+echo $common_count
+
+common_count=$(comm -12 Norway_first_column_sorted.txt SE_first_column_sorted.txt | wc -l)
+echo $common_count
+
+1
+2 Do1_05_a00001G00111V1.1 NADH OXIDOREDUCTASE
+1
+1
+
+cat Alaska_first_column_sorted.txt Swed_first_column_sorted.txt SE_first_column_sorted.txt \
+Alex_first_column_sorted.txt Norway_first_column_sorted.txt > All_DEGs.txt
+
+sort All_DEGs.txt | uniq -c | awk '$1 > 1'
+
+sort All_DEGs.txt | uniq -c | awk '$1 > 1'
+      2 Do1_00148G00016V1.1
+      2 Do1_00148G00027V1.1
+      2 Do1_00148G00037V1.1
+      2 Do1_01_a00001G01424V1.1
+      2 Do1_04_a00002G00133V1.1
+      2 Do1_04_a00002G00429V1.1
+      2 Do1_05_a00001G00111V1.1
+      2 Do1_05_a00003G00085V1.1
+      5 logFC
+
+
+##################################
 # Intersect the DMR genes for CHH and CpG and DEGs for each site
 
 cd /home/celphin/scratch/Dryas/RNAseq_analysis
@@ -1573,12 +1750,759 @@ Sweden_CHH_W_C_CHH.bedGraph
 2206 Sweden_CHH_W_C_CHH.bedGraph
 
 
-#-----------------------
+################################
 # DEGs
 # need to look in r
 
 cd /home/celphin/scratch/Dryas/RNAseq_analysis
-grep -v "-" RNA_Alaska_W_C_DERs.txt | wc -l 
-grep -v "-" RNA_Norway_W_C_DERs.txt | wc -l 
-grep -v "-" RNA_Sweden_W_C_DERs.txt | wc -l 
-grep -v "-" RNA_Alex_W_C_DERs.txt | wc -l 
+
+# counts
+grep -v "-" RNA_Alaska_W_C_DERs_updown.txt | wc -l 
+grep -v "-" RNA_Norway_W_C_DERs_updown.txt | wc -l 
+grep -v "-" RNA_Sweden_W_C_DERs_updown.txt | wc -l 
+grep -v "-" RNA_Alex_W_C_DERs_updown.txt | wc -l 
+
+grep  "-" RNA_Alaska_W_C_DERs_updown.txt | wc -l 
+grep  "-" RNA_Norway_W_C_DERs_updown.txt | wc -l 
+grep  "-" RNA_Sweden_W_C_DERs_updown.txt | wc -l 
+grep  "-" RNA_Alex_W_C_DERs_updown.txt | wc -l 
+
+# make FILES
+cd /home/celphin/scratch/Dryas/RNAseq_analysis/snpEff
+
+grep -v "-" ../RNA_Alaska_W_C_DERs_updown.txt |awk '{print $2}' > RNA_Alaska_W_C_DERs_up
+grep -v "-" ../RNA_Norway_W_C_DERs_updown.txt |awk '{print $2}' > RNA_Norway_W_C_DERs_up
+grep -v "-" ../RNA_Sweden_W_C_DERs_updown.txt |awk '{print $2}' > RNA_Sweden_W_C_DERs_up
+grep -v "-" ../RNA_Alex_W_C_DERs_updown.txt |awk '{print $2}' > RNA_Alex_W_C_DERs_up
+
+grep "-" ../RNA_Alaska_W_C_DERs_updown.txt |awk '{print $2}' > RNA_Alaska_W_C_DERs_down
+grep "-" ../RNA_Norway_W_C_DERs_updown.txt |awk '{print $2}' > RNA_Norway_W_C_DERs_down
+grep "-" ../RNA_Sweden_W_C_DERs_updown.txt |awk '{print $2}' > RNA_Sweden_W_C_DERs_down
+grep "-" ../RNA_Alex_W_C_DERs_updown.txt |awk '{print $2}' > RNA_Alex_W_C_DERs_down
+
+# remove the V1.1
+
+sed -i 's/V1\.1//g' RNA*_W_C_DERs_*
+
+#######################################
+# compare to DMRs for matching genes
+cd /home/celphin/scratch/Dryas/snpEff/
+
+cp /home/celphin/scratch/Dryas/snpEff/out/*.out /home/celphin/scratch/Dryas/RNAseq_analysis/snpEff
+cp /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/*.bedGraph /home/celphin/scratch/Dryas/RNAseq_analysis/snpEff
+
+cp /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/*.out /home/celphin/scratch/Dryas/RNAseq_analysis/snpEff/CHH
+cp /home/celphin/scratch/Dryas/snpEff/Dryas_DMRs/CHH/*.bedGraph /home/celphin/scratch/Dryas/RNAseq_analysis/snpEff/CHH
+
+#--------------------------
+cd /home/celphin/scratch/Dryas/RNAseq_analysis/snpEff
+
+# remove the header lines of the snpEff file
+for file in *.out; do
+  sed -i.bak '/^#/d' "$file" 
+done
+
+# join with hyper and hypo info
+paste Alaska_W_C.bedGraph Alaska_W_C.bed.out > Alaska_W_C_combined.out
+paste Nunavut_W_C.bedGraph Nunavut_W_C.bed.out > Nunavut_W_C_combined.out
+paste Parent_W_C.bedGraph Parent_W_C.bed.out > Parent_W_C_combined.out
+paste SE_W_C.bedGraph SE_W_C.bed.out > SE_W_C_combined.out
+paste Svalbard_W_C.bedGraph Svalbard_W_C.bed.out > Svalbard_W_C_combined.out
+paste Sweden_W_C.bedGraph Sweden_W_C.bed.out > Sweden_W_C_combined.out
+
+# split DMRs by hyper and hyp
+grep -v "-" Alaska_W_C_combined.out  > Alaska_W_C_up.out
+grep "-" Alaska_W_C_combined.out  > Alaska_W_C_down.out
+
+grep -v "-" Nunavut_W_C_combined.out  > Nunavut_W_C_up.out
+grep "-" Nunavut_W_C_combined.out > Nunavut_W_C_down.out
+
+grep -v "-" Sweden_W_C_combined.out > Sweden_W_C_up.out
+grep "-" Sweden_W_C_combined.out  > Sweden_W_C_down.out
+
+grep -v "-" Svalbard_W_C_combined.out  > Svalbard_W_C_up.out
+grep "-" Svalbard_W_C_combined.out  > Svalbard_W_C_down.out
+
+grep -v "-" SE_W_C_combined.out  > SE_W_C_up.out
+grep "-" SE_W_C_combined.out  > SE_W_C_down.out
+
+grep -v "-" Parent_W_C_combined.out  > Parent_W_C_up.out
+grep "-" Parent_W_C_combined.out  > Parent_W_C_down.out
+
+#----------------------------------
+# compare hyper and hypo methylation to up and down regulated genes
+
+# Loop through all .up files
+for gene_file in *up; do
+    if [[ -f "$gene_file" ]]; then
+        # Output file for results related to .up genes
+        output_up_hyper="up_hyper_results.txt"
+        output_up_hypo="up_hypo_results.txt"
+
+        # Read each gene from the current .up file
+        while read -r gene; do
+            # Search for the gene in all .out files and append the gene name as a column to the results
+            find . -type f -name "*_up.out" -exec grep -H "$gene" {} \; | awk -v gene="$gene" '{print $0 "\tGene: " gene }' | awk -v gene_file="$gene_file"  '{print $0 "\tFile: " gene_file }' >> "$output_up_hyper"
+        done < "$gene_file"
+        # Read each gene from the current .up file
+        while read -r gene; do
+            # Search for the gene in all .out files and append the gene name as a column to the results
+            find . -type f -name "*_down.out" -exec grep -H "$gene" {} \; | awk -v gene="$gene"  '{print $0 "\tGene: " gene }' | awk -v gene_file="$gene_file"  '{print $0 "\tFile: " gene_file }' >> "$output_up_hypo"
+        done < "$gene_file"
+    fi
+done
+
+for gene_file in *down; do
+    if [[ -f "$gene_file" ]]; then
+        # Output file for results related to .up genes
+        output_down_hyper="down_hyper_results.txt"
+        output_down_hypo="down_hypo_results.txt"
+
+        # Read each gene from the current .up file
+        while read -r gene; do
+            # Search for the gene in all .out files and append the gene name as a column to the results
+            find . -type f -name "*_up.out" -exec grep -H "$gene" {} \; | awk -v gene="$gene" '{print $0 "\tGene: " gene }' | awk -v gene_file="$gene_file"  '{print $0 "\tFile: " gene_file }'  >> "$output_down_hyper"
+        done < "$gene_file"
+        # Read each gene from the current .up file
+        while read -r gene; do
+            # Search for the gene in all .out files and append the gene name as a column to the results
+            find . -type f -name "*_down.out" -exec grep -H "$gene" {} \; | awk -v gene="$gene"  '{print $0 "\tGene: " gene }' | awk -v gene_file="$gene_file"  '{print $0 "\tFile: " gene_file }' >> "$output_down_hypo"
+        done < "$gene_file"
+    fi
+done
+
+wc -l up_hyper_results.txt
+wc -l up_hypo_results.txt
+wc -l down_hyper_results.txt
+wc -l down_hypo_results.txt
+
+
+8 up_hyper_results.txt
+41 up_hypo_results.txt
+
+6 down_hyper_results.txt
+24 down_hypo_results.txt
+
+
+#-------------------------
+# Extract the gene name and types
+
+FILES=$(ls *.txt)
+echo ${FILES}
+
+for file in ${FILES}; do
+awk -F'[;:]' '{print $3 $7}' "$file" > "$file"1
+echo 
+echo "$file Upstream"
+grep "Upstream" "$file"1 | wc -l 
+echo "$file Downstream"
+grep "Downstream" "$file"1 | wc -l 
+echo "$file Gene"
+grep "Gene" "$file"1 | wc -l 
+echo "$file Intergenic"
+grep "Intergenic" "$file"1 | wc -l 
+echo "$file Intron"
+grep "Intron" "$file"1 | wc -l 
+echo "$file Exon"
+grep "Exon" "$file"1 | wc -l 
+done
+
+
+down_hyper_results.txt 
+Upstream 5
+Exon 1
+
+up_hyper_results.txt 
+Upstream 2
+Downstream 1
+Gene 1
+Exon 4
+
+down_hypo_results.txt 
+Upstream 7
+Downstream 7
+Intergenic 6
+Exon 4
+
+up_hypo_results.txt 
+Upstream 14
+Downstream 8
+Gene 3
+Intergenic 9
+Intron 1
+Exon 6
+
+##########################
+# CHH
+
+cd /home/celphin/scratch/Dryas/RNAseq_analysis/snpEff/CHH
+
+# remove the header lines of the snpEff file
+for file in *.out; do
+  sed -i.bak '/^#/d' "$file" 
+done
+
+# join with hyper and hypo info
+paste Alaska_CHH_W_C.bedGraph Alaska_CHH_W_C.bed.out > Alaska_CHH_W_C_combined.out
+paste Nunavut_CHH_W_C.bedGraph Nunavut_CHH_W_C.bed.out > Nunavut_CHH_W_C_combined.out
+paste Svalbard_CHH_W_C.bedGraph Svalbard_CHH_W_C.bed.out > Svalbard_CHH_W_C_combined.out
+paste Sweden_CHH_W_C.bedGraph Sweden_CHH_W_C.bed.out > Sweden_CHH_W_C_combined.out
+
+# split DMRs by hyper and hyp
+grep -v "-" Alaska_CHH_W_C_combined.out  > Alaska_CHH_W_C_up.out
+grep "-" Alaska_CHH_W_C_combined.out  > Alaska_CHH_W_C_down.out
+
+grep -v "-" Nunavut_CHH_W_C_combined.out  > Nunavut_CHH_W_C_up.out
+grep "-" Nunavut_CHH_W_C_combined.out > Nunavut_CHH_W_C_down.out
+
+grep -v "-" Sweden_CHH_W_C_combined.out > Sweden_CHH_W_C_up.out
+grep "-" Sweden_CHH_W_C_combined.out  > Sweden_CHH_W_C_down.out
+
+grep -v "-" Svalbard_CHH_W_C_combined.out  > Svalbard_CHH_W_C_up.out
+grep "-" Svalbard_CHH_W_C_combined.out  > Svalbard_CHH_W_C_down.out
+
+cp ../RNA_* .
+
+# compare hyper and hypo methylation to up and down regulated genes
+
+# Loop through all .up files
+for gene_file in *up; do
+    if [[ -f "$gene_file" ]]; then
+        # Output file for results related to .up genes
+        output_up_hyper="up_hyper_results.txt"
+        output_up_hypo="up_hypo_results.txt"
+
+        # Read each gene from the current .up file
+        while read -r gene; do
+            # Search for the gene in all .out files and append the gene name as a column to the results
+            find . -type f -name "*_up.out" -exec grep -H "$gene" {} \; | awk -v gene="$gene" '{print $0 "\tGene: " gene }' | awk -v gene_file="$gene_file"  '{print $0 "\tFile: " gene_file }' >> "$output_up_hyper"
+        done < "$gene_file"
+        # Read each gene from the current .up file
+        while read -r gene; do
+            # Search for the gene in all .out files and append the gene name as a column to the results
+            find . -type f -name "*_down.out" -exec grep -H "$gene" {} \; | awk -v gene="$gene"  '{print $0 "\tGene: " gene }' | awk -v gene_file="$gene_file"  '{print $0 "\tFile: " gene_file }' >> "$output_up_hypo"
+        done < "$gene_file"
+    fi
+done
+
+for gene_file in *down; do
+    if [[ -f "$gene_file" ]]; then
+        # Output file for results related to .up genes
+        output_down_hyper="down_hyper_results.txt"
+        output_down_hypo="down_hypo_results.txt"
+
+        # Read each gene from the current .up file
+        while read -r gene; do
+            # Search for the gene in all .out files and append the gene name as a column to the results
+            find . -type f -name "*_up.out" -exec grep -H "$gene" {} \; | awk -v gene="$gene" '{print $0 "\tGene: " gene }' | awk -v gene_file="$gene_file"  '{print $0 "\tFile: " gene_file }'  >> "$output_down_hyper"
+        done < "$gene_file"
+        # Read each gene from the current .up file
+        while read -r gene; do
+            # Search for the gene in all .out files and append the gene name as a column to the results
+            find . -type f -name "*_down.out" -exec grep -H "$gene" {} \; | awk -v gene="$gene"  '{print $0 "\tGene: " gene }' | awk -v gene_file="$gene_file"  '{print $0 "\tFile: " gene_file }' >> "$output_down_hypo"
+        done < "$gene_file"
+    fi
+done
+
+wc -l up_hyper_results.txt
+wc -l up_hypo_results.txt
+wc -l down_hyper_results.txt
+wc -l down_hypo_results.txt
+
+
+1 up_hyper_results.txt
+
+45 up_hypo_results.txt
+
+0 down_hyper_results.txt
+
+57 down_hypo_results.txt
+
+
+#-------------------------
+# Extract the gene name and types
+
+FILES=$(ls *.txt)
+echo ${FILES}
+
+for file in ${FILES}; do
+awk -F'[;:]' '{print $3 $7}' "$file" > "$file"1
+echo 
+echo "$file Upstream"
+grep "Upstream" "$file"1 | wc -l 
+echo "$file Downstream"
+grep "Downstream" "$file"1 | wc -l 
+echo "$file Gene"
+grep "Gene" "$file"1 | wc -l 
+echo "$file Intergenic"
+grep "Intergenic" "$file"1 | wc -l 
+echo "$file Intron"
+grep "Intron" "$file"1 | wc -l 
+echo "$file Exon"
+grep "Exon" "$file"1 | wc -l 
+done
+
+down_hypo_results.txt Upstream
+18
+down_hypo_results.txt Downstream
+17
+down_hypo_results.txt Gene
+0
+down_hypo_results.txt Intergenic
+18
+down_hypo_results.txt Intron
+1
+down_hypo_results.txt Exon
+3
+
+up_hyper_results.txt Upstream
+1
+up_hyper_results.txt Downstream
+0
+up_hyper_results.txt Gene
+0
+up_hyper_results.txt Intergenic
+0
+up_hyper_results.txt Intron
+0
+up_hyper_results.txt Exon
+0
+
+up_hypo_results.txt Upstream
+17
+up_hypo_results.txt Downstream
+13
+up_hypo_results.txt Gene
+0
+up_hypo_results.txt Intergenic
+15
+up_hypo_results.txt Intron
+0
+up_hypo_results.txt Exon
+0
+
+#---------------------------
+# check if percent on TEs is higher for hyper or hypo meth
+
+module load StdEnv/2023 bedtools/2.31.0
+
+cd /home/celphin/scratch/Dryas/RNAseq_analysis/snpEff/CHH
+
+for file in *.bedGraph; do
+    # Extract rows with negative values in the fourth column and save to a file
+    awk -F'\t' '$4 < 0 {print $1, $2, $3}' "$file" > "${file%.bedGraph}_hypo.bed"
+    
+    # Extract rows with positive values in the fourth column and save to a file
+    awk -F'\t' '$4 > 0 {print $1, $2, $3}' "$file" > "${file%.bedGraph}_hyper.bed"
+done
+
+for file in *.bed; do
+    # Replace spaces with tabs in the file and overwrite the file
+    sed -i 's/ /\t/g' "$file"
+done
+
+FILES=$(ls *.bed)
+echo ${FILES}
+
+for file in ${FILES}; do
+intersectBed \
+-u \
+-a ${file} \
+-b /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 \
+> ${file}-All-TE.bed
+
+#head ${file}-All-TE.bed
+wc -l ${file}-All-TE.bed
+
+done
+
+1154 Alaska_CHH_W_C_hyper.bed-All-TE.bed
+289 Alaska_CHH_W_C_hypo.bed-All-TE.bed
+708 Nunavut_CHH_W_C_hyper.bed-All-TE.bed
+263 Nunavut_CHH_W_C_hypo.bed-All-TE.bed
+532 Svalbard_CHH_W_C_hyper.bed-All-TE.bed
+575 Svalbard_CHH_W_C_hypo.bed-All-TE.bed
+839 Sweden_CHH_W_C_hyper.bed-All-TE.bed
+781 Sweden_CHH_W_C_hypo.bed-All-TE.bed
+
+#---------------------
+cd /home/celphin/scratch/Dryas/RNAseq_analysis/snpEff/
+
+for file in *.bedGraph; do
+    # Extract rows with negative values in the fourth column and save to a file
+    awk -F'\t' '$4 < 0 {print $1, $2, $3}' "$file" > "${file%.bedGraph}_hypo.bed"
+    
+    # Extract rows with positive values in the fourth column and save to a file
+    awk -F'\t' '$4 > 0 {print $1, $2, $3}' "$file" > "${file%.bedGraph}_hyper.bed"
+done
+
+for file in *.bed; do
+    # Replace spaces with tabs in the file and overwrite the file
+    sed -i 's/ /\t/g' "$file"
+done
+
+FILES=$(ls *.bed)
+echo ${FILES}
+
+for file in ${FILES}; do
+intersectBed \
+-u \
+-a ${file} \
+-b /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 \
+> ${file}-All-TE.bed
+
+#head ${file}-All-TE.bed
+wc -l ${file}-All-TE.bed
+
+done
+
+153 Alaska_W_C_hyper.bed-All-TE.bed
+177 Alaska_W_C_hypo.bed-All-TE.bed
+65 Nunavut_W_C_hyper.bed-All-TE.bed
+74 Nunavut_W_C_hypo.bed-All-TE.bed
+105 Parent_W_C_hyper.bed-All-TE.bed
+71 Parent_W_C_hypo.bed-All-TE.bed
+89 SE_W_C_hyper.bed-All-TE.bed
+136 SE_W_C_hypo.bed-All-TE.bed
+72 Svalbard_W_C_hyper.bed-All-TE.bed
+64 Svalbard_W_C_hypo.bed-All-TE.bed
+292 Sweden_W_C_hyper.bed-All-TE.bed
+289 Sweden_W_C_hypo.bed-All-TE.bed
+78 Wild_W_C_hyper.bed-All-TE.bed
+95 Wild_W_C_hypo.bed-All-TE.bed
+
+#---------------------
+# methylkit
+cd /home/celphin/scratch/Dryas/CpG/stranded_CpG_report/DMRs
+
+for file in *.bedGraph; do
+    # Extract rows with negative values in the fourth column and save to a file
+    awk -F'\t' '$4 < 0 {print $1, $2, $3}' "$file" > "${file%.bedGraph}_hypo.bed"
+    
+    # Extract rows with positive values in the fourth column and save to a file
+    awk -F'\t' '$4 > 0 {print $1, $2, $3}' "$file" > "${file%.bedGraph}_hyper.bed"
+done
+
+for file in *.bed; do
+    # Replace spaces with tabs in the file and overwrite the file
+    sed -i 's/ /\t/g' "$file"
+done
+
+FILES=$(ls *.bed)
+echo ${FILES}
+
+for file in ${FILES}; do
+intersectBed \
+-u \
+-a ${file} \
+-b /home/celphin/scratch/Dryas/snpEff/data/OldDoct/OldDoct.genome.fa.mod.EDTA.TEanno.gff3 \
+> ${file}-All-TE.bed
+
+#head ${file}-All-TE.bed
+wc -l ${file}-All-TE.bed
+
+done
+
+2 intersect_ALAS_LAT_W_C_25plowcovDMRs_hyper.bed-All-TE.bed
+0 intersect_ALAS_LAT_W_C_25plowcovDMRs_hypo.bed-All-TE.bed
+1 intersect_Alex_LAT_SVAL_plowcovDMRs_hyper.bed-All-TE.bed
+0 intersect_Alex_LAT_SVAL_plowcovDMRs_hypo.bed-All-TE.bed
+4 intersect_Alex_LAT_W_C_25plowcovDMRs_hyper.bed-All-TE.bed
+4 intersect_Alex_LAT_W_C_25plowcovDMRs_hypo.bed-All-TE.bed
+0 intersect_ALL_plowcovDMRs_hyper.bed-All-TE.bed
+0 intersect_ALL_plowcovDMRs_hypo.bed-All-TE.bed
+7 intersect_SVAL_Alex_W_C_25plowcovDMRs_hyper.bed-All-TE.bed
+4 intersect_SVAL_Alex_W_C_25plowcovDMRs_hypo.bed-All-TE.bed
+6 intersect_SVAL_LAT_W_C_25plowcovDMRs_hyper.bed-All-TE.bed
+1 intersect_SVAL_LAT_W_C_25plowcovDMRs_hypo.bed-All-TE.bed
+32 Methylkit_ALAS_W_C_25plowcovDMRs_hyper.bed-All-TE.bed
+37 Methylkit_ALAS_W_C_25plowcovDMRs_hypo.bed-All-TE.bed
+1247 Methylkit_ALAS_W_C_lowcovDMRs_hyper.bed-All-TE.bed
+1133 Methylkit_ALAS_W_C_lowcovDMRs_hypo.bed-All-TE.bed
+203 Methylkit_Alex_W_C_10plowcovDMRs_hyper.bed-All-TE.bed
+154 Methylkit_Alex_W_C_10plowcovDMRs_hypo.bed-All-TE.bed
+112 Methylkit_LAT_W_C_25plowcovDMRs_hyper.bed-All-TE.bed
+83 Methylkit_LAT_W_C_25plowcovDMRs_hypo.bed-All-TE.bed
+77 Methylkit_SVAL_W_C_25plowcovDMRs_hyper.bed-All-TE.bed
+59 Methylkit_SVAL_W_C_25plowcovDMRs_hypo.bed-All-TE.bed
+10 Methylkit_Wild_W_C_DMRs_hyper.bed-All-TE.bed
+7 Methylkit_Wild_W_C_DMRs_hypo.bed-All-TE.bed
+26 Methylkit_Wild_W_C_lowcovDMRs_hyper.bed-All-TE.bed
+26 Methylkit_Wild_W_C_lowcovDMRs_hypo.bed-All-TE.bed
+
+
+wc -l *hyper.bed
+     3 intersect_ALAS_LAT_W_C_25plowcovDMRs_hyper.bed
+     2 intersect_Alex_LAT_SVAL_plowcovDMRs_hyper.bed
+     9 intersect_Alex_LAT_W_C_25plowcovDMRs_hyper.bed
+     9 intersect_SVAL_Alex_W_C_25plowcovDMRs_hyper.bed
+     7 intersect_SVAL_LAT_W_C_25plowcovDMRs_hyper.bed
+    67 Methylkit_ALAS_W_C_25plowcovDMRs_hyper.bed
+  2476 Methylkit_ALAS_W_C_lowcovDMRs_hyper.bed
+   376 Methylkit_Alex_W_C_10plowcovDMRs_hyper.bed
+   183 Methylkit_LAT_W_C_25plowcovDMRs_hyper.bed
+   140 Methylkit_SVAL_W_C_25plowcovDMRs_hyper.bed
+    21 Methylkit_Wild_W_C_DMRs_hyper.bed
+   116 Methylkit_Wild_W_C_lowcovDMRs_hyper.bed
+   
+wc -l *hypo.bed
+     1 intersect_ALAS_LAT_W_C_25plowcovDMRs_hypo.bed
+     0 intersect_Alex_LAT_SVAL_plowcovDMRs_hypo.bed
+     4 intersect_Alex_LAT_W_C_25plowcovDMRs_hypo.bed
+     4 intersect_SVAL_Alex_W_C_25plowcovDMRs_hypo.bed
+     2 intersect_SVAL_LAT_W_C_25plowcovDMRs_hypo.bed
+    72 Methylkit_ALAS_W_C_25plowcovDMRs_hypo.bed
+  2610 Methylkit_ALAS_W_C_lowcovDMRs_hypo.bed
+   302 Methylkit_Alex_W_C_10plowcovDMRs_hypo.bed
+   145 Methylkit_LAT_W_C_25plowcovDMRs_hypo.bed
+   115 Methylkit_SVAL_W_C_25plowcovDMRs_hypo.bed
+    11 Methylkit_Wild_W_C_DMRs_hypo.bed
+    96 Methylkit_Wild_W_C_lowcovDMRs_hypo.bed
+
+# hypermethylation of TEs with warming chambers is slightly higher
+
+###############################
+# Sort overlap files by first column
+
+sort -k1,1 up_hypo_results.txt > up_hypo_results_sorted.txt
+
+# really driven by overlap in Sweden
+
+more up_hypo_results_sorted.txt
+./Alaska_W_C_down.out:Do1_01_a00001     10414157        10414286        24.791812       Do1_01_a00001   10
+414157  10414286        line_59;Downstream:3137|Transcript:Do1_01_a00001G01909V1.1:protein_coding|Gene:Do1
+_01_a00001G01909:protein_coding;Intergenic:Do1_01_a00001G01908-Do1_01_a00001G01909;Downstream:2141|Transcr
+ipt:Do1_01_a00001G01908V1.1:protein_coding|Gene:Do1_01_a00001G01908:protein_coding      Gene: Do1_01_a0000
+1G01909 File: RNA_Sweden_W_C_DERs_up
+./Alaska_W_C_down.out:Do1_01_a00001     3955238 3955782 -6.108593       Do1_01_a00001   3955238 3955782 li
+ne_21;Gene:Do1_01_a00001G00761:protein_coding;Upstream:1141|Transcript:Do1_01_a00001G00760V1.1:protein_cod
+ing|Gene:Do1_01_a00001G00760:protein_coding;Downstream:3187|Transcript:Do1_01_a00001G00762V1.1:protein_cod
+ing|Gene:Do1_01_a00001G00762:protein_coding     Gene: Do1_01_a00001G00762       File: RNA_Alaska_W_C_DERs_
+up
+./Alaska_W_C_down.out:Do1_01_a00007     793375  793496  47.069723       Do1_01_a00007   793375  793496  li
+ne_167;Upstream:3476|Transcript:Do1_01_a00007G00167V1.1:protein_coding|Gene:Do1_01_a00007G00167:protein_co
+ding;Upstream:4305|Transcript:Do1_01_a00007G00164V1.1:protein_coding|Gene:Do1_01_a00007G00164:protein_codi
+ng;Downstream:3800|Transcript:Do1_01_a00007G00165V1.1:protein_coding|Gene:Do1_01_a00007G00165:protein_codi
+ng;Intergenic:Do1_01_a00007G00166-Do1_01_a00007G00167;Downstream:2546|Transcript:Do1_01_a00007G00166V1.1:p
+rotein_coding|Gene:Do1_01_a00007G00166:protein_coding   Gene: Do1_01_a00007G00164       File: RNA_Sweden_W
+_C_DERs_up
+./Alaska_W_C_down.out:Do1_03_a00002     2787693 2787975 -16.751389      Do1_03_a00002   2787693 2787975 li
+ne_324;Downstream:0|Transcript:Do1_03_a00002G00495V1.1:protein_coding|Gene:Do1_03_a00002G00495:protein_cod
+ing;Upstream:3201|Transcript:Do1_03_a00002G00494V1.1:protein_coding|Gene:Do1_03_a00002G00494:protein_codin
+g;Intergenic:Do1_03_a00002G00494-Do1_03_a00002G00495;Exon:1:1:RETAINED|Transcript:Do1_03_a00002G00495V1.1:
+protein_coding|Gene:Do1_03_a00002G00495:protein_coding;Downstream:941|Transcript:Do1_03_a00002G00496V1.1:p
+rotein_coding|Gene:Do1_03_a00002G00496:protein_coding;Intergenic:Do1_03_a00002G00495-Do1_03_a00002G00496;U
+pstream:11|Transcript:Do1_03_a00002G00495V1.1:protein_coding|Gene:Do1_03_a00002G00495:protein_coding;Upstr
+eam:3800|Transcript:Do1_03_a00002G00493V1.1:protein_coding|Gene:Do1_03_a00002G00493:protein_coding      Ge
+ne: Do1_03_a00002G00493 File: RNA_Alaska_W_C_DERs_up
+./Alaska_W_C_down.out:Do1_06_a00001     7563000 7563197 -33.187374      Do1_06_a00001   7563000 7563197 li
+ne_646;Intergenic:Do1_06_a00001G01290-Do1_06_a00001G01291;Upstream:2430|Transcript:Do1_06_a00001G01290V1.1
+:protein_coding|Gene:Do1_06_a00001G01290:protein_coding;Downstream:3861|Transcript:Do1_06_a00001G01291V1.1
+:protein_coding|Gene:Do1_06_a00001G01291:protein_coding Gene: Do1_06_a00001G01291       File: RNA_Sweden_W
+_C_DERs_up
+./Alaska_W_C_down.out:Do1_06_a00002     4486112 4486383 21.591812       Do1_06_a00002   4486112 4486383 li
+ne_687;Downstream:1636|Transcript:Do1_06_a00002G00928V1.1:protein_coding|Gene:Do1_06_a00002G00928:protein_
+coding;Upstream:672|Transcript:Do1_06_a00002G00927V1.1:protein_coding|Gene:Do1_06_a00002G00927:protein_cod
+ing;Intergenic:Do1_06_a00002G00927-Do1_06_a00002G00928  Gene: Do1_06_a00002G00928       File: RNA_Sweden_W
+_C_DERs_up
+./Alaska_W_C_down.out:Do1_06_a00002     587971  588152  34.489606       Do1_06_a00002   587971  588152  li
+ne_670;Upstream:2445|Transcript:Do1_06_a00002G00118V1.1:protein_coding|Gene:Do1_06_a00002G00118:protein_co
+ding;Upstream:1324|Transcript:Do1_06_a00002G00117V1.1:protein_coding|Gene:Do1_06_a00002G00117:protein_codi
+ng;Intergenic:Do1_06_a00002G00115-Do1_06_a00002G00116;Downstream:3096|Transcript:Do1_06_a00002G00119V1.1:p
+rotein_coding|Gene:Do1_06_a00002G00119:protein_coding;Downstream:2975|Transcript:Do1_06_a00002G00115V1.1:p
+rotein_coding|Gene:Do1_06_a00002G00115:protein_coding;Downstream:386|Transcript:Do1_06_a00002G00116V1.1:pr
+otein_coding|Gene:Do1_06_a00002G00116:protein_coding    Gene: Do1_06_a00002G00119       File: RNA_Sweden_W
+_C_DERs_up
+./Alaska_W_C_down.out:Do1_06_a00002     588236  588420  36.740881       Do1_06_a00002   588236  588420  li
+ne_671;Exon:1:1:RETAINED|Transcript:Do1_06_a00002G00116V1.1:protein_coding|Gene:Do1_06_a00002G00116:protei
+n_coding;Upstream:2180|Transcript:Do1_06_a00002G00118V1.1:protein_coding|Gene:Do1_06_a00002G00118:protein_
+coding;Intergenic:Do1_06_a00002G00115-Do1_06_a00002G00116;Downstream:121|Transcript:Do1_06_a00002G00116V1.
+1:protein_coding|Gene:Do1_06_a00002G00116:protein_coding;Upstream:1059|Transcript:Do1_06_a00002G00117V1.1:
+protein_coding|Gene:Do1_06_a00002G00117:protein_coding;Downstream:3240|Transcript:Do1_06_a00002G00115V1.1:
+protein_coding|Gene:Do1_06_a00002G00115:protein_coding;Downstream:2831|Transcript:Do1_06_a00002G00119V1.1:
+protein_coding|Gene:Do1_06_a00002G00119:protein_coding  Gene: Do1_06_a00002G00119       File: RNA_Sweden_W
+_C_DERs_up
+#------------------
+./Nunavut_W_C_down.out:Do1_01_a00002    2973631 2973746 -12.314129      Do1_01_a00002   2973631 2973746 li
+ne_30;Upstream:135|Transcript:Do1_01_a00002G00497V1.1:protein_coding|Gene:Do1_01_a00002G00497:protein_codi
+ng;Gene:Do1_01_a00002G00498:protein_coding;Downstream:891|Transcript:Do1_01_a00002G00496V1.1:protein_codin
+g|Gene:Do1_01_a00002G00496:protein_coding;Upstream:3600|Transcript:Do1_01_a00002G00493V1.1:protein_coding|
+Gene:Do1_01_a00002G00493:protein_coding;Upstream:5006|Transcript:Do1_01_a00002G00499V1.1:protein_coding|Ge
+ne:Do1_01_a00002G00499:protein_coding;Downstream:2534|Transcript:Do1_01_a00002G00494V1.1:protein_coding|Ge
+ne:Do1_01_a00002G00494:protein_coding;Downstream:2035|Transcript:Do1_01_a00002G00495V1.1:protein_coding|Ge
+ne:Do1_01_a00002G00495:protein_coding   Gene: Do1_01_a00002G00498       File: RNA_Alaska_W_C_DERs_up
+./Nunavut_W_C_down.out:Do1_01_a00002    441249  441476  19.829772       Do1_01_a00002   441249  441476  li
+ne_25;Intergenic:Do1_01_a00002G00067-Do1_01_a00002G00068        Gene: Do1_01_a00002G00067       File: RNA_
+Sweden_W_C_DERs_up
+./Nunavut_W_C_down.out:Do1_04_a00005    194843  195113  -11.450868      Do1_04_a00005   194843  195113  li
+ne_175;Upstream:3323|Transcript:Do1_04_a00005G00025V1.1:protein_coding|Gene:Do1_04_a00005G00025:protein_co
+ding;Intergenic:Do1_04_a00005G00024-Do1_04_a00005G00025 Gene: Do1_04_a00005G00024       File: RNA_Sweden_W
+_C_DERs_up
+
+#---------------------
+./SE_W_C_down.out:Do1_01_a00001 2735512 2735769 -39.384367      Do1_01_a00001   2735512 2735769 line_13;Up
+stream:3859|Transcript:Do1_01_a00001G00556V1.1:protein_coding|Gene:Do1_01_a00001G00556:protein_coding;Inte
+rgenic:Do1_01_a00001G00555-Do1_01_a00001G00556;Downstream:1379|Transcript:Do1_01_a00001G00555V1.1:protein_
+coding|Gene:Do1_01_a00001G00555:protein_coding  Gene: Do1_01_a00001G00556       File: RNA_Sweden_W_C_DERs_
+up
+./SE_W_C_down.out:Do1_01_a00007 788623  789090  27.228386       Do1_01_a00007   788623  789090  line_111;I
+ntergenic:Do1_01_a00007G00163-Do1_01_a00007G00164;Upstream:1621|Transcript:Do1_01_a00007G00163V1.1:protein
+_coding|Gene:Do1_01_a00007G00163:protein_coding;Upstream:0|Transcript:Do1_01_a00007G00164V1.1:protein_codi
+ng|Gene:Do1_01_a00007G00164:protein_coding;Intergenic:Do1_01_a00007G00164-Do1_01_a00007G00165;Upstream:125
+0|Transcript:Do1_01_a00007G00166V1.1:protein_coding|Gene:Do1_01_a00007G00166:protein_coding;Exon:1:1:RETAI
+NED|Transcript:Do1_01_a00007G00164V1.1:protein_coding|Gene:Do1_01_a00007G00164:protein_coding;Downstream:1
+50|Transcript:Do1_01_a00007G00164V1.1:protein_coding|Gene:Do1_01_a00007G00164:protein_coding;Upstream:685|
+Transcript:Do1_01_a00007G00165V1.1:protein_coding|Gene:Do1_01_a00007G00165:protein_coding       Gene: Do1_
+01_a00007G00164 File: RNA_Sweden_W_C_DERs_up
+./SE_W_C_down.out:Do1_02_a00003 6756922 6757188 -50.739069      Do1_02_a00003   6756922 6757188 line_192;U
+pstream:4084|Transcript:Do1_02_a00003G01352V1.1:protein_coding|Gene:Do1_02_a00003G01352:protein_coding;Dow
+nstream:1076|Transcript:Do1_02_a00003G01350V1.1:protein_coding|Gene:Do1_02_a00003G01350:protein_coding;Exo
+n:1:1:RETAINED|Transcript:Do1_02_a00003G01351V1.1:protein_coding|Gene:Do1_02_a00003G01351:protein_coding -Gene: Do1_02_a00003G01351       File: RNA_Alaska_W_C_DERs_up
+./SE_W_C_down.out:Do1_03_a00002 2787713 2787943 -28.135316      Do1_03_a00002   2787713 2787943 line_288;D
+ownstream:0|Transcript:Do1_03_a00002G00495V1.1:protein_coding|Gene:Do1_03_a00002G00495:protein_coding;Down
+stream:921|Transcript:Do1_03_a00002G00496V1.1:protein_coding|Gene:Do1_03_a00002G00496:protein_coding;Exon:
+1:1:RETAINED|Transcript:Do1_03_a00002G00495V1.1:protein_coding|Gene:Do1_03_a00002G00495:protein_coding;Ups
+tream:3820|Transcript:Do1_03_a00002G00493V1.1:protein_coding|Gene:Do1_03_a00002G00493:protein_coding;Inter
+genic:Do1_03_a00002G00495-Do1_03_a00002G00496;Upstream:3221|Transcript:Do1_03_a00002G00494V1.1:protein_cod
+ing|Gene:Do1_03_a00002G00494:protein_coding     Gene: Do1_03_a00002G00493       File: RNA_Alaska_W_C_DERs_
+up
+./SE_W_C_down.out:Do1_06_a00001 12932542        12932826        26.974964       Do1_06_a00001   12932542 -12932826        line_666;Intergenic:Do1_06_a00001G02298-Do1_06_a00001G02299;Downstream:3839|Transcript:Do1
+_06_a00001G02300V1.1:protein_coding|Gene:Do1_06_a00001G02300:protein_coding;Downstream:2969|Transcript:Do1
+_06_a00001G02299V1.1:protein_coding|Gene:Do1_06_a00001G02299:protein_coding;Downstream:0|Transcript:Do1_06
+_a00001G02298V1.1:protein_coding|Gene:Do1_06_a00001G02298:protein_coding;Upstream:1311|Transcript:Do1_06_a
+00001G02297V1.1:protein_coding|Gene:Do1_06_a00001G02297:protein_coding;Exon:2:2:RETAINED|Transcript:Do1_06
+_a00001G02298V1.1:protein_coding|Gene:Do1_06_a00001G02298:protein_coding        Gene: Do1_06_a00001G02298-File: RNA_Norway_W_C_DERs_up
+./SE_W_C_down.out:Do1_06_a00002 3939270 3939419 -34.189996      Do1_06_a00002   3939270 3939419 line_694;U
+pstream:1920|Transcript:Do1_06_a00002G00826V1.1:protein_coding|Gene:Do1_06_a00002G00826:protein_coding;Dow
+nstream:3951|Transcript:Do1_06_a00002G00824V1.1:protein_coding|Gene:Do1_06_a00002G00824:protein_coding;Dow
+nstream:4581|Transcript:Do1_06_a00002G00830V1.1:protein_coding|Gene:Do1_06_a00002G00830:protein_coding;Ups
+tream:68|Transcript:Do1_06_a00002G00827V1.1:protein_coding|Gene:Do1_06_a00002G00827:protein_coding;Downstr
+eam:1450|Transcript:Do1_06_a00002G00829V1.1:protein_coding|Gene:Do1_06_a00002G00829:protein_coding;Exon:1:
+1:RETAINED|Transcript:Do1_06_a00002G00827V1.1:protein_coding|Gene:Do1_06_a00002G00827:protein_coding;Upstr
+eam:2283|Transcript:Do1_06_a00002G00825V1.1:protein_coding|Gene:Do1_06_a00002G00825:protein_coding;Upstrea
+m:445|Transcript:Do1_06_a00002G00828V1.1:protein_coding|Gene:Do1_06_a00002G00828:protein_coding;Intergenic
+:Do1_06_a00002G00826-Do1_06_a00002G00827        Gene: Do1_06_a00002G00830       File: RNA_Sweden_W_C_DERs_
+up
+#------------------------------------
+./Svalbard_W_C_down.out:Do1_01_a00001   3955454 3955755 -11.929379      Do1_01_a00001   3955454 3955755 li
+ne_9;Gene:Do1_01_a00001G00761:protein_coding;Downstream:2971|Transcript:Do1_01_a00001G00762V1.1:protein_co
+ding|Gene:Do1_01_a00001G00762:protein_coding;Upstream:1357|Transcript:Do1_01_a00001G00760V1.1:protein_codi
+ng|Gene:Do1_01_a00001G00760:protein_coding      Gene: Do1_01_a00001G00762       File: RNA_Alaska_W_C_DERs_
+up
+./Svalbard_W_C_down.out:Do1_01_a00002   938512  939081  -22.306690      Do1_01_a00002   938512  939081  li
+ne_25;Upstream:1312|Transcript:Do1_01_a00002G00147V1.1:protein_coding|Gene:Do1_01_a00002G00147:protein_cod
+ing;Upstream:2658|Transcript:Do1_01_a00002G00148V1.1:protein_coding|Gene:Do1_01_a00002G00148:protein_codin
+g;Intergenic:Do1_01_a00002G00147-Do1_01_a00002G00148    Gene: Do1_01_a00002G00148       File: RNA_Sweden_W
+_C_DERs_up
+
+#------------------------------
+./Sweden_W_C_down.out:Do1_00161 21292   21584   -22.554756      Do1_00161       21292   21584   line_12;Up
+stream:3020|Transcript:Do1_00161G00004V1.1:protein_coding|Gene:Do1_00161G00004:protein_coding;Exon:2:2:RET
+AINED|Transcript:Do1_00161G00005V1.1:protein_coding|Gene:Do1_00161G00005:protein_coding;Intergenic:Do1_001
+61G00004-Do1_00161G00005;Upstream:1804|Transcript:Do1_00161G00006V1.1:protein_coding|Gene:Do1_00161G00006:
+protein_coding;Downstream:176|Transcript:Do1_00161G00005V1.1:protein_coding|Gene:Do1_00161G00005:protein_c
+oding   Gene: Do1_00161G00004   File: RNA_Sweden_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_01_a00001     1051991 1052562 -15.741293      Do1_01_a00001   1051991 1052562 li
+ne_39;Downstream:486|Transcript:Do1_01_a00001G00213V1.1:protein_coding|Gene:Do1_01_a00001G00213:protein_co
+ding;Downstream:5227|Transcript:Do1_01_a00001G00216V1.1:protein_coding|Gene:Do1_01_a00001G00216:protein_co
+ding;Upstream:443|Transcript:Do1_01_a00001G00214V1.1:protein_coding|Gene:Do1_01_a00001G00214:protein_codin
+g;Upstream:4557|Transcript:Do1_01_a00001G00215V1.1:protein_coding|Gene:Do1_01_a00001G00215:protein_coding;
+Intergenic:Do1_01_a00001G00213-Do1_01_a00001G00214;Exon:1:5:RETAINED|Transcript:Do1_01_a00001G00214V1.1:pr
+otein_coding|Gene:Do1_01_a00001G00214:protein_coding    Gene: Do1_01_a00001G00214       File: RNA_Sweden_W
+_C_DERs_up
+./Sweden_W_C_down.out:Do1_01_a00001     1052681 1052804 -13.843138      Do1_01_a00001   1052681 1052804 li
+ne_37;Gene:Do1_01_a00001G00214:protein_coding;Downstream:4537|Transcript:Do1_01_a00001G00216V1.1:protein_c
+oding|Gene:Do1_01_a00001G00216:protein_coding;Downstream:1176|Transcript:Do1_01_a00001G00213V1.1:protein_c
+oding|Gene:Do1_01_a00001G00213:protein_coding;Upstream:3867|Transcript:Do1_01_a00001G00215V1.1:protein_cod
+ing|Gene:Do1_01_a00001G00215:protein_coding     Gene: Do1_01_a00001G00214       File: RNA_Sweden_W_C_DERs_
+up
+./Sweden_W_C_down.out:Do1_01_a00001     1059564 1059798 -24.216919      Do1_01_a00001   1059564 1059798 li
+ne_38;Intron:7:7:RETAINED-RETAINED|Transcript:Do1_01_a00001G00216V1.1:protein_coding|Gene:Do1_01_a00001G00
+216:protein_coding;Downstream:3463|Transcript:Do1_01_a00001G00214V1.1:protein_coding|Gene:Do1_01_a00001G00
+214:protein_coding;Downstream:2692|Transcript:Do1_01_a00001G00215V1.1:protein_coding|Gene:Do1_01_a00001G00
+215:protein_coding      Gene: Do1_01_a00001G00214       File: RNA_Sweden_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_01_a00001     11134580        11134766        10.475884       Do1_01_a00001   11
+134580  11134766        line_114;Downstream:1068|Transcript:Do1_01_a00001G02027V1.1:protein_coding|Gene:Do
+1_01_a00001G02027:protein_coding;Intergenic:Do1_01_a00001G02027-Do1_01_a00001G02028     Gene: Do1_01_a0000
+1G02027 File: RNA_Alex_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_01_a00003     4988127 4988265 40.687564       Do1_01_a00003   4988127 4988265 li
+ne_191;Downstream:3389|Transcript:Do1_01_a00003G00798V1.1:protein_coding|Gene:Do1_01_a00003G00798:protein_
+coding;Intergenic:Do1_01_a00003G00799-Do1_01_a00003G00800;Downstream:279|Transcript:Do1_01_a00003G00799V1.
+1:protein_coding|Gene:Do1_01_a00003G00799:protein_coding;Exon:1:4:RETAINED|Transcript:Do1_01_a00003G00800V
+1.1:protein_coding|Gene:Do1_01_a00003G00800:protein_coding;Upstream:121|Transcript:Do1_01_a00003G00800V1.1
+:protein_coding|Gene:Do1_01_a00003G00800:protein_coding Gene: Do1_01_a00003G00798       File: RNA_Sweden_W
+_C_DERs_up
+
+./Sweden_W_C_down.out:Do1_02_a00001     4213499 4213622 -8.961747       Do1_02_a00001   4213499 4213622 li
+ne_319;Exon:1:29:RETAINED|Transcript:Do1_02_a00001G00643V1.1:protein_coding|Gene:Do1_02_a00001G00643:prote
+in_coding       Gene: Do1_02_a00001G00643       File: RNA_Sweden_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_02_a00003     6757018 6757189 -26.791575      Do1_02_a00003   6757018 6757189 li
+ne_387;Exon:1:1:RETAINED|Transcript:Do1_02_a00003G01351V1.1:protein_coding|Gene:Do1_02_a00003G01351:protei
+n_coding;Downstream:1172|Transcript:Do1_02_a00003G01350V1.1:protein_coding|Gene:Do1_02_a00003G01350:protei
+n_coding;Upstream:3988|Transcript:Do1_02_a00003G01352V1.1:protein_coding|Gene:Do1_02_a00003G01352:protein_
+coding  Gene: Do1_02_a00003G01351       File: RNA_Alaska_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_02_a00003     9786846 9786959 -50.486828      Do1_02_a00003   9786846 9786959 li
+ne_412;Upstream:655|Transcript:Do1_02_a00003G01881V1.1:protein_coding|Gene:Do1_02_a00003G01881:protein_cod
+ing;Downstream:4720|Transcript:Do1_02_a00003G01880V1.1:protein_coding|Gene:Do1_02_a00003G01880:protein_cod
+ing;Downstream:2715|Transcript:Do1_02_a00003G01882V1.1:protein_coding|Gene:Do1_02_a00003G01882:protein_cod
+ing;Intergenic:Do1_02_a00003G01880-Do1_02_a00003G01881  Gene: Do1_02_a00003G01881       File: RNA_Alaska_W
+_C_DERs_up
+./Sweden_W_C_down.out:Do1_03_a00002     10528980        10529136        -24.067710      Do1_03_a00002   10
+528980  10529136        line_647;Exon:2:5:RETAINED|Transcript:Do1_03_a00002G01930V1.1:protein_coding|Gene:
+Do1_03_a00002G01930:protein_coding;Downstream:1802|Transcript:Do1_03_a00002G01928V1.1:protein_coding|Gene:
+Do1_03_a00002G01928:protein_coding;Upstream:2169|Transcript:Do1_03_a00002G01927V1.1:protein_coding|Gene:Do
+1_03_a00002G01927:protein_coding;Downstream:1179|Transcript:Do1_03_a00002G01929V1.1:protein_coding|Gene:Do
+1_03_a00002G01929:protein_coding        Gene: Do1_03_a00002G01930       File: RNA_Alaska_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_03_a00002     11938686        11938752        -34.326561      Do1_03_a00002   11
+938686  11938752        line_666;Upstream:2887|Transcript:Do1_03_a00002G02135V1.1:protein_coding|Gene:Do1_
+03_a00002G02135:protein_coding;Intergenic:Do1_03_a00002G02134-Do1_03_a00002G02135;Upstream:433|Transcript:
+Do1_03_a00002G02134V1.1:protein_coding|Gene:Do1_03_a00002G02134:protein_coding  Gene: Do1_03_a00002G02134-File: RNA_Alaska_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_03_a00002     8261778 8261888 -30.088264      Do1_03_a00002   8261778 8261888 li
+ne_631;Intergenic:Do1_03_a00002G01515-Do1_03_a00002G01516;Downstream:959|Transcript:Do1_03_a00002G01515V1.
+1:protein_coding|Gene:Do1_03_a00002G01515:protein_coding        Gene: Do1_03_a00002G01515       File: RNA_
+Sweden_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_04_a00005     175106  175216  20.636618       Do1_04_a00005   175106  175216  li
+ne_970;Intergenic:Do1_04_a00005G00023-Do1_04_a00005G00024       Gene: Do1_04_a00005G00024       File: RNA_
+Sweden_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_05_a00001     5188839 5188896 -15.401527      Do1_05_a00001   5188839 5188896 li
+ne_1006;Intergenic:Do1_05_a00001G01056-Do1_05_a00001G01057      Gene: Do1_05_a00001G01057       File: RNA_
+Sweden_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_05_a00001     8941886 8942095 -33.537105      Do1_05_a00001   8941886 8942095 li
+ne_1037;Upstream:2072|Transcript:Do1_05_a00001G01742V1.1:protein_coding|Gene:Do1_05_a00001G01742:protein_c
+oding;Intergenic:Do1_05_a00001G01743-Do1_05_a00001G01744;Upstream:263|Transcript:Do1_05_a00001G01743V1.1:p
+rotein_coding|Gene:Do1_05_a00001G01743:protein_coding;Upstream:3998|Transcript:Do1_05_a00001G01744V1.1:pro
+tein_coding|Gene:Do1_05_a00001G01744:protein_coding     Gene: Do1_05_a00001G01744       File: RNA_Sweden_W
+_C_DERs_up
+./Sweden_W_C_down.out:Do1_05_a00002     107390  107696  -23.376064      Do1_05_a00002   107390  107696  li
+ne_1078;Exon:7:7:RETAINED|Transcript:Do1_05_a00002G00014V1.1:protein_coding|Gene:Do1_05_a00002G00014:prote
+in_coding;Upstream:1998|Transcript:Do1_05_a00002G00015V1.1:protein_coding|Gene:Do1_05_a00002G00015:protein
+_coding;Upstream:4612|Transcript:Do1_05_a00002G00016V1.1:protein_coding|Gene:Do1_05_a00002G00016:protein_c
+oding   Gene: Do1_05_a00002G00016       File: RNA_Sweden_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_05_a00004     582199  582458  8.291380        Do1_05_a00004   582199  582458  li
+ne_1165;Downstream:1730|Transcript:Do1_05_a00004G00096V1.1:protein_coding|Gene:Do1_05_a00004G00096:protein
+_coding;Intergenic:Do1_05_a00004G00096-Do1_05_a00004G00097      Gene: Do1_05_a00004G00097       File: RNA_
+Sweden_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_06_a00002     12074391        12074558        -23.236069      Do1_06_a00002   12
+074391  12074558        line_1393;Upstream:45|Transcript:Do1_06_a00002G02285V1.1:protein_coding|Gene:Do1_0
+6_a00002G02285:protein_coding;Upstream:4675|Transcript:Do1_06_a00002G02283V1.1:protein_coding|Gene:Do1_06_
+a00002G02283:protein_coding;Downstream:3505|Transcript:Do1_06_a00002G02284V1.1:protein_coding|Gene:Do1_06_
+a00002G02284:protein_coding;Intergenic:Do1_06_a00002G02285-Do1_06_a00002G02286  Gene: Do1_06_a00002G02285-File: RNA_Alaska_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_06_a00002     5342908 5343304 21.881194       Do1_06_a00002   5342908 5343304 li
+ne_1334;Intergenic:Do1_06_a00002G01112-Do1_06_a00002G01113      Gene: Do1_06_a00002G01112       File: RNA_
+Sweden_W_C_DERs_up
+./Sweden_W_C_down.out:Do1_07_a00002     7853137 7853522 -15.313078      Do1_07_a00002   7853137 7853522 li
+ne_1515;Exon:1:1:RETAINED|Transcript:Do1_07_a00002G01552V1.1:protein_coding|Gene:Do1_07_a00002G01552:prote
+in_coding;Upstream:3802|Transcript:Do1_07_a00002G01550V1.1:protein_coding|Gene:Do1_07_a00002G01550:protein
+_coding;Upstream:1230|Transcript:Do1_07_a00002G01551V1.1:protein_coding|Gene:Do1_07_a00002G01551:protein_c
+oding;Upstream:4671|Transcript:Do1_07_a00002G01549V1.1:protein_coding|Gene:Do1_07_a00002G01549:protein_cod
+ing;Upstream:0|Transcript:Do1_07_a00002G01552V1.1:protein_coding|Gene:Do1_07_a00002G01552:protein_coding;D
+ownstream:2042|Transcript:Do1_07_a00002G01553V1.1:protein_coding|Gene:Do1_07_a00002G01553:protein_coding;I
+ntergenic:Do1_07_a00002G01552-Do1_07_a00002G01553       Gene: Do1_07_a00002G01553       File: RNA_Sweden_W
+_C_DERs_up
+./Sweden_W_C_down.out:Do1_07_a00005     1435801 1435956 7.980132        Do1_07_a00005   1435801 1435956 li
+ne_1672;Upstream:1278|Transcript:Do1_07_a00005G00229V1.1:protein_coding|Gene:Do1_07_a00005G00229:protein_c
+oding;Intergenic:Do1_07_a00005G00228-Do1_07_a00005G00229;Upstream:3503|Transcript:Do1_07_a00005G00230V1.1:
+protein_coding|Gene:Do1_07_a00005G00230:protein_coding;Upstream:3608|Transcript:Do1_07_a00005G00228V1.1:pr
+otein_coding|Gene:Do1_07_a00005G00228:protein_coding    Gene: Do1_07_a00005G00229       File: RNA_Alaska_W
+_C_DERs_up
+

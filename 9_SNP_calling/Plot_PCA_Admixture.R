@@ -493,6 +493,44 @@ summary(anova_model)
 # PC3: 0.00932 **
 # PC5: 0.00880 **
 
+#-----------------------------
+kruskal_test_result <- kruskal.test(PC5 ~ Treatment.x, data = W_C_samples_data)
+
+# Viewing the results
+print(kruskal_test_result)
+
+# not significant for any for just treatment
+# PC1  Kruskal-Wallis chi-squared = 0.02233, df = 1, p-value = 0.8812
+# PC3 Kruskal-Wallis chi-squared = 0.45218, df = 1, p-value = 0.5013
+# PC5 Kruskal-Wallis chi-squared = 0.026574, df = 1, p-value = 0.8705
+
+#-----------------------------
+library(lme4)
+library(car)
+
+# Fit a mixed-effects model
+model <- lmer(PC5 ~ Treatment.x + (1 | Site_Alex), data = W_C_samples_data)
+summary(model)
+#plot(resid(model))
+# Type II ANOVA
+Anova(model, type = 2)
+
+# PC1 Treatment.x 7.4037  1   0.006509 **
+# PC3 Treatment.x 2.0441  1     0.1528
+
+#---------------------------
+# Which sites?
+
+Low_Arctic_W_C_samples_data <- W_C_samples_data[which(W_C_samples_data$Site.x=="LAT"),]
+
+kruskal_test_result <- kruskal.test(PC3 ~ Treatment.x, data = Low_Arctic_W_C_samples_data)
+
+# Viewing the results
+print(kruskal_test_result)
+
+
+
+#######################
 
 pdf("./plots/PCA_PC1_PC3_maf0_W_C.pdf", width = 100, height = 90)
 W_C_samples_data %>%

@@ -299,14 +299,16 @@ library(car)
 library(lme4)
 
 # Define the trait
-traits <- c("Aligned.Reads", "Total.Reads", "Methylated.CpGs", "Methylated.chgs", "Methylated.CHHs",
-            "Unmethylated.CpGs", "Unmethylated.chgs", "Unmethylated.CHHs",
-            "percent_CpG", "percent_chg", "percent_CHH",
-            "TotalCpG", "Totalchg", "TotalCHH", "TotalmCs", "TotalCs")
-            # "Height", "Flwr_total", "Weight.x", "Lf.hairs",
-            # "Aphids", "Crystals.on.lv", "X..seeds..all.seeds.", "weight.all.seeds..g.mg.",
-            # "Dryas.seed.Ripeness", "Number.of.Seeds", "Seed.weight.mg",
-            # "Percent_germ", "Numb.Lv", "Hair.on.leaves")
+traits <- c(#"Aligned.Reads", "Total.Reads", "Methylated.CpGs", "Methylated.chgs", "Methylated.CHHs",
+            #"Unmethylated.CpGs", "Unmethylated.chgs", "Unmethylated.CHHs",
+            #"percent_CpG", "percent_chg", "percent_CHH",
+            #"TotalCpG", "Totalchg", "TotalCHH", "TotalmCs", "TotalCs")
+             "Height", "Flwr_total", "Weight.x", "Lf.hairs",
+             "Aphids",  "X..seeds..all.seeds.", "weight.all.seeds..g.mg.",
+             "Dryas.seed.Ripeness", "Number.of.Seeds", "Seed.weight.mg",
+             "Percent_germ", "Numb.Lv", "Hair.on.leaves")
+
+Total_data$Methylated.CHHs[which(Total_data$Methylated.CHHs>1e8)] <- NA
 
 # Loop over each trait and create a plot
 for (trait in traits) {

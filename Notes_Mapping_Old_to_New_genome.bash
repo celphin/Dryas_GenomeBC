@@ -292,32 +292,280 @@ CrossMap vcf ../Dryas_New_Old.chain <vcffile> <outfile>
 
 
 
+##############################
+# Check chloroplast conversion rates
+
+grep DoctH0-11_RagTag Dryas_RagTag_Old.chain
+# chain   255     Do1_a00047      148538  +       0       148538  DoctH0-11_RagTag        148538  -       0 148538   33
+
+# chloroplast scaffolds
+# Do1_a00047
+# DoctH0-11_RagTag
+
+#-----------------------------
+# count converted C's in chloroplast scaffold
+# https://jlsteenwyk.com/BioKIT/usage/index.html
+
+cd /home/celphin/scratch/Dryas/CrossMap
+
+# Set the FASTA file and scaffold name (replace these with your values)
+FASTA_FILE="Dryas_old.fa"
+SCAFFOLD_NAME="Do1_a00047"  # Replace with the exact scaffold name
+
+# Extract the sequence for the given scaffold and count cytosines (C)
+cytosine_count=$(awk -v scaffold="$SCAFFOLD_NAME" '
+  BEGIN {in_scaffold = 0}
+  /^>/ { 
+    # Check if this line is the header for the desired scaffold
+    if ($0 ~ ">" scaffold) {
+      in_scaffold = 1
+    } else {
+      in_scaffold = 0
+    }
+  }
+  in_scaffold && !/^>/ { 
+    # Print the sequence lines for the scaffold
+    sequence = sequence $0
+  }
+  END {
+    # Count the occurrences of "C" in the sequence
+    print gsub(/C/, "", sequence)
+  }' "$FASTA_FILE")
+
+# Print the result
+echo "Number of cytosines in scaffold $SCAFFOLD_NAME: $cytosine_count"
+
+# Number of cytosines in scaffold Do1_a00047: 26,368 bp
+# Total bp 148 kbp
+#--------------------------------
+# count non converted C's
+cd /home/celphin/scratch/Dryas/CpG/Wild_W_C_Metilene/Wild_W_C_input_files
+
+grep Do1_a00047 W4.G10.W2d1_DRY9W_50_185_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph | wc -l
+# 9239
+
+for file in *.deduplicated.bedGraph_sorted_tab.bedGraph; do
+  # Use grep to search for the pattern and save the output in a file with the same name but with a .txt extension
+  grep -w "Do1_a00047" "$file" > "${file%_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph}.txt"
+  
+  # Input file (replace with your file)
+  INPUT_FILE="${file%_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph}.txt"
+
+  # Count total number of values in the last column
+  total_count=$(awk '{print $NF}' "$INPUT_FILE" | wc -l)
+
+  # Count number of zero or <1 values in the last column (treating <1 as zero)
+  zero_or_less_count=$(awk '$NF < 1 {print $NF}' "$INPUT_FILE" | wc -l)
+
+  # Count number of values >= 1 in the last column (treated as non-zero)
+  non_zero_count=$(awk '$NF >= 1 {print $NF}' "$INPUT_FILE" | wc -l)
+
+  # Calculate the percentage of zero or <1 values
+  if [ "$total_count" -gt 0 ]; then
+    zero_percent=$(echo "scale=2; $zero_or_less_count / $total_count * 100" | bc)
+  else
+    zero_percent=0
+  fi
+
+  # Output the results
+  echo "${file%_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph}.txt"
+  echo "Total count in last column: $total_count"
+  echo "Non-zero count (>=1) in last column: $non_zero_count"
+  echo "Zero or <1 count in last column: $zero_or_less_count"
+  echo "Percentage of zero or <1 values: $zero_percent%"
+
+done
+
+
+# ones less than 98%
+W2.F01.W2d8_ALAS0W_15_242.txt
+Total count in last column: 8544
+Non-zero count (>=1) in last column: 1237
+Zero or <1 count in last column: 7307
+Percentage of zero or <1 values: 85.00%
+
+W2.D01.W2a8_ALAS0W_16_239.txt
+Total count in last column: 8662
+Non-zero count (>=1) in last column: 1354
+Zero or <1 count in last column: 7308
+Percentage of zero or <1 values: 84.00%
+
+W2.5.3f6_ALAS_00W_228.txt
+Total count in last column: 8210
+Non-zero count (>=1) in last column: 1435
+Zero or <1 count in last column: 6775
+Percentage of zero or <1 values: 82.00%
+
+C2.E01.C2b8_ALAS0C_4_240.txt
+Total count in last column: 8245
+Non-zero count (>=1) in last column: 721
+Zero or <1 count in last column: 7524
+Percentage of zero or <1 values: 91.00%
+
+W1.E07.W1g6_WILL10W_437_84.txt
+Total count in last column: 9220
+Non-zero count (>=1) in last column: 3928
+Zero or <1 count in last column: 5292
+Percentage of zero or <1 values: 57.00%
+
+C1.C10.C1f12_FERT31C_15F_170.txt
+Total count in last column: 9048
+Non-zero count (>=1) in last column: 1806
+Zero or <1 count in last column: 7242
+Percentage of zero or <1 values: 80.00%
+
+##############################
+# seedlings
+
+cd /home/celphin/scratch/Dryas/CpG/Seedling_W_C_Metilene/SE_W_C_input_files
+
+
+for file in *.deduplicated.bedGraph_sorted_tab.bedGraph; do
+  # Use grep to search for the pattern and save the output in a file with the same name but with a .txt extension
+  grep -w "Do1_a00047" "$file" > "${file%_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph}.txt"
+  
+  # Input file (replace with your file)
+  INPUT_FILE="${file%_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph}.txt"
+
+  # Count total number of values in the last column
+  total_count=$(awk '{print $NF}' "$INPUT_FILE" | wc -l)
+
+  # Count number of zero or <1 values in the last column (treating <1 as zero)
+  zero_or_less_count=$(awk '$NF < 1 {print $NF}' "$INPUT_FILE" | wc -l)
+
+  # Count number of values >= 1 in the last column (treated as non-zero)
+  non_zero_count=$(awk '$NF >= 1 {print $NF}' "$INPUT_FILE" | wc -l)
+
+  # Calculate the percentage of zero or <1 values
+  if [ "$total_count" -gt 0 ]; then
+    zero_percent=$(echo "scale=2; $zero_or_less_count / $total_count * 100" | bc)
+  else
+    zero_percent=0
+  fi
+
+  # Output the results
+  echo "${file%_R1_val_1_bismark_bt2_pe.deduplicated.bedGraph_sorted_tab.bedGraph}.txt"
+  echo "Total count in last column: $total_count"
+  echo "Non-zero count (>=1) in last column: $non_zero_count"
+  echo "Zero or <1 count in last column: $zero_or_less_count"
+  echo "Percentage of zero or <1 values: $zero_percent%"
+
+done
+
+# ones less than 95%
+
+W_SE_T_W_H_228_95_F112570.txt
+Total count in last column: 7646
+Non-zero count (>=1) in last column: 690
+Zero or <1 count in last column: 6956
+Percentage of zero or <1 values: 90.00%
+
+
+W_SE_L_W_H_219_105_F112564.txt
+Total count in last column: 7939
+Non-zero count (>=1) in last column: 479
+Zero or <1 count in last column: 7460
+Percentage of zero or <1 values: 93.00%
+
+C_SE_L_C_H_194_92_F112566.txt
+Total count in last column: 7881
+Non-zero count (>=1) in last column: 505
+Zero or <1 count in last column: 7376
+Percentage of zero or <1 values: 93.00%
 
 
 
+C_SE_L_C_H_187_98_F112565.txt
+Total count in last column: 7749
+Non-zero count (>=1) in last column: 486
+Zero or <1 count in last column: 7263
+Percentage of zero or <1 values: 93.00%
+
+##################################
+# Phenology
+
+cd /home/celphin/scratch/Dryas/CpG/Phenology_Metilene/Mat_Sen_input_files
+
+for file in *.bedGraph_sorted_tab.bedGraph; do
+  # Use grep to search for the pattern and save the output in a file with the same name but with a .txt extension
+  grep -w "Do1_a00047" "$file" > "${file%.bedGraph_sorted_tab.bedGraph}.txt"
+  
+  # Input file (replace with your file)
+  INPUT_FILE="${file%.bedGraph_sorted_tab.bedGraph}.txt"
+
+  # Count total number of values in the last column
+  total_count=$(awk '{print $NF}' "$INPUT_FILE" | wc -l)
+
+  # Count number of zero or <1 values in the last column (treating <1 as zero)
+  zero_or_less_count=$(awk '$NF < 1 {print $NF}' "$INPUT_FILE" | wc -l)
+
+  # Count number of values >= 1 in the last column (treated as non-zero)
+  non_zero_count=$(awk '$NF >= 1 {print $NF}' "$INPUT_FILE" | wc -l)
+
+  # Calculate the percentage of zero or <1 values
+  if [ "$total_count" -gt 0 ]; then
+    zero_percent=$(echo "scale=2; $zero_or_less_count / $total_count * 100" | bc)
+  else
+    zero_percent=0
+  fi
+
+  # Output the results
+  echo "${file%.bedGraph_sorted_tab.bedGraph}.txt"
+  echo "Total count in last column: $total_count"
+  echo "Non-zero count (>=1) in last column: $non_zero_count"
+  echo "Zero or <1 count in last column: $zero_or_less_count"
+  echo "Percentage of zero or <1 values: $zero_percent%"
+
+done
 
 
+# All above 95% 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+MatFl_Cass_10W_60_544_F112581.txt
+Total count in last column: 8131
+Non-zero count (>=1) in last column: 108
+Zero or <1 count in last column: 8023
+Percentage of zero or <1 values: 98.00%
+MatFl_Cass_4C_4_524_F112579.txt
+Total count in last column: 8357
+Non-zero count (>=1) in last column: 68
+Zero or <1 count in last column: 8289
+Percentage of zero or <1 values: 99.00%
+MatFl_Cass_5W_130_525_F112580.txt
+Total count in last column: 8275
+Non-zero count (>=1) in last column: 75
+Zero or <1 count in last column: 8200
+Percentage of zero or <1 values: 99.00%
+MatFl_Fert_5C_97_1F_F112583.txt
+Total count in last column: 8280
+Non-zero count (>=1) in last column: 82
+Zero or <1 count in last column: 8198
+Percentage of zero or <1 values: 99.00%
+MatFl_Fert_6W_110_3F_F112584.txt
+Total count in last column: 7999
+Non-zero count (>=1) in last column: 107
+Zero or <1 count in last column: 7892
+Percentage of zero or <1 values: 98.00%
+MatFl_Mead_1C_33_446_F112577.txt
+Total count in last column: 8199
+Non-zero count (>=1) in last column: 268
+Zero or <1 count in last column: 7931
+Percentage of zero or <1 values: 96.00%
+MatFl_Mead_1W_116_444_F112578.txt
+Total count in last column: 7783
+Non-zero count (>=1) in last column: 342
+Zero or <1 count in last column: 7441
+Percentage of zero or <1 values: 95.00%
+MatFl_Will_3C_100_414_F112575.txt
+Total count in last column: 8411
+Non-zero count (>=1) in last column: 79
+Zero or <1 count in last column: 8332
+Percentage of zero or <1 values: 99.00%
+MatFl_Will_4W_13_417_F112576.txt
+Total count in last column: 8241
+Non-zero count (>=1) in last column: 101
+Zero or <1 count in last column: 8140
+Percentage of zero or <1 values: 98.00%
 
 
 ###############################
