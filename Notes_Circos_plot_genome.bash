@@ -1,10 +1,9 @@
-﻿
-
-
-
+﻿##############################
+# Notes to make a circos plot
+# Dec 2024
+##############################
 #Step 1: Install Circos and Prepare Tools
 #First, install Circos. It’s a software for creating circular visualizations, and it’s available from Circos website.
-
 
 cd /home/celphin/scratch/Dryas/circos/data
 
