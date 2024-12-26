@@ -4,18 +4,6 @@
 # Nov 2024
 #####################################
 # following https://bioconductor.org/packages/release/workflows/vignettes/RnaSeqGeneEdgeRQL/inst/doc/edgeRQL.html
-###########################################################
-# try differential expression analysis - plotting
-# EdgeR
-
-tmux new-session -s RNA
-tmux attach-session -t RNA
-
-# Cedar1
-cd /home/celphin/projects/rrg-rieseber-ac/rpp-rieseber/celphin/Dryas/RNAseq_analysis/
-
-# copy to Beluga scratch/
-cd /home/celphin/scratch/Dryas/RNAseq_analysis/
 
 #---------------------------------
 # https://github.com/owensgl/biol525D/tree/master/Topic_6
@@ -24,28 +12,41 @@ cd /home/celphin/scratch/Dryas/RNAseq_analysis/
 # also see https://rpubs.com/jrgonzalezISGlobal/enrichment
 # https://bioinformatics-core-shared-training.github.io/cruk-bioinf-sschool/Day3/rnaSeq_DE.pdf
 
+###########################################################
+# try differential expression analysis - plotting
+# EdgeR
 
-# get R on server
-# open R
-module load StdEnv/2020
-module load r/4.2.1
-module load gdal
-module load udunits
-module load python
-#export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.2.1/
-export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.2.1/
+# tmux new-session -s RNA
+# tmux attach-session -t RNA
 
-R
+# # Cedar1
+# cd /home/celphin/projects/rrg-rieseber-ac/rpp-rieseber/celphin/Dryas/RNAseq_analysis/
+
+# # copy to Beluga scratch/
+# cd /home/celphin/scratch/Dryas/RNAseq_analysis/
+
+# # get R on server
+# # open R
+# module load StdEnv/2020
+# module load r/4.2.1
+# module load gdal
+# module load udunits
+# module load python
+# #export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.2.1/
+# export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.2.1/
+
+# R
 
 #install the package edgeR
- if (!require("BiocManager", quietly = TRUE))
-     install.packages("BiocManager")
- BiocManager::install(version = "3.15")
 
- BiocManager::install("edgeR")
- install.packages('gplots')
- install.packages('stringr')
- 
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(version = "3.15")
+
+BiocManager::install("edgeR")
+install.packages('gplots')
+install.packages('stringr')
+
 #paste it in here (i.e. replace my path with yours):
 #setwd ("/scratch/msandler/RNAseq_analysis")
 setwd ("/home/celphin/scratch/Dryas/RNAseq_analysis/")
@@ -187,17 +188,16 @@ fit$design
 # C_Alex_11        1      0        1        0        0        0
 
 
-contrasts <- makeContrasts(groupWvsgroupC = groupW-groupC,
-                           levels = designMat)
+contrasts <- makeContrasts(groupWvsgroupC = groupW-groupC,levels = designMat)
 
-          # Contrasts
+# Contrasts
 # Levels     groupWvsgroupC
-  # groupC               -1
-  # groupW                1
-  # siteAlex              0
-  # siteNorw              0
-  # siteSeed              0
-  # siteSwed              0
+# groupC               -1
+# groupW                1
+# siteAlex              0
+# siteNorw              0
+# siteSeed              0
+# siteSwed              0
 
 #------------------------------
 # Performing differential expression analysis
@@ -205,7 +205,6 @@ contrasts <- makeContrasts(groupWvsgroupC = groupW-groupC,
 
 qlf <- glmQLFTest(fit_QLF, contrast=contrasts)
 lrt <- glmLRT(fit, contrast=contrasts)
-
 
 fit2 <- contrasts.fit(lmfit, contrasts)
 fit2 <- eBayes(fit2)
@@ -284,9 +283,9 @@ WC_result_QLF <- topTags(qlf)
 # Do1_04_a00001G00673V1.1 8.964057e-05 0.1905427
 
 
-save(WC_result_eBayes, file='edgeR_TopTags_Bayes.RData') #We will need this later
-save(WC_result_LRT, file='edgeR_TopTags_LRT.RData') #We will need this later
-save(WC_result_QLF, file='edgeR_TopTags_QLF.RData') #We will need this later
+save(WC_result_eBayes, file='edgeR_TopTags_Bayes.RData')
+save(WC_result_LRT, file='edgeR_TopTags_LRT.RData') 
+save(WC_result_QLF, file='edgeR_TopTags_QLF.RData') 
 
 #--------------
 # Filter based on significance criteria (e.g., adjusted p-value and fold-change)
@@ -412,27 +411,27 @@ results1 <- glmmQvals(results)
 ##################################
 # Run for each site
 
-tmux new-session -s RNA
-tmux attach-session -t RNA
+# tmux new-session -s RNA
+# tmux attach-session -t RNA
 
-# Cedar1
-cd /home/celphin/projects/rrg-rieseber-ac/rpp-rieseber/celphin/Dryas/RNAseq_analysis/
+# # Cedar1
+# cd /home/celphin/projects/rrg-rieseber-ac/rpp-rieseber/celphin/Dryas/RNAseq_analysis/
 
-# copy to Beluga scratch/
-cd /home/celphin/scratch/Dryas/RNAseq_analysis/
+# # copy to Beluga scratch/
+# cd /home/celphin/scratch/Dryas/RNAseq_analysis/
 
 
-# get R on server
-# open R
-module load StdEnv/2020
-module load r/4.2.1
-module load gdal
-module load udunits
-module load python
-#export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.2.1/
-export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.2.1/
+# # get R on server
+# # open R
+# module load StdEnv/2020
+# module load r/4.2.1
+# module load gdal
+# module load udunits
+# module load python
+# #export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.2.1/
+# export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.2.1/
 
-R
+# R
 
 setwd ("/home/celphin/projects/rrg-rieseber-ac/rpp-rieseber/celphin/Dryas/RNAseq_analysis/")
 setwd ("/home/celphin/scratch/Dryas/RNAseq_analysis/")
