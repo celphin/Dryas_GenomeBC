@@ -25,17 +25,17 @@
 # # copy to Beluga scratch/
 # cd /home/celphin/scratch/Dryas/RNAseq_analysis/
 
-# # get R on server
-# # open R
-# module load StdEnv/2020
-# module load r/4.2.1
-# module load gdal
-# module load udunits
-# module load python
-# #export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.2.1/
-# export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.2.1/
+# get R on server
+# open R
+module load StdEnv/2020
+module load r/4.2.1
+module load gdal
+module load udunits
+module load python
+#export R_LIBS_USER=/home/msandler/R/x86_64-pc-linux-gnu-library/4.2.1/
+export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.2.1/
 
-# R
+R
 
 #install the package edgeR
 
