@@ -177,7 +177,7 @@ export R_LIBS_USER=/home/celphin/R/x86_64-pc-linux-gnu-library/4.4/
 
 sh metilene_filter_qval.sh 150 5 4 25 1e-5
 # Wild 490 DMRs with 0.9
-# WIld 1 DMR with 25
+# Wild 1 DMR with 25
 # Wild 237 with 10
 
 # real 109 with 10
