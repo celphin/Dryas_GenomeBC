@@ -6,8 +6,8 @@
 
 # copy over relevant files
 
-tmux new-session -s GO
-tmux attach-session -t GO
+tmux new-session -s GO1
+tmux attach-session -t GO1
 
 mkdir /lustre04/scratch/celphin/Dryas/GO_enrichment/
 cd /lustre04/scratch/celphin/Dryas/GO_enrichment/
@@ -29,101 +29,9 @@ cd /lustre04/scratch/celphin/Dryas/GO_enrichment/
 grep mRNA Dryas_octopetala_H1.gff3 | wc -l
 # 41181
 
-# Interproscan output
-#Do1_04_a00001G01549V1.1 a660bcfabce7c9b57fe024301da0870e        560     SUPERFAMILY     SSF48452        TPR-like       138     295     1.23E-12        T       29-09-2023      IPR011990       Tetratricopeptide-like helicaldomain superfamily      GO:0005515
-
-####################################
-# Edit Interproscan file to remove duplicates
-# format 
-awk -v FS="\t" '{print $1 "\t" $4 "\t" $6 "\t" $12 "\t" $13 "\t" $14}' interproscan_dryas_full0.tsv | wc -l 
-# 216 861
-
-awk -v FS="\t" '{print $1 "\t" $4 "\t" $6 "\t" $12 "\t" $13 "\t" $14}' interproscan_dryas_full0.tsv | sort | uniq |wc -l
-# 157 061
-
-awk -v FS="\t" '{print $1 "\t" $4 "\t" $6 "\t" $12 "\t" $13 "\t" $14}' interproscan_dryas_full0.tsv | sort | uniq > interproscan_dryas_full.tsv
-
-grep -v $'\t''-'$'\t''-'$'\t' interproscan_dryas_full.tsv > interproscan_dryas_full1.tsv
-
-sed 's/|/,/g' interproscan_dryas_full1.tsv | sort -u > interproscan_dryas_full2.tsv
-
-wc -l interproscan_dryas_full2.tsv
-# 95 869
-
-#-------------------------
-# load GO ont data
-
-module load StdEnv/2023
-module load r/4.4.0
-
-R
-
-path="/lustre04/scratch/celphin/Dryas/GO_enrichment"
-Gene_ont_file <- "interproscan_dryas_full2.tsv"
-gene_ont <- read.delim(paste0(path,"/", Gene_ont_file), header = FALSE, sep = "\t", na.strings = "-", colClasses = c("character", "character", "character", "character"))
-
-colnames(gene_ont) <- c( "gene", "Pfam", "descrip1", "INTPRO", "descrip2", "GOterm")
-length(unique(gene_ont$INTPRO))
-# 8644
-
-nrow(gene_ont)
-#  95869 # getting read in properly, half of the rows missing before
-
-#-----------------------------
-# formatting Interproscan to have no duplicates of genes - one row per gene
-library(dplyr)
-library(tidyr)
-
-# collapse GO terms
-collapsed_go_terms1 <- gene_ont %>%
-  group_by(gene) %>%
-  summarize(
-    descrip1 = paste(unique(descrip1), collapse = ","),  # Collapse unique descriptions
-    descrip2 = paste(unique(descrip2), collapse = ","),  # Collapse unique descriptions
-    GOterm = paste(unique(GOterm), collapse = ","),    # Collapse unique GO terms
-    INTPRO = paste(unique(INTPRO), collapse = ","), .groups="keep"      # Collapse unique IPR terms
-  )
-
-# remove duplicate values in a list
-cleaned_tibble <- collapsed_go_terms1 %>%
-  separate_rows(GOterm, sep = ",") %>%  # Split the GOterm string into multiple rows
-  separate_rows(INTPRO, sep = ",") %>%  # Split the INTPRO string into multiple rows
-  separate_rows(descrip1, sep = ",") %>%  # Split the descrip string into multiple rows
-  separate_rows(descrip2, sep = ",") %>%  # Split the descrip string into multiple rows
-  filter(GOterm != "NA") %>%              # Remove rows with '-'
-  distinct(gene, GOterm, INTPRO,descrip1,descrip2,.keep_all = TRUE ) #%>% # Keep unique terms with gene info
-
-# recollapse 
-collapsed_go_terms2 <- cleaned_tibble %>%
-  group_by(gene) %>%
-  summarize(
-    INTPRO = paste(sort(unique(INTPRO)), collapse = ","),           # Collapse IPR terms with unique values
-    descrip1 = paste(sort(unique(descrip1)), collapse = ","),        # Collapse descriptions with unique values
-    descrip2 = paste(sort(unique(descrip2)), collapse = ","),        # Collapse descriptions with unique values
-    GOterm = paste(sort(unique(GOterm)), collapse = ",") , .groups="keep"         # Collapse GO terms with unique values
-  )
-
-# format for ermineJ
-collapsed_go_terms <- collapsed_go_terms2 %>%
-  #mutate(gene2 = gene) %>%
-  select(gene, everything())
-
-collapsed_go_terms_df <- as.data.frame(collapsed_go_terms)
-
-gene_ont <- collapsed_go_terms_df
-
-nrow(gene_ont)
-# 14963
-
-# write out file
-utils::write.table(x=gene_ont , file=paste0(path,"/interproscan_dryas_full3.tsv"), append = FALSE, sep = "\t", dec = ".", row.names = FALSE, col.names = TRUE)
 
 ##########################
 # GENE IDs for DMRs and DEGs
-
-#----------------------------------
-tmux new-session -s GO
-tmux attach-session -t GO
 
 module load StdEnv/2023
 module load r/4.4.0
@@ -145,84 +53,190 @@ DMR_DEG <- read.delim(paste0(path,"/genes_RNA_MethylkitDMR_merged_data.tsv"), he
 head(DMR_DEG)
 colnames(DMR_DEG)
 
- # [1] "Scaffold"          "Gene_Start"        "Gene_End"
- # [4] "Gene"              "gene"              "INTPRO"
- # [7] "descrip1"          "descrip2"          "GOterm"
-# [10] "logFC"             "logCPM"            "LR"
-# [13] "PValue"            "file_basename.x.x" "UpDown"
-# [16] "file_basename.y.x" "chr"               "start"
-# [19] "end"               "file_basename.x.y" "mixed"
-# [22] "strand"            "pvalue"            "qvalue"
-# [25] "meth.diff"         "file_basename.y.y"
-
-DMR_DEG$DEG_Origin <- DMR_DEG$file_basename.x.x
-DMR_DEG$DEG_Origin <- DMR_DEG$file_basename.y.x
-
-DMR_DEG$DMR_Origin <- 
+ # [1] "Scaffold"   "Gene_Start" "Gene_End"   "Gene"       "gene"
+ # [6] "INTPRO"     "descrip1"   "descrip2"   "GOterm"     "logFC"
+# [11] "logCPM"     "LR"         "PValue"     "RNAsite"    "UpDown"
+# [16] "chr"        "start"      "end"        "site"       "context"
+# [21] "random"     "perdiff"    "strand"     "pvalue"     "qvalue"
+# [26] "meth.diff"
 
 #------------------------
 #Get a list of the specific genes for each group 
 
-unique(DMR_DEG$Origin)
+unique(DMR_DEG$site)
 
-# "Wild_W_C"
-DMR_Wild_W_C <- DMR_DEG[which(DMR_DEG$Origin=="Wild_W_C"),]
-Wild_W_C <- cbind(DMR_Wild_W_C$Gene, DMR_Wild_W_C$q.value)
-write.table(Wild_W_C, "Wild_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+ # [1] NA         "Pheno"    "HL"       "MEAD_W_C" "WILL_W_C" "FERT_W_C"
+ # [7] "ALAS_W_C" "DRY_W_C"  "SE_W_C"   "LAT_W_C"  "SE_HL"    "CASS_W_C"
+# [13] "SVAL_W_C"
 
-# "Mat_Sen"
-DMR_Mat_Sen <- DMR_DEG[which(DMR_DEG$Origin=="Mat_Sen"),]
-Mat_Sen <- cbind(DMR_Mat_Sen$Gene, DMR_Mat_Sen$q.value)
-write.table(Mat_Sen, "Mat_Sen_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-
-# "Wild_Lat_L_H"
-DMR_Wild_Lat_L_H <- DMR_DEG[which(DMR_DEG$Origin=="Wild_Lat_L_H"),]
-Wild_Lat_L_H <- cbind(DMR_Wild_Lat_L_H$Gene, DMR_Wild_Lat_L_H$q.value)
-write.table(Wild_Lat_L_H, "Wild_Lat_L_H_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-
-# "Sweden_W_C"
-DMR_Sweden_W_C <- DMR_DEG[which(DMR_DEG$Origin=="Sweden_W_C"),]
-Sweden_W_C <- cbind(DMR_Sweden_W_C$Gene, DMR_Sweden_W_C$q.value)
-write.table(Sweden_W_C, "Sweden_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-
-# "Alaska_W_C"
-DMR_Alaska_W_C <- DMR_DEG[which(DMR_DEG$Origin=="Alaska_W_C"),]
-Alaska_W_C <- cbind(DMR_Alaska_W_C$Gene, DMR_Alaska_W_C$q.value)
+# "ALAS_W_C"
+DMR_Alaska_W_C <- DMR_DEG[which(DMR_DEG$site=="ALAS_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+Alaska_W_C <- as.data.frame(cbind(DMR_Alaska_W_C$Gene, DMR_Alaska_W_C$qvalue))
+Alaska_W_C <- distinct(Alaska_W_C)
 write.table(Alaska_W_C, "Alaska_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#142
 
-# "Nunavut_W_C"
-DMR_Nunavut_W_C <- DMR_DEG[which(DMR_DEG$Origin=="Nunavut_W_C"),]
-Nunavut_W_C <- cbind(DMR_Nunavut_W_C$Gene, DMR_Nunavut_W_C$q.value)
+# "LAT_W_C"
+DMR_Sweden_W_C <- DMR_DEG[which(DMR_DEG$site=="LAT_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+Sweden_W_C <- as.data.frame(cbind(DMR_Sweden_W_C$Gene, DMR_Sweden_W_C$qvalue))
+Sweden_W_C <- distinct(Sweden_W_C)
+write.table(Sweden_W_C, "Sweden_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+# 808
+
+# "CASS_W_C"
+DMR_Nunavut_W_C <- DMR_DEG[which(DMR_DEG$site=="CASS_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+Nunavut_W_C <- as.data.frame(cbind(DMR_Nunavut_W_C$Gene, DMR_Nunavut_W_C$qvalue))
+Nunavut_W_C <- distinct(Nunavut_W_C)
 write.table(Nunavut_W_C, "Nunavut_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#78
 
-# "Svalbard_W_C"
-DMR_Svalbard_W_C <- DMR_DEG[which(DMR_DEG$Origin=="Svalbard_W_C"),]
-Svalbard_W_C <- cbind(DMR_Svalbard_W_C$Gene, DMR_Svalbard_W_C$q.value)
+# "SVAL_W_C"
+DMR_Svalbard_W_C <- DMR_DEG[which(DMR_DEG$site=="SVAL_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+Svalbard_W_C <- as.data.frame(cbind(DMR_Svalbard_W_C$Gene, DMR_Svalbard_W_C$qvalue))
+Svalbard_W_C <- distinct(Svalbard_W_C)
 write.table(Svalbard_W_C, "Svalbard_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#103
 
+# "Pheno"
+DMR_Mat_Sen <- DMR_DEG[which(DMR_DEG$site=="Pheno" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+Mat_Sen <- as.data.frame(cbind(DMR_Mat_Sen$Gene, DMR_Mat_Sen$qvalue))
+Mat_Sen <- distinct(Mat_Sen)
+write.table(Mat_Sen, "Mat_Sen_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+# 8584
 
-# "Parent_W_C"
-DMR_Parent_W_C <- DMR_DEG[which(DMR_DEG$Origin=="Parent_W_C"),]
-Parent_W_C <- cbind(DMR_Parent_W_C$Gene, DMR_Parent_W_C$q.value)
-write.table(Parent_W_C, "Parent_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+# "HL"
+DMR_Wild_Lat_L_H <- DMR_DEG[which(DMR_DEG$site=="HL" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+Wild_Lat_L_H <- as.data.frame(cbind(DMR_Wild_Lat_L_H$Gene, DMR_Wild_Lat_L_H$qvalue))
+Wild_Lat_L_H <- distinct(Wild_Lat_L_H)
+write.table(Wild_Lat_L_H, "Wild_Lat_L_H_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#7621
 
 # "SE_W_C"
-DMR_SE_W_C <- DMR_DEG[which(DMR_DEG$Origin=="SE_W_C"),]
-SE_W_C <- cbind(DMR_SE_W_C$Gene, DMR_SE_W_C$q.value)
+DMR_SE_W_C <- DMR_DEG[which(DMR_DEG$site=="SE_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+SE_W_C <- as.data.frame(cbind(DMR_SE_W_C$Gene, DMR_SE_W_C$qvalue))
+SE_W_C <- distinct(SE_W_C)
 write.table(SE_W_C, "SE_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#1434
 
-# "SE_L_H"
-DMR_SE_L_H <- DMR_DEG[which(DMR_DEG$Origin=="SE_L_H"),]
-SE_L_H <- cbind(DMR_SE_L_H$Gene, DMR_SE_L_H$q.value)
+# "SE_HL"
+DMR_SE_L_H <- DMR_DEG[which(DMR_DEG$site=="SE_HL" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+SE_L_H <- as.data.frame(cbind(DMR_SE_L_H$Gene, DMR_SE_L_H$qvalue))
+SE_L_H <- distinct(SE_L_H)
 write.table(SE_L_H, "SE_L_H_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+# 388
 
-# "RNA"
-DMR_RNA <- DMR_DEG[which(DMR_DEG$Origin=="RNA"),]
-RNA <- cbind(DMR_RNA$Gene, DMR_RNA$fdr)
-write.table(RNA, "RNA_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#-------------------
+# Extract RNA info separately
 
+unique(DMR_DEG$RNAsite)
+# [1] NA         "SE_W_C"   "LAT_W_C"  "NORW_W_C" "ALAS_W_C" "ALEX_W_C"
 
-#-------------------------
+# "LAT_W_C"
+LAT_RNA <- DMR_DEG[which(DMR_DEG$RNAsite=="LAT_W_C"),]
+LAT_RNA_gene <- as.data.frame(cbind(LAT_RNA$Gene, LAT_RNA$PValue))
+LAT_RNA_gene <- distinct(LAT_RNA_gene)
+write.table(LAT_RNA_gene, "Sweden_RNA_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#59
+
+# "ALAS_W_C"
+ALAS_RNA <- DMR_DEG[which(DMR_DEG$RNAsite=="ALAS_W_C"),]
+ALAS_RNA_gene <- as.data.frame(cbind(ALAS_RNA$Gene, ALAS_RNA$PValue))
+ALAS_RNA_gene <- distinct(ALAS_RNA_gene)
+write.table(ALAS_RNA_gene , "Alaska_RNA_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#19
+
+# "ALEX_W_C"
+ALEX_RNA <- DMR_DEG[which(DMR_DEG$RNAsite=="ALEX_W_C"),]
+ALEX_RNA_gene <- as.data.frame(cbind(ALEX_RNA$Gene, ALEX_RNA$PValue))
+ALEX_RNA_gene <- distinct(ALEX_RNA_gene)
+write.table(ALEX_RNA_gene , "Nunavut_RNA_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#21
+
+# "NORW_W_C"
+NORW_RNA <- DMR_DEG[which(DMR_DEG$RNAsite=="NORW_W_C"),]
+NORW_RNA_gene <- as.data.frame(cbind(NORW_RNA$Gene, NORW_RNA$PValue))
+NORW_RNA_gene <- distinct(NORW_RNA_gene)
+write.table(NORW_RNA_gene , "Norway_RNA_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#6
+
+# "SE_W_C"
+SE_RNA <- DMR_DEG[which(DMR_DEG$RNAsite=="SE_W_C"),]
+SE_RNA_gene <- as.data.frame(cbind(SE_RNA$Gene, SE_RNA$PValue))
+SE_RNA_gene <- distinct(SE_RNA_gene)
+write.table(SE_RNA_gene , "Seedling_RNA_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#45
+
+#--------------------------
+# Extract for random as well
+
+# "ALAS_W_C"
+DMR_Alaska_W_C <- DMR_DEG[which(DMR_DEG$site=="ALAS_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
+Alaska_W_C <- as.data.frame(cbind(DMR_Alaska_W_C$Gene, DMR_Alaska_W_C$qvalue))
+Alaska_W_C <- distinct(Alaska_W_C)
+write.table(Alaska_W_C, "Alaska_W_C_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#13
+
+# "LAT_W_C"
+DMR_Sweden_W_C <- DMR_DEG[which(DMR_DEG$site=="LAT_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
+Sweden_W_C <- as.data.frame(cbind(DMR_Sweden_W_C$Gene, DMR_Sweden_W_C$qvalue))
+Sweden_W_C <- distinct(Sweden_W_C)
+write.table(Sweden_W_C, "Sweden_W_C_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#0
+
+# "CASS_W_C"
+DMR_Nunavut_W_C <- DMR_DEG[which(DMR_DEG$site=="CASS_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
+Nunavut_W_C <- as.data.frame(cbind(DMR_Nunavut_W_C$Gene, DMR_Nunavut_W_C$qvalue))
+Nunavut_W_C <- distinct(Nunavut_W_C)
+write.table(Nunavut_W_C, "Nunavut_W_C_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#0
+
+# "SVAL_W_C"
+DMR_Svalbard_W_C <- DMR_DEG[which(DMR_DEG$site=="SVAL_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
+Svalbard_W_C <- as.data.frame(cbind(DMR_Svalbard_W_C$Gene, DMR_Svalbard_W_C$qvalue))
+Svalbard_W_C <- distinct(Svalbard_W_C)
+write.table(Svalbard_W_C, "Svalbard_W_C_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#123
+
+# "Pheno"
+DMR_Mat_Sen <- DMR_DEG[which(DMR_DEG$site=="Pheno" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
+Mat_Sen <- as.data.frame(cbind(DMR_Mat_Sen$Gene, DMR_Mat_Sen$qvalue))
+Mat_Sen <- distinct(Mat_Sen)
+write.table(Mat_Sen, "Mat_Sen_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#0
+
+# "HL"
+DMR_Wild_Lat_L_H <- DMR_DEG[which(DMR_DEG$site=="HL" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
+Wild_Lat_L_H <- as.data.frame(cbind(DMR_Wild_Lat_L_H$Gene, DMR_Wild_Lat_L_H$qvalue))
+Wild_Lat_L_H <- distinct(Wild_Lat_L_H)
+write.table(Wild_Lat_L_H, "Wild_Lat_L_H_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#0
+
+# "SE_W_C"
+DMR_SE_W_C <- DMR_DEG[which(DMR_DEG$site=="SE_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
+SE_W_C <- as.data.frame(cbind(DMR_SE_W_C$Gene, DMR_SE_W_C$qvalue))
+SE_W_C <- distinct(SE_W_C)
+write.table(SE_W_C, "SE_W_C_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#0
+
+# "SE_HL"
+DMR_SE_L_H <- DMR_DEG[which(DMR_DEG$site=="SE_HL" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
+SE_L_H <- as.data.frame(cbind(DMR_SE_L_H$Gene, DMR_SE_L_H$qvalue))
+SE_L_H <- distinct(SE_L_H)
+write.table(SE_L_H, "SE_L_H_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+#8
+
+##############################
+# Get summary counts for number of genes in various categories
+
+DMR_DEG_summary <- DMR_DEG %>%
+  group_by(site, perdiff,context, RNAsite, random) %>%
+  summarize(count = n())
+
+print(DMR_DEG_summary, n=137)
+
+write.table(DMR_DEG_summary, "DMR_DEG_summary_counts.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+
+####################################
 # GO ont data
 
 nrow(gene_ont)
@@ -262,9 +276,17 @@ n
 # Prepare gene score file 
 # https://erminej.msl.ubc.ca/help/input-files/gene-scores/
 
+cd /lustre04/scratch/celphin/Dryas/GO_enrichment
+rename randgenes.txt rand_genes.txt *
+
 awk 'BEGIN{FS="\t"}{print $1,"1"}' total_gene_list.txt | sort -u > Dryas_blank_geneset
 
-for taxon in Wild_W_C Mat_Sen Wild_Lat_L_H Sweden_W_C Alaska_W_C Nunavut_W_C Svalbard_W_C RNA Parent_W_C SE_W_C SE_L_H ; \
+# Alaska_W_C Sweden_W_C Nunavut_W_C Svalbard_W_C Mat_Sen Wild_Lat_L_H SE_W_C SE_L_H Sweden_RNA Alaska_RNA Nunavut_RNA Norway_RNA Seedling_RNA Alaska_W_C_rand Sweden_W_C_rand Nunavut_W_C_rand Svalbard_W_C_rand Mat_Sen_rand Wild_Lat_L_H_rand SE_W_C_rand SE_L_H_rand
+
+for taxon in Alaska_W_C Sweden_W_C Nunavut_W_C Svalbard_W_C Mat_Sen Wild_Lat_L_H SE_W_C SE_L_H \
+Sweden_RNA Alaska_RNA Nunavut_RNA Norway_RNA Seedling_RNA \
+Alaska_W_C_rand Sweden_W_C_rand Nunavut_W_C_rand Svalbard_W_C_rand \
+Mat_Sen_rand Wild_Lat_L_H_rand SE_W_C_rand SE_L_H_rand ; \
 do \
 echo "$taxon"
 cp Dryas_blank_geneset "$taxon"_geneset
@@ -276,7 +298,10 @@ while read gene qvalue ; do \
     sed -i "s/$gene 1/$gene $qvalue/g" "$taxon"_geneset ; \
 done ; done
 
-for taxon in Wild_W_C Mat_Sen Wild_Lat_L_H Sweden_W_C Alaska_W_C Nunavut_W_C Svalbard_W_C RNA Parent_W_C SE_W_C SE_L_H ; \
+for taxon in Alaska_W_C Sweden_W_C Nunavut_W_C Svalbard_W_C Mat_Sen Wild_Lat_L_H SE_W_C SE_L_H \
+Sweden_RNA Alaska_RNA Nunavut_RNA Norway_RNA Seedling_RNA \
+Alaska_W_C_rand Sweden_W_C_rand Nunavut_W_C_rand Svalbard_W_C_rand \
+Mat_Sen_rand Wild_Lat_L_H_rand SE_W_C_rand SE_L_H_rand ; \
 do sed -i 's/ /\t/g' "$taxon"_geneset; done
 
 # remove V1.1 in GO_gene_mappings.ermineJ.txt
@@ -299,6 +324,28 @@ wc -l *_genes.txt
   # 31161 Wild_Lat_L_H_genes.txt
     # 573 Wild_W_C_genes.txt
 
+     # 19 Alaska_RNA_genes.txt
+    # 150 Alaska_W_C_genes.txt
+     # 13 Alaska_W_C_rand_genes.txt
+  # 14278 Mat_Sen_genes.txt
+      # 0 Mat_Sen_rand_genes.txt
+      # 6 Norway_RNA_genes.txt
+     # 21 Nunavut_RNA_genes.txt
+     # 84 Nunavut_W_C_genes.txt
+      # 0 Nunavut_W_C_rand_genes.txt
+     # 45 Seedling_RNA_genes.txt
+    # 405 SE_L_H_genes.txt
+      # 8 SE_L_H_rand_genes.txt
+   # 1631 SE_W_C_genes.txt
+      # 0 SE_W_C_rand_genes.txt
+    # 103 Svalbard_W_C_genes.txt
+    # 123 Svalbard_W_C_rand_genes.txt
+     # 59 Sweden_RNA_genes.txt
+    # 890 Sweden_W_C_genes.txt
+      # 0 Sweden_W_C_rand_genes.txt
+  # 12853 Wild_Lat_L_H_genes.txt
+      # 0 Wild_Lat_L_H_rand_genes.txt
+
 
 ##############################################
 # ermineJ
@@ -311,10 +358,25 @@ wc -l *_genes.txt
 # be appropriate if the annotation file includes genes that were not assayed in your experiment. 
 # This is most likely to be a problem if your annotation file is a list of all the genes in the genome
 
-tmux new-session -s GO
-tmux attach-session -t GO
+#In home, install ermineJ:
+cd ~
+wget https://home.pavlab.msl.ubc.ca/ermineJ/distributions/ermineJ-3.2-generic-bundle.zip
+unzip ermineJ-3.2-generic-bundle.zip
+module load StdEnv/2020  python/3.10.2 scipy-stack/2021a diamond/2.1.7 fastme/2.1.6.2 gcc/9.3.0 mcl/14.137 java/13.0.2 r/4.2.2 glpk/5.0
+cd ermineJ-3.2/bin/
+chmod +x ermineJ.sh
 
-salloc -c1 --time 2:00:00 --mem 120000m --account def-cronk
+#Get gene ontology file (gene set file)
+mkdir ~/ermineJ.data
+cd ~/ermineJ.data
+wget https://release.geneontology.org/2024-04-24/ontology/go.obo
+
+#######################################################################################################################################
+
+tmux new-session -s GO1
+tmux attach-session -t GO1
+
+salloc -c1 --time 3:00:00 --mem 120000m --account def-henryg
 
 cd /lustre04/scratch/celphin/Dryas/GO_enrichment
 
@@ -323,7 +385,10 @@ export JAVA_HOME=/cvmfs/soft.computecanada.ca/easybuild/software/2020/Core/java/
 
 module load java/13.0.2
 
-for taxon in Wild_W_C Mat_Sen Wild_Lat_L_H Sweden_W_C Alaska_W_C Nunavut_W_C Svalbard_W_C RNA Parent_W_C SE_W_C SE_L_H ; \
+for taxon in Alaska_W_C Sweden_W_C Nunavut_W_C Svalbard_W_C Mat_Sen Wild_Lat_L_H SE_W_C SE_L_H \
+Sweden_RNA Alaska_RNA Nunavut_RNA Norway_RNA Seedling_RNA \
+Alaska_W_C_rand Sweden_W_C_rand Nunavut_W_C_rand Svalbard_W_C_rand \
+Mat_Sen_rand Wild_Lat_L_H_rand SE_W_C_rand SE_L_H_rand ; \
 do $ERMINEJ_HOME/bin/ermineJ.sh \
 -a GO_gene_mappings1.ermineJ.txt \
 -s "$taxon"_geneset \
@@ -352,7 +417,10 @@ do $ERMINEJ_HOME/bin/ermineJ.sh \
 
 # Look at the files for each set combined
 # Subset those with a p-value < 0.05
-for taxon in Wild_W_C Mat_Sen Wild_Lat_L_H Sweden_W_C Alaska_W_C Nunavut_W_C Svalbard_W_C RNA Parent_W_C SE_W_C SE_L_H ; \
+for taxon in Alaska_W_C Sweden_W_C Nunavut_W_C Svalbard_W_C Mat_Sen Wild_Lat_L_H SE_W_C SE_L_H \
+Sweden_RNA Alaska_RNA Nunavut_RNA Norway_RNA Seedling_RNA \
+Alaska_W_C_rand Sweden_W_C_rand Nunavut_W_C_rand Svalbard_W_C_rand \
+Mat_Sen_rand Wild_Lat_L_H_rand SE_W_C_rand SE_L_H_rand ; \
 do grep "!" "$taxon".ermine.results  | awk -F '\t' '$7 <0.5 { print }'| awk  -F $'\t' '{print $2, $3, $7, $1}' |sort  > "$taxon"_sig.ermine.results
 done
 
@@ -363,7 +431,10 @@ cat *_sig.ermine.results | awk -F '\t' '$7 <0.5 { print }' | awk  -F $'\t' '{pri
 ###################################
 # summarize with : http://revigo.irb.hr/
 
-for taxon in Wild_W_C Mat_Sen Wild_Lat_L_H Sweden_W_C Alaska_W_C Nunavut_W_C Svalbard_W_C RNA Parent_W_C SE_W_C SE_L_H ; \
+for taxon in Alaska_W_C Sweden_W_C Nunavut_W_C Svalbard_W_C Mat_Sen Wild_Lat_L_H SE_W_C SE_L_H \
+Sweden_RNA Alaska_RNA Nunavut_RNA Norway_RNA Seedling_RNA \
+Alaska_W_C_rand Sweden_W_C_rand Nunavut_W_C_rand Svalbard_W_C_rand \
+Mat_Sen_rand Wild_Lat_L_H_rand SE_W_C_rand SE_L_H_rand ; \
 do cat "$taxon".ermine.results | awk -F '\t' '$7 <0.05 { print }' | awk  -F $'\t' '{print $3}' | \
 sort  | uniq -c | awk  -F " " '{print $2, $1}' > Revigio_"$taxon".txt 
 done

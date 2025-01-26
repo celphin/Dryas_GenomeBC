@@ -21,10 +21,37 @@ cp /lustre04/scratch/celphin/Dryas_large_folders/RNAseq_analysis/*.txt /lustre04
 cd /lustre04/scratch/celphin/Dryas/MS_Dryas_Merged_Data/original_data
 cp Dryas_octopetala_H1.gff3 /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
 
+# Interproscan
 cd /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
 cp /lustre04/scratch/celphin/Dryas/GO_enrichment/interproscan_dryas_full3.tsv .
+cp /home/celphin/scratch/Dryas/MS_Dryas_Merged_Data/original_data/interproscan_dryas_full.tsv .
 
-#-----------------------------
+
+##################################################
+# Process Interproscan file
+
+# Interproscan output
+#Do1_04_a00001G01549V1.1 a660bcfabce7c9b57fe024301da0870e        560     SUPERFAMILY     SSF48452        TPR-like       138     295     1.23E-12        T       29-09-2023      IPR011990       Tetratricopeptide-like helicaldomain superfamily      GO:0005515
+
+####################################
+# Edit Interproscan file to remove duplicates
+# format 
+awk -v FS="\t" '{print $1 "\t" $4 "\t" $6 "\t" $12 "\t" $13 "\t" $14}' interproscan_dryas_full0.tsv | wc -l 
+# 216 861
+
+awk -v FS="\t" '{print $1 "\t" $4 "\t" $6 "\t" $12 "\t" $13 "\t" $14}' interproscan_dryas_full0.tsv | sort | uniq |wc -l
+# 157 061
+
+awk -v FS="\t" '{print $1 "\t" $4 "\t" $6 "\t" $12 "\t" $13 "\t" $14}' interproscan_dryas_full0.tsv | sort | uniq > interproscan_dryas_full.tsv
+
+grep -v $'\t''-'$'\t''-'$'\t' interproscan_dryas_full.tsv > interproscan_dryas_full1.tsv
+
+sed 's/|/,/g' interproscan_dryas_full1.tsv | sort -u > interproscan_dryas_full2.tsv
+
+wc -l interproscan_dryas_full2.tsv
+# 95 869
+
+##############################################
 tmux new-session -s GO
 tmux attach-session -t GO
 
@@ -40,6 +67,67 @@ R
 library(dplyr)
 library(tidyr)
 library(stringr)
+
+#-------------------------
+# load GO ont data
+
+path="/lustre04/scratch/celphin/Dryas/methylkit_merged_data"
+Gene_ont_file <- "interproscan_dryas_full2.tsv"
+gene_ont <- read.delim(paste0(path,"/", Gene_ont_file), header = FALSE, sep = "\t", na.strings = "-", colClasses = c("character", "character", "character", "character"))
+
+colnames(gene_ont) <- c( "gene", "Pfam", "descrip1", "INTPRO", "descrip2", "GOterm")
+length(unique(gene_ont$INTPRO))
+# 8644
+
+nrow(gene_ont)
+#  95869 # getting read in properly, half of the rows missing before
+
+#-----------------------------
+# formatting Interproscan to have no duplicates of genes - one row per gene
+
+# collapse GO terms
+collapsed_go_terms1 <- gene_ont %>%
+  group_by(gene) %>%
+  summarize(
+    descrip1 = paste(unique(descrip1), collapse = ","),  # Collapse unique descriptions
+    descrip2 = paste(unique(descrip2), collapse = ","),  # Collapse unique descriptions
+    GOterm = paste(unique(GOterm), collapse = ","),    # Collapse unique GO terms
+    INTPRO = paste(unique(INTPRO), collapse = ","), .groups="keep"      # Collapse unique IPR terms
+  )
+
+# remove duplicate values in a list
+cleaned_tibble <- collapsed_go_terms1 %>%
+  separate_rows(GOterm, sep = ",") %>%  # Split the GOterm string into multiple rows
+  separate_rows(INTPRO, sep = ",") %>%  # Split the INTPRO string into multiple rows
+  separate_rows(descrip1, sep = ",") %>%  # Split the descrip string into multiple rows
+  separate_rows(descrip2, sep = ",") %>%  # Split the descrip string into multiple rows
+  filter(GOterm != "NA") %>%              # Remove rows with '-'
+  distinct(gene, GOterm, INTPRO,descrip1,descrip2,.keep_all = TRUE ) #%>% # Keep unique terms with gene info
+
+# recollapse 
+collapsed_go_terms2 <- cleaned_tibble %>%
+  group_by(gene) %>%
+  summarize(
+    INTPRO = paste(sort(unique(INTPRO)), collapse = ","),           # Collapse IPR terms with unique values
+    descrip1 = paste(sort(unique(descrip1)), collapse = ","),        # Collapse descriptions with unique values
+    descrip2 = paste(sort(unique(descrip2)), collapse = ","),        # Collapse descriptions with unique values
+    GOterm = paste(sort(unique(GOterm)), collapse = ",") , .groups="keep"         # Collapse GO terms with unique values
+  )
+
+# format for ermineJ
+collapsed_go_terms <- collapsed_go_terms2 %>%
+  #mutate(gene2 = gene) %>%
+  select(gene, everything())
+
+collapsed_go_terms_df <- as.data.frame(collapsed_go_terms)
+
+gene_ont <- collapsed_go_terms_df
+
+nrow(gene_ont)
+# 14963
+
+# write out file
+utils::write.table(x=gene_ont , file=paste0(path,"/interproscan_dryas_full3.tsv"), append = FALSE, sep = "\t", dec = ".", row.names = FALSE, col.names = TRUE)
 
 
 #####################################################################
@@ -156,6 +244,9 @@ unique(as.factor(methylkitDMRs_info_combined_data$context))
 unique(as.factor(methylkitDMRs_info_combined_data$random))
 unique(as.factor(methylkitDMRs_info_combined_data$perdiff))
 
+methylkitDMRs_info_combined_data0 <- methylkitDMRs_info_combined_data
+methylkitDMRs_info_combined_data = subset(methylkitDMRs_info_combined_data0, select = -c(file_basename, origin) )
+
 #####################################################################
 #Read in the methylkit DMR nearest gene names, add filename column, join for all data
 #*.uniq_genes
@@ -177,14 +268,11 @@ list_of_data_with_basename <- lapply(seq_along(list_of_data), function(i) {
 
 # Combine all data frames into one using rbind
 methylkitDMRs_genenames_combined_data <- do.call(rbind, list_of_data_with_basename)
-
+colnames(methylkitDMRs_genenames_combined_data)<- c("chr", "start", "end", "Gene", "file_basename")
 methylkitDMRs_genenames_combined_data$gene <- methylkitDMRs_genenames_combined_data$Gene
 methylkitDMRs_genenames_combined_data$Gene <- sub("V1.1", "", methylkitDMRs_genenames_combined_data$gene)
 
-
 head(methylkitDMRs_genenames_combined_data)
-
-colnames(methylkitDMRs_genenames_combined_data)<- c("chr", "start", "end", "Gene", "file_basename")
 
 #----------------------
 # Extract DMR site/origin info
@@ -234,6 +322,9 @@ unique(as.factor(methylkitDMRs_genenames_combined_data$context))
 unique(as.factor(methylkitDMRs_genenames_combined_data$random))
 unique(as.factor(methylkitDMRs_genenames_combined_data$perdiff))
 
+methylkitDMRs_genenames_combined_data0 <- methylkitDMRs_genenames_combined_data
+methylkitDMRs_genenames_combined_data = subset(methylkitDMRs_genenames_combined_data0, select = -c(file_basename, origin) )
+
 #####################################################################
 #Read in the DEG gene names, add filename column, join for all data
 # RNA*_DERs.txt
@@ -265,28 +356,22 @@ RNA_info_combined_data$Gene <- sub("V1.1", "", RNA_info_combined_data$gene)
 
 # Extract DEG site/origin info and remove filename
 RNA_info_combined_data$origin <- RNA_info_combined_data$file_basename
-RNA_info_combined_data$origin <- sub("Rand_", "", RNA_info_combined_data$origin)
-RNA_info_combined_data$origin <- sub("Methylkit_", "", RNA_info_combined_data$origin)
-RNA_info_combined_data$origin <- sub("_DMRs.txt", "", RNA_info_combined_data$origin)
+RNA_info_combined_data$origin <- sub("RNA_", "", RNA_info_combined_data$origin)
+RNA_info_combined_data$origin <- sub("_DERs.txt", "", RNA_info_combined_data$origin)
 
-RNA_info_combined_data$site <- RNA_info_combined_data$origin
+RNA_info_combined_data$RNAsite <- RNA_info_combined_data$origin
 
 # find sites
-RNA_info_combined_data$site[grep("SE_W_C", RNA_info_combined_data$origin)]<- "SE_W_C"
-RNA_info_combined_data$site[grep("Pheno", RNA_info_combined_data$origin)]<- "Pheno"
-RNA_info_combined_data$site[grep("HL", RNA_info_combined_data$origin)]<- "HL"
-RNA_info_combined_data$site[grep("SE_HL", RNA_info_combined_data$origin)]<- "SE_HL"
+RNA_info_combined_data$RNAsite[grep("Seedling_W_C", RNA_info_combined_data$origin)]<- "SE_W_C"
+RNA_info_combined_data$RNAsite[grep("Alex_W_C", RNA_info_combined_data$origin)]<- "ALEX_W_C"
+RNA_info_combined_data$RNAsite[grep("Sweden_W_C", RNA_info_combined_data$origin)]<- "LAT_W_C"
+RNA_info_combined_data$RNAsite[grep("Alaska_W_C", RNA_info_combined_data$origin)]<- "ALAS_W_C"
+RNA_info_combined_data$RNAsite[grep("Norway_W_C", RNA_info_combined_data$origin)]<- "NORW_W_C"
 
-RNA_info_combined_data$site[grep("MEAD", RNA_info_combined_data$origin)]<- "MEAD_W_C"
-RNA_info_combined_data$site[grep("WILL", RNA_info_combined_data$origin)]<- "WILL_W_C"
-RNA_info_combined_data$site[grep("DRY", RNA_info_combined_data$origin)]<- "DRY_W_C"
-RNA_info_combined_data$site[grep("CASS", RNA_info_combined_data$origin)]<- "CASS_W_C"
-RNA_info_combined_data$site[grep("FERT", RNA_info_combined_data$origin)]<- "FERT_W_C"
+unique(as.factor(RNA_info_combined_data$RNAsite))
 
-RNA_info_combined_data$site[grep("LAT", RNA_info_combined_data$origin)]<- "LAT_W_C"
-RNA_info_combined_data$site[grep("ALAS", RNA_info_combined_data$origin)]<- "ALAS_W_C"
-RNA_info_combined_data$site[grep("SVAL", RNA_info_combined_data$origin)]<- "SVAL_W_C"
-
+RNA_info_combined_data0 <- RNA_info_combined_data
+RNA_info_combined_data = subset(RNA_info_combined_data0, select = -c(file_basename, origin) )
 
 
 #####################################################################
@@ -319,32 +404,44 @@ head(RNA_updown_combined_data)
 colnames(RNA_updown_combined_data)
 
 # Extract DEG site/origin info and remove filename
+RNA_updown_combined_data$origin <- RNA_updown_combined_data$file_basename
+RNA_updown_combined_data$origin <- sub("RNA_", "", RNA_updown_combined_data$origin)
+RNA_updown_combined_data$origin <- sub("_DERs_updown.txt", "", RNA_updown_combined_data$origin)
+
+RNA_updown_combined_data$RNAsite <- RNA_updown_combined_data$origin
+
+# find sites
+RNA_updown_combined_data$RNAsite[grep("Seedling_W_C", RNA_updown_combined_data$origin)]<- "SE_W_C"
+RNA_updown_combined_data$RNAsite[grep("Alex_W_C", RNA_updown_combined_data$origin)]<- "ALEX_W_C"
+RNA_updown_combined_data$RNAsite[grep("Sweden_W_C", RNA_updown_combined_data$origin)]<- "LAT_W_C"
+RNA_updown_combined_data$RNAsite[grep("Alaska_W_C", RNA_updown_combined_data$origin)]<- "ALAS_W_C"
+RNA_updown_combined_data$RNAsite[grep("Norway_W_C", RNA_updown_combined_data$origin)]<- "NORW_W_C"
+
+unique(as.factor(RNA_updown_combined_data$RNAsite))
+
+RNA_updown_combined_data0 <- RNA_updown_combined_data
+RNA_updown_combined_data = subset(RNA_updown_combined_data0, select = -c(file_basename, origin) )
 
 
 
 #################################################################
 # join all by the gene names
 
-# join DMRinfo with DMR gene names by DMR mixed
-methylkitDMRs_info_combined_data$mixed <- paste0(methylkitDMRs_info_combined_data$chr, "_", methylkitDMRs_info_combined_data$start, "_", methylkitDMRs_info_combined_data$end)
-methylkitDMRs_genenames_combined_data$mixed <- paste0(methylkitDMRs_genenames_combined_data$chr, "_", methylkitDMRs_genenames_combined_data$start, "_", methylkitDMRs_genenames_combined_data$end)
-
-DMR_total_data <- left_join(methylkitDMRs_genenames_combined_data, methylkitDMRs_info_combined_data, by = join_by(chr, start, end, mixed), relationship = "many-to-many")
+DMR_total_data <- left_join(methylkitDMRs_genenames_combined_data, methylkitDMRs_info_combined_data, by = join_by(chr, start, end, site, context, random, perdiff))
 head(DMR_total_data)
 
 #--------------------
 # join DEGs with up and down regulation by gene name
-RNA_total_data <- left_join(RNA_info_combined_data, RNA_updown_combined_data, by=join_by(Gene, gene))
+RNA_total_data <- left_join(RNA_info_combined_data, RNA_updown_combined_data, by=join_by(Gene, gene, RNAsite))
 head(RNA_total_data)
 
 #---------------------
 # join annotation and interproscan data with DMRdata and DEG data
 
-genes_RNA_merged_data <- left_join(dryas_genes_interpro, RNA_total_data, by = join_by(Gene, gene), relationship = "many-to-many")
-genes_RNA_DMR_merged_data <- left_join(genes_RNA_merged_data, DMR_total_data, by = join_by(Gene, gene), relationship = "many-to-many")
+genes_RNA_merged_data <- left_join(dryas_genes_interpro, RNA_total_data, by = join_by(Gene, gene))
+genes_RNA_DMR_merged_data <- left_join(genes_RNA_merged_data, DMR_total_data, by = join_by(Gene, gene))
 
 head(genes_RNA_DMR_merged_data)
-
 
 write.table(genes_RNA_DMR_merged_data, "genes_RNA_MethylkitDMR_merged_data.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
 
