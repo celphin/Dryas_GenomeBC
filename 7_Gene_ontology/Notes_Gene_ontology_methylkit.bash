@@ -383,13 +383,16 @@ cd /lustre04/scratch/celphin/Dryas/GO_enrichment
 ERMINEJ_HOME=/home/celphin/ermineJ-3.2
 export JAVA_HOME=/cvmfs/soft.computecanada.ca/easybuild/software/2020/Core/java/13.0.2/
 
+module load StdEnv/2020 
 module load java/13.0.2
 
 for taxon in Alaska_W_C Sweden_W_C Nunavut_W_C Svalbard_W_C Mat_Sen Wild_Lat_L_H SE_W_C SE_L_H \
 Sweden_RNA Alaska_RNA Nunavut_RNA Norway_RNA Seedling_RNA \
 Alaska_W_C_rand Sweden_W_C_rand Nunavut_W_C_rand Svalbard_W_C_rand \
 Mat_Sen_rand Wild_Lat_L_H_rand SE_W_C_rand SE_L_H_rand ; \
-do $ERMINEJ_HOME/bin/ermineJ.sh \
+do \
+echo $taxon 
+$ERMINEJ_HOME/bin/ermineJ.sh \
 -a GO_gene_mappings1.ermineJ.txt \
 -s "$taxon"_geneset \
 -c /home/celphin/ermineJ.data/go.obo \
@@ -397,20 +400,118 @@ do $ERMINEJ_HOME/bin/ermineJ.sh \
 --genesOut -aspects BCM \
 -o "$taxon".ermine.results -y 5 ; done
 
+
+# Starting analysis ...
+# Reading scores from /lustre04/scratch/celphin/Dryas/GO_enrichment/SE_L_H_rand_geneset
+# Reading gene scores from column 2 ...
+# 14960 (36.33%) of the scores were usable (others may not have genes in the annotations?)
+# 3 elements in your gene score file had no gene sets and were ignored.
+# Usable scores for 14960 distinct genes found (99.98%)
+# Creating a subsetted annotation set for 14960/14963 elements) ...
+# INFO: Subclone: 1507ms
+# INFO: Subclone annotations: 1514ms
 # Starting ORA analysis
-# Hit list (182 genes) enrichment for multifunctionality: P = 0.998
+# Hit list (8 genes) enrichment for multifunctionality: P = 0.495
 # 300 gene sets analyzed ...
 # 600 gene sets analyzed ...
 # 900 gene sets analyzed ...
 # 1200 gene sets analyzed ...
 # 1500 gene sets analyzed ...
 # 'Hits' are not significantly multifunctionality-biased, no multifunctionality correction needed
-# Finished with ORA computations: 182 elements passed your threshold.
+# Finished with ORA computations: 8 elements passed your threshold.
+
+#---------------------
+# Try combining some of the genesets
+cat Alaska_W_C_geneset Sweden_W_C_geneset | sort -u >  Alaska_Sweden_W_C_geneset
+cat Svalbard_W_C_geneset Nunavut_W_C_geneset | sort -u >  Nunavut_Svalbard_W_C_geneset
+cat Alaska_RNA_geneset Nunavut_RNA_geneset Norway_RNA_geneset | sort -u >  Total_RNA_geneset
+cat Alaska_W_C_rand_geneset Sweden_W_C_rand_geneset Nunavut_W_C_rand_geneset Svalbard_W_C_rand_geneset \
+Mat_Sen_rand_geneset Wild_Lat_L_H_rand_geneset SE_W_C_rand_geneset SE_L_H_rand_geneset | sort -u > Total_random_geneset
+
+# remove duplicates and select the lowest value
+
+
+for taxon in Alaska_Sweden_W_C Nunavut_Svalbard_W_C Total_RNA Total_random ; \
+do \
+echo $taxon 
+$ERMINEJ_HOME/bin/ermineJ.sh \
+-a GO_gene_mappings1.ermineJ.txt \
+-s "$taxon"_geneset \
+-c /home/celphin/ermineJ.data/go.obo \
+-n ORA -t 0.01 \
+--genesOut -aspects BCM \
+-o "$taxon".ermine.results -y 5 ; done
+
+# Picked up JAVA_TOOL_OPTIONS: -Xmx2g
+# INFO: Data directory is /home/celphin/ermineJ.data
+# DEBUG: Custom gene sets directory is /home/celphin/ermineJ.data/genesets
+# INFO: Gene symbols for each term will be output
+# DEBUG: gene score threshold set to 0.01
+# Reading GO descriptions from /home/celphin/ermineJ.data/go.obo ...
+# Reading gene annotations from /lustre04/scratch/celphin/Dryas/GO_enrichment/GO_gene_mappings1.e
+# rmineJ.txt ...
+# Read 2500 elements ...
+# Read 5000 elements ...
+# Read 7500 elements ...
+# Read 10000 elements ...
+# Read 12500 elements ...
+# No gene sets found in /home/celphin/ermineJ.data/genesets
+# Inferring annotations in graph ...
+# 3000 genes examined for term parents ... ...
+# 6000 genes examined for term parents ... ...
+# 9000 genes examined for term parents ... ...
+# 12000 genes examined for term parents ... ...
+# Added 194927 inferred annotations (affected 14836/14963 genes) ...
+# Pruning: 921/3985 sets removed: obsolete (0), too small (921) or too big (0) terms pruned. ...
+# There are 3064 gene sets in the annotations, checking for redundancy ... ...
+# 2000 sets checked for redundancy, 757 found ... ...
+# 1455/3064 gene sets are redundant with at least one other. ...
+# INFO: Redundancy check: 161ms
+# INFO: Multifunctionality computation: 1143ms
+# INFO: Total annotation setup: 1823ms
+# Initializing gene class mapping ...
+# Done with setup ...
+# Ready.
+
+# Starting analysis ...
+# Reading scores from /lustre04/scratch/celphin/Dryas/GO_enrichment/Total_random_geneset
+# Reading gene scores from column 2 ...
+# Repeated identifier: Do1_01_a00001G00168, keeping original value.
+# 14960 (36.33%) of the scores were usable (others may not have genes in the annotations?)
+# 3 elements in your gene score file had no gene sets and were ignored.
+# 144 identifiers in your gene score file were repeats. Only the first occurrence encountered was
+ # kept in each case.
+# Usable scores for 14960 distinct genes found (99.98%)
+# Creating a subsetted annotation set for 14960/14963 elements) ...
+# INFO: Multifunctionality computation: 1185ms
+# INFO: Subclone: 1539ms
+# INFO: Subclone annotations: 1544ms
+# Starting ORA analysis
+# Hit list (117 genes) enrichment for multifunctionality: P = 0.00448
+# 300 gene sets analyzed ...
+# 600 gene sets analyzed ...
+# 900 gene sets analyzed ...
+# 1200 gene sets analyzed ...
+# 1500 gene sets analyzed ...
+# 0 top groups will be monitored for multifunctionality sensitivity
+# Insufficient enrichment found, skipping multifunctionality correction
+# Finished with ORA computations: 117 elements passed your threshold.
 # Multiple test correction for 1667 scored sets.
-# Multifunctionality correlation is 0.01 for 14954 values
+# Multifunctionality correlation is 0.02 for 14960 values
 # Done!
-# [Gemma 2024-12-01 23:06:53,276] INFO [main] ubic.erminej.ResultsPrinter.getDestination(177) | Writing results t
-# o Wild_W_C.ermine.results
+
+# Alaska_Sweden_W_C
+# Finished with ORA computations: 815 elements passed your threshold.
+
+# Nunavut_Svalbard_W_C
+# Finished with ORA computations: 152 elements passed your threshold.
+
+# Total_RNA
+# Finished with ORA computations: 2 elements passed your threshold.
+
+#Total_random
+# Finished with ORA computations: 117 elements passed your threshold.
+
 
 ############################
 # Results exploration
@@ -426,7 +527,16 @@ done
 
 # Extract just GO terms and count duplicates
 cat *_sig.ermine.results | awk -F '\t' '$7 <0.5 { print }' | awk  -F $'\t' '{print $3, $2}' | sort | uniq -c  
-# 3404
+#  4948
+
+mkdir sig.ermine.results
+mv *sig.ermine.results sig.ermine.results
+
+mkdir ermine.results
+mv *ermine.results ermine.results
+
+mkdir Revigio
+mv Revigio* Revigio
 
 ###################################
 # summarize with : http://revigo.irb.hr/
@@ -443,7 +553,7 @@ done
 # Look at all and what species they are from
 cd /lustre04/scratch/celphin/Dryas/GO_enrichment
 
-grep "!" *totalfam*_genesets.ermine.results  | awk -F '\t' '$7 <1 { print }'| awk  -F $'\t' '{print $1, $2, $3, $7}' |sort  > List_all_GO.txt
+grep "!" *sig.ermine.results  | awk -F '\t' '$7 <1 { print }'| awk  -F $'\t' '{print $1, $2, $3, $7}' |sort  > List_all_GO.txt
 
 
 ############################
