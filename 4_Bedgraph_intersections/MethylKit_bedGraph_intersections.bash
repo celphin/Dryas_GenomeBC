@@ -108,6 +108,7 @@ bedtools intersect -u -a Methylkit_Pheno_10_DMRs.bedGraph \
 # compare seedling and warming - CpG
 bedtools intersect -u -a Methylkit_LAT_W_C_10plowcovDMRs.bedGraph \
 -b Methylkit_SE_W_C_10_DMRs.bedGraph > intersect_LAT_SE_W_C_10plowcovDMRs.bedGraph
+# 34/900 overlap,  ~3%
 
 # compare seedling warming and growth chamber - CpG
 bedtools intersect -u -a Methylkit_SE_W_C_10_DMRs.bedGraph \
