@@ -195,13 +195,27 @@ nrow(getData(myDifftiles10p.hyper))
 # [1] 2
 # [1] 4
 
+# rand1 
+# [1] 146
+# [1] 89
+# [1] 57
+
+# rand2
+# 7,4,3 
+
+# rand 3 3 only moved 3 individuals between W/C
+# [1] 55
+# [1] 31
+# [1] 24
+
+
 # real overdip and chisq
 # [1] 158
 # [1] 80
 # [1] 78
 
 ALAS_rand_W_C_lowcovDMRs <- getData(myDifftiles10p)
-write.table(ALAS_rand_W_C_lowcovDMRs, "Methylkit_ALAS_rand_W_C_10plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+write.table(ALAS_rand_W_C_lowcovDMRs, "Methylkit_ALAS_rand3_W_C_10plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 
 #--------------------------
 # get hyper methylated bases
@@ -224,15 +238,88 @@ nrow(getData(myDifftiles25p.hyper))
 # [1] 71
 # [1] 67
 
+# real overdisp and chisq
 # [1] 56
 # [1] 19
 # [1] 37
 
 # rand over disp and chisq - none
 
+# rand1 
+# [1] 13
+# [1] 7
+# [1] 6
+
+# rand2
+# 1,0,1
+
+# rand3
+# [1] 9
+# [1] 7
+# [1] 2
+
 
 ALAS_rand_W_C_lowcovDMRs <- getData(myDifftiles25p)
-write.table(ALAS_rand_W_C_lowcovDMRs, "Methylkit_ALAS_rand_W_C_25plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+write.table(ALAS_rand_W_C_lowcovDMRs, "Methylkit_ALAS_rand3_W_C_25plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
+######################
+#---------------------------
+# calculate overdispDMRs
+
+myDifftiles=calculateDiffMeth(methtiles_rand)
+save(myDifftiles, file = "ALAS_rand_MethDiffRegions_overdisp.RData")
+load("ALAS_rand_MethDiffRegions_overdisp.RData")
+
+# get hyper methylated bases
+myDifftiles10p.hyper=getMethylDiff(myDifftiles,difference=10,qvalue=0.01,type="hyper")
+
+# get hypo methylated bases
+myDifftiles10p.hypo=getMethylDiff(myDifftiles,difference=10,qvalue=0.01,type="hypo")
+
+# get all differentially methylated bases
+myDifftiles10p=getMethylDiff(myDifftiles,difference=10,qvalue=0.01)
+
+## -----------------------------------------------------------------------------
+diffMethPerChr(myDifftiles,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=10)
+
+nrow(getData(myDifftiles10p))
+nrow(getData(myDifftiles10p.hypo))
+nrow(getData(myDifftiles10p.hyper))
+
+# rand3 overdisp
+# [1] 4581
+# [1] 2267
+# [1] 2314
+
+
+ALAS_rand_W_C_lowcovDMRs <- getData(myDifftiles10p)
+write.table(ALAS_rand_W_C_lowcovDMRs, "Methylkit_ALAS_rand_W_C_10_overdisp_DMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
+#--------------------------
+# get hyper methylated bases
+myDifftiles25p.hyper=getMethylDiff(myDifftiles,difference=25,qvalue=0.01,type="hyper")
+
+# get hypo methylated bases
+myDifftiles25p.hypo=getMethylDiff(myDifftiles,difference=25,qvalue=0.01,type="hypo")
+
+# get all differentially methylated bases
+myDifftiles25p=getMethylDiff(myDifftiles,difference=25,qvalue=0.01)
+
+## -----------------------------------------------------------------------------
+diffMethPerChr(myDifftiles,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25)
+
+nrow(getData(myDifftiles25p))
+nrow(getData(myDifftiles25p.hypo))
+nrow(getData(myDifftiles25p.hyper))
+
+#rand3 overdisp
+# [1] 119
+# [1] 72
+# [1] 47
+
+
+ALAS_rand_W_C_lowcovDMRs <- getData(myDifftiles25p)
+write.table(ALAS_rand_W_C_lowcovDMRs, "Methylkit_ALAS_rand_W_C_25_overdisp_DMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 
 ########################################
 # DMRs for Svalbard
@@ -310,8 +397,15 @@ nrow(getData(myDifftiles10p.hyper))
 # [1] 59
 # [1] 69
 
+# rand1
+[1] 80
+[1] 40
+[1] 40
+
+
+
 SVAL_rand_W_C_lowcovDMRs <- getData(myDifftiles10p)
-write.table(SVAL_rand_W_C_lowcovDMRs, "Methylkit_SVAL_rand_W_C_10plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+write.table(SVAL_rand_W_C_lowcovDMRs, "Methylkit_SVAL_rand1_W_C_10plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 
 #--------------------------
 # get hyper methylated bases
@@ -339,8 +433,72 @@ nrow(getData(myDifftiles25p.hyper))
 # [1] 9
 # [1] 5
 
+# rand1 
+[1] 16
+[1] 8
+[1] 8
+
+
 SVAL_rand_W_C_lowcovDMRs <- getData(myDifftiles25p)
-write.table(SVAL_rand_W_C_lowcovDMRs, "Methylkit_SVAL_rand_W_C_25plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+write.table(SVAL_rand_W_C_lowcovDMRs, "Methylkit_SVAL_rand1_W_C_25plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
+#---------------------------
+# calculate overdisp DMRs
+
+myDifftiles=calculateDiffMeth(methtiles_rand)
+save(myDifftiles, file = "SVAL_rand_MethDiffRegions.RData")
+load("SVAL_rand_MethDiffRegions.RData")
+
+# get hyper methylated bases
+myDifftiles10p.hyper=getMethylDiff(myDifftiles,difference=10,qvalue=0.01,type="hyper")
+
+# get hypo methylated bases
+myDifftiles10p.hypo=getMethylDiff(myDifftiles,difference=10,qvalue=0.01,type="hypo")
+
+# get all differentially methylated bases
+myDifftiles10p=getMethylDiff(myDifftiles,difference=10,qvalue=0.01)
+
+## -----------------------------------------------------------------------------
+diffMethPerChr(myDifftiles,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=10)
+
+nrow(getData(myDifftiles10p))
+nrow(getData(myDifftiles10p.hypo))
+nrow(getData(myDifftiles10p.hyper))
+
+# rand1 overdisp
+
+SVAL_rand_W_C_lowcovDMRs <- getData(myDifftiles10p)
+write.table(SVAL_rand_W_C_lowcovDMRs, "Methylkit_SVAL_rand_W_C_10_overdisp_DMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
+#--------------------------
+# get hyper methylated bases
+myDifftiles25p.hyper=getMethylDiff(myDifftiles,difference=25,qvalue=0.01,type="hyper")
+
+# get hypo methylated bases
+myDifftiles25p.hypo=getMethylDiff(myDifftiles,difference=25,qvalue=0.01,type="hypo")
+
+# get all differentially methylated bases
+myDifftiles25p=getMethylDiff(myDifftiles,difference=25,qvalue=0.01)
+
+## -----------------------------------------------------------------------------
+diffMethPerChr(myDifftiles,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25)
+
+nrow(getData(myDifftiles25p))
+nrow(getData(myDifftiles25p.hypo))
+nrow(getData(myDifftiles25p.hyper))
+
+# [1] 239
+# [1] 90
+# [1] 149
+
+# rand1 overdisp
+[1] 274
+[1] 149
+[1] 125
+
+
+SVAL_rand_W_C_lowcovDMRs <- getData(myDifftiles25p)
+write.table(SVAL_rand_W_C_lowcovDMRs, "Methylkit_SVAL_rand_W_C_25_overdisp_DMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 
 #######################################
 # Sweden
@@ -414,12 +572,22 @@ nrow(getData(myDifftiles10p.hyper))
 # [1] 1012
 
 # rand over disp and chisq
-# [1] 1
-# [1] 1
-# 0
+# 1,1,0
+
+# rand1
+# 6,5,1
+
+# rand 2
+0
+
+# rand3
+[1] 26
+[1] 20
+[1] 6
+
 
 LAT_rand_W_C_lowcovDMRs <- getData(myDifftiles10p)
-write.table(LAT_rand_W_C_lowcovDMRs, "Methylkit_LAT_rand_W_C_10plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+write.table(LAT_rand_W_C_lowcovDMRs, "Methylkit_LAT_rand3_W_C_10plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 
 #--------------------------
 # get hyper methylated bases
@@ -443,9 +611,75 @@ nrow(getData(myDifftiles25p.hyper))
 
 # rand over disp and chisq - none
 
+# rand1
+# 1 1 0 
+
+# rand 2
+0
+
+# rand3
+# 2,2,0
 
 LAT_rand_W_C_lowcovDMRs <- getData(myDifftiles25p)
-write.table(LAT_rand_W_C_lowcovDMRs, "Methylkit_LAT_rand_W_C_25plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+write.table(LAT_rand_W_C_lowcovDMRs, "Methylkit_LAT_rand3_W_C_25plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
+##############################
+
+# calculate overdisp DMRs
+
+myDifftiles=calculateDiffMeth(methtiles_rand)
+save(myDifftiles, file = "LAT_rand_MethDiffRegions.RData")
+load("LAT_rand_MethDiffRegions.RData")
+
+# get hyper methylated bases
+myDifftiles10p.hyper=getMethylDiff(myDifftiles,difference=10,qvalue=0.01,type="hyper")
+
+# get hypo methylated bases
+myDifftiles10p.hypo=getMethylDiff(myDifftiles,difference=10,qvalue=0.01,type="hypo")
+
+# get all differentially methylated bases
+myDifftiles10p=getMethylDiff(myDifftiles,difference=10,qvalue=0.01)
+
+diffMethPerChr(myDifftiles,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=10)
+
+nrow(getData(myDifftiles10p))
+nrow(getData(myDifftiles10p.hypo))
+nrow(getData(myDifftiles10p.hyper))
+
+# overdisp
+[1] 4327
+[1] 2043
+[1] 2284
+
+
+
+LAT_rand_W_C_lowcovDMRs <- getData(myDifftiles10p)
+write.table(LAT_rand_W_C_lowcovDMRs, "Methylkit_LAT_rand_W_C_10_overdisp_DMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
+#--------------------------
+# get hyper methylated bases
+myDifftiles25p.hyper=getMethylDiff(myDifftiles,difference=25,qvalue=0.01,type="hyper")
+
+# get hypo methylated bases
+myDifftiles25p.hypo=getMethylDiff(myDifftiles,difference=25,qvalue=0.01,type="hypo")
+
+# get all differentially methylated bases
+myDifftiles25p=getMethylDiff(myDifftiles,difference=25,qvalue=0.01)
+
+diffMethPerChr(myDifftiles,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25)
+
+nrow(getData(myDifftiles25p))
+nrow(getData(myDifftiles25p.hypo))
+nrow(getData(myDifftiles25p.hyper))
+
+# overdisp 
+[1] 118
+[1] 56
+[1] 62
+
+
+LAT_rand_W_C_lowcovDMRs <- getData(myDifftiles25p)
+write.table(LAT_rand_W_C_lowcovDMRs, "Methylkit_LAT_rand_W_C_25_overdisp_DMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 
 ####################################
 #Nunavut
@@ -519,6 +753,10 @@ nrow(getData(myDifftiles10p.hyper))
 # [1] 259
 
 # overdisp and chisq - none 
+
+Alex_rand_W_C_lowcovDMRs <- getData(myDifftiles10p)
+write.table(Alex_rand_W_C_lowcovDMRs, "Methylkit_Alex_rand1_W_C_10plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
 #--------------------------
 # get hyper methylated bases
 myDifftiles25p.hyper=getMethylDiff(myDifftiles,difference=25,qvalue=0.01,type="hyper")
@@ -541,10 +779,81 @@ nrow(getData(myDifftiles25p.hyper))
 # 0
 
 # overdisp and chisq - none 
+# rand1 - none
+
+Alex_rand_W_C_lowcovDMRs <- getData(myDifftiles25p)
+write.table(Alex_rand_W_C_lowcovDMRs, "Methylkit_Alex_rand1_W_C_25plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
+#---------------------------
+# calculate overdisp DMRs
+
+myDifftiles=calculateDiffMeth(methtiles_rand)
+save(myDifftiles, file = "Alex_rand_MethDiffRegions.RData")
+load("Alex_rand_MethDiffRegions.RData")
+
+# get hyper methylated bases
+myDifftiles10p.hyper=getMethylDiff(myDifftiles,difference=10,qvalue=0.01,type="hyper")
+
+# get hypo methylated bases
+myDifftiles10p.hypo=getMethylDiff(myDifftiles,difference=10,qvalue=0.01,type="hypo")
+
+# get all differentially methylated bases
+myDifftiles10p=getMethylDiff(myDifftiles,difference=10,qvalue=0.01)
+
+## -----------------------------------------------------------------------------
+diffMethPerChr(myDifftiles,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=10)
+
+nrow(getData(myDifftiles10p))
+nrow(getData(myDifftiles10p.hypo))
+nrow(getData(myDifftiles10p.hyper))
+
+# rand
+# [1] 707
+# [1] 448
+# [1] 259
+
+# rand1
+# [1] 782
+# [1] 404
+# [1] 378
+
+
+# overdisp and chisq - none 
+
+Alex_rand_W_C_lowcovDMRs <- getData(myDifftiles10p)
+write.table(Alex_rand_W_C_lowcovDMRs, "Methylkit_Alex_rand_W_C_10_overdisp_DMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
+#--------------------------
+# get hyper methylated bases
+myDifftiles25p.hyper=getMethylDiff(myDifftiles,difference=25,qvalue=0.01,type="hyper")
+
+# get hypo methylated bases
+myDifftiles25p.hypo=getMethylDiff(myDifftiles,difference=25,qvalue=0.01,type="hypo")
+
+# get all differentially methylated bases
+myDifftiles25p=getMethylDiff(myDifftiles,difference=25,qvalue=0.01)
+
+## -----------------------------------------------------------------------------
+diffMethPerChr(myDifftiles,plot=FALSE,qvalue.cutoff=0.01, meth.cutoff=25)
+
+nrow(getData(myDifftiles25p))
+nrow(getData(myDifftiles25p.hypo))
+nrow(getData(myDifftiles25p.hyper))
+
+# rand
+# 3
+# 3
+# 0
+
+# rand1
+# [1] 4
+# [1] 2
+# [1] 2
+
 
 
 Alex_rand_W_C_lowcovDMRs <- getData(myDifftiles25p)
-write.table(Alex_rand_W_C_lowcovDMRs, "Methylkit_Alex_rand_W_C_25plowcovDMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+write.table(Alex_rand_W_C_lowcovDMRs, "Methylkit_Alex_rand_W_C_25_overdisp_DMRs.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 
 ##################################
 # Compare High and Low Arctic

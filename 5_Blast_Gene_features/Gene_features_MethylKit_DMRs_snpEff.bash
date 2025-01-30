@@ -13,6 +13,9 @@ mkdir /lustre04/scratch/celphin/Dryas/snpEff/methylkit
 cp /lustre04/scratch/celphin/Dryas_large_folders/intersections/Methylkit_*bedGraph /lustre04/scratch/celphin/Dryas/snpEff/methylkit
 cp /lustre04/scratch/celphin/Dryas_large_folders/intersections/Rand_*bedGraph /lustre04/scratch/celphin/Dryas/snpEff/methylkit
 
+cp /lustre04/scratch/celphin/Dryas_large_folders/intersections/*_overdisp_DMRs.bedGraph /lustre04/scratch/celphin/Dryas/snpEff/methylkit
+
+
 cp /lustre04/scratch/celphin/Dryas_large_folders/intersections/Methylkit_Pheno_10_DMRs_CHH.bedGraph /lustre04/scratch/celphin/Dryas/snpEff/methylkit
 cp /lustre04/scratch/celphin/Dryas_large_folders/intersections/Methylkit_Pheno_25_DMRs_CHH.bedGraph /lustre04/scratch/celphin/Dryas/snpEff/methylkit
 
@@ -46,7 +49,7 @@ done
 
 # extract the immediate feature types and count them
 cd /lustre04/scratch/celphin/Dryas/snpEff/methylkit/
-FILES=$(ls *.out)
+FILES=$(ls *.bed.out)
 echo ${FILES}
 
 for file in ${FILES}; do
@@ -346,7 +349,7 @@ wc -l Methylkit_WILL_rand_W_C_25plowcovDMRs.bed.uniq_genes.out
 # to loop
 # extract the immediate feature types and count them
 cd /lustre04/scratch/celphin/Dryas/snpEff/methylkit/
-FILES=$(ls *.out)
+FILES=$(ls *.bed.out)
 echo ${FILES}
 
 FILES=$(ls Methylkit_Pheno_*_DMRs_CHH.bed.out)
@@ -379,6 +382,66 @@ echo ${file}
 done
 
 cp  /lustre04/scratch/celphin/Dryas/snpEff/methylkit/*.uniq_genes /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
+#------------------------------
+
+# Run again for metilene data
+
+# make bed files
+FILES=$(ls /lustre04/scratch/celphin/Dryas/snpEff/Dryas_DMRs/*.bedGraph)
+echo ${FILES}
+for file in ${FILES}; do
+    # Run the command on the file and create the .bed file
+    grep -v track "$file" | awk '{print $1 "\t" $2 "\t" $3}' > "${file%.bedGraph}.bed"
+    echo "Processed $file"
+done
+
+# run SNPEff
+cd /lustre04/scratch/celphin/Dryas/snpEff/Dryas_DMRs
+module load StdEnv/2023 java/21.0.1
+mkdir gene_features
+cd /lustre04/scratch/celphin/Dryas/snpEff/Dryas_DMRs/gene_features/
+
+FILES=$(ls /lustre04/scratch/celphin/Dryas/snpEff/Dryas_DMRs/*.bed)
+echo ${FILES}
+
+cd /lustre04/scratch/celphin/Dryas/snpEff
+
+for file in ${FILES}; do
+java -Xmx8g -jar snpEff.jar -i bed OldDoct "$file" > "$file".out
+echo "Processed $file"
+done
+
+# extract the immediate feature types and count them
+cd /lustre04/scratch/celphin/Dryas/snpEff/Dryas_DMRs
+FILES=$(ls *.bed.out)
+echo ${FILES}
+
+for file in ${FILES}; do
+
+awk 'BEGIN {OFS="\t"} {
+    if ($0 !~ /^#/) {
+        chromo = $1
+        start = $2
+        end = $3
+        genes = $4
+        # Use a regular expression to match only the gene names starting with "Do1_0" and ending with "V1.1"
+        while (match(genes, /Do1_0[^\s]*V1.1/)) {
+            gene_name = substr(genes, RSTART, RLENGTH)
+            # Print chromo, start, end, and the gene name, trimming any unwanted characters
+            print chromo, start, end, gene_name
+            # Remove the matched gene name from the genes string and continue searching
+            genes = substr(genes, RSTART + RLENGTH)
+        }
+    }
+}'  ${file} > ${file}2
+
+sort ${file}2 | uniq > ${file}_metilene.uniq_genes
+
+echo ${file} 
+
+done
+
+cp  /lustre04/scratch/celphin/Dryas/snpEff/Dryas_DMRs/*_metilene.uniq_genes /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
 
 ###################################
 # join with Interproscan data and GO terms

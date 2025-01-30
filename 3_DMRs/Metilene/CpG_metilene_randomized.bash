@@ -185,18 +185,18 @@ sh metilene_filter_qval.sh 150 5 4 25 1e-5
 
 #########################
 # Nunavut
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/
 
 mkdir Nunavut_Metilene_random
 cd Nunavut_Metilene_random
-cp /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Nunavut_Metilene/* /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Nunavut_Metilene_random/
+cp /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Nunavut_Metilene/* /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Nunavut_Metilene_random/
 
 tmux new-session -s Nunavut_DMRS
 tmux attach-session -t Nunavut_DMRS
-salloc -c15 --time 7:00:00 --mem 200000m --account def-cronk
+salloc -c15 --time 7:00:00 --mem 200000m --account def-henryg
 
 # Define the path to the input file 
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Nunavut_Metilene_random/
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Nunavut_Metilene_random/
 
 cp ../Nunavut_Metilene/Nunavut_W_C_input_files/Nunavut_metilene_W_C.input .
 
@@ -286,7 +286,7 @@ nano metilene_run.sh
 h1='W'
 h2='C'
 metilene_dir="/home/celphin/projects/rpp-rieseber/celphin/Dryas/DMRs/June2022_Metilene_DMRs"
-input_dir="/home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Nunavut_Metilene_random"
+input_dir="/lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Nunavut_Metilene_random"
 maxdist=$1
 mincpgs=$2
 mindiff=$3
@@ -299,17 +299,13 @@ threads=15
 #---------------------------------------
 #metilene:
 # params: maxdist, mincpgs, mindiff
-salloc -c15 --time 7:00:00 --mem 200000m --account rrg-rieseber-ac
+salloc -c15 --time 7:00:00 --mem 200000m --account def-henryg
 
 module load StdEnv/2020
 module load bedtools/2.30.0 
 
 # with in_metilene="Nunavut_metilene_"$h1"_"$h2"2.input"
 sh metilene_run.sh 150 5 4 
-
-# with in_metilene="Nunavut_metilene_"$h1"_"$h2"3.input"
-sh metilene_run3.sh 150 5 4 
-
 
 
 #-------------------------------------------------
@@ -318,7 +314,7 @@ sh metilene_run3.sh 150 5 4
 
 nano  metilene_filter_qval.sh
 
-input_dir="/home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Nunavut_Metilene_random"
+input_dir="/lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Nunavut_Metilene_random"
 outputname=Nunavut_CHH_random_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
 
 # to run
@@ -336,19 +332,20 @@ cp metilene_filter_qval.sh metilene_filter_qval3.sh
 ####################################################################################
 #Svalbard:
 
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/
 
 mkdir Svalbard_Metilene_random
 cd Svalbard_Metilene_random
-cp /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Svalbard_Metilene/* /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Svalbard_Metilene_random/
+cp /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Svalbard_Metilene/* /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Svalbard_Metilene_random/
 
 tmux new-session -s Svalbard_DMRS
 tmux attach-session -t Svalbard_DMRS
+salloc -c15 --time 7:00:00 --mem 200000m --account def-henryg
 
 # Define the path to the input file 
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Svalbard_Metilene_random/
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Svalbard_Metilene_random/
 
-cp ../Svalbard_Metilene/Svalbard_metilene_W_C.input .
+cp ../Svalbard_Metilene/Svalbard_W_C_input_files/Svalbard_metilene_W_C.input .
 
 head Svalbard_metilene_W_C.input > Svalbard_metilene_W_C1.input
 
@@ -433,7 +430,7 @@ sed 's/NA/-/g' Svalbard_metilene_W_C2.input > Svalbard_metilene_W_C3.input
 #Svalbard specific adjustments,
 nano metilene_run.sh
 
-input_dir="/home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Svalbard_Metilene_random"
+input_dir="/lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Svalbard_Metilene_random"
 ...
 output_name=Svalbard_CHH_random_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
 
@@ -446,7 +443,7 @@ salloc -c7 --time 7:00:00 --mem 200000m --account def-cronk
 
 module load StdEnv/2020
 module load bedtools/2.30.0 
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Svalbard_Metilene_random
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Svalbard_Metilene_random
 # with in_metilene="Svalbard_metilene_"$h1"_"$h2"2.input"
 sh metilene_run.sh 150 5 4 
 
@@ -457,7 +454,7 @@ sh metilene_run.sh 150 5 4
 
 nano  metilene_filter_qval.sh
 
-input_dir="/home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Svalbard_Metilene_random"
+input_dir="/lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Svalbard_Metilene_random"
 outputname=Svalbard_CHH_random_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
 
 # to run
@@ -472,18 +469,18 @@ sh metilene_filter_qval.sh 150 5 4 0.9 1e-5
 
 ###############################################################
 # Alaska
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/
 
 mkdir Alaska_Metilene_random
 cd Alaska_Metilene_random
-cp /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Alaska_Metilene/* /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Alaska_Metilene_random/
+cp /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Alaska_Metilene/* /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Alaska_Metilene_random/
 
 tmux new-session -s Alaska_DMRS
 tmux attach-session -t Alaska_DMRS
 salloc -c15 --time 7:00:00 --mem 200000m --account def-cronk
 
 # Define the path to the input file 
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Alaska_Metilene_random/
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Alaska_Metilene_random/
 
 cp ../Alaska_Metilene/Alaska_metilene_W_C.input .
 
@@ -570,7 +567,7 @@ sed 's/NA/-/g' Alaska_metilene_W_C2.input > Alaska_metilene_W_C3.input
 #Alaska specific adjustments,
 nano metilene_run.sh
 
-input_dir="/home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Alaska_Metilene_random"
+input_dir="/lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Alaska_Metilene_random"
 ...
 output_name=Alaska_CHH_random_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
 
@@ -583,7 +580,7 @@ salloc -c15 --time 7:00:00 --mem 200000m --account def-cronk
 
 module load StdEnv/2020
 module load bedtools/2.30.0 
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Alaska_Metilene_random
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Alaska_Metilene_random
 # with in_metilene="Alaska_metilene_"$h1"_"$h2"2.input"
 sh metilene_run.sh 150 5 4 
 
@@ -596,7 +593,7 @@ sh metilene_run.sh 150 5 4
 
 nano  metilene_filter_qval.sh
 
-input_dir="/home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Alaska_Metilene_random"
+input_dir="/lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Alaska_Metilene_random"
 outputname=Alaska_CHH_random_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
 
 # to run
@@ -611,18 +608,18 @@ sh metilene_filter_qval.sh 150 5 4 0.9 1e-5
 
 ###############################################################
 # Sweden
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/
 
 mkdir Sweden_Metilene_random
 cd Sweden_Metilene_random
-cp /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Sweden_Metilene/* /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Sweden_Metilene_random/
+cp /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Sweden_Metilene/* /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Sweden_Metilene_random/
 
 tmux new-session -s Sweden_DMRS
 tmux attach-session -t Sweden_DMRS
 salloc -c15 --time 7:00:00 --mem 200000m --account def-cronk
 
 # Define the path to the input file 
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Sweden_Metilene_random/
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Sweden_Metilene_random/
 
 cp ../Sweden_Metilene/Sweden_metilene_W_C.input .
 
@@ -709,7 +706,7 @@ sed 's/NA/-/g' Sweden_metilene_W_C2.input > Sweden_metilene_W_C3.input
 #Sweden specific adjustments,
 nano metilene_run.sh
 
-input_dir="/home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Sweden_Metilene_random"
+input_dir="/lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Sweden_Metilene_random"
 ...
 output_name=Sweden_CHH_random_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
 
@@ -722,7 +719,7 @@ salloc -c7 --time 7:00:00 --mem 200000m --account def-cronk
 
 module load StdEnv/2020
 module load bedtools/2.30.0 
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Sweden_Metilene_random
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Sweden_Metilene_random
 
 # with in_metilene="Sweden_metilene_"$h1"_"$h2"2.input"
 sh metilene_run.sh 150 5 4 
@@ -734,7 +731,7 @@ sh metilene_run.sh 150 5 4
 
 nano  metilene_filter_qval.sh
 
-input_dir="/home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Sweden_Metilene_random"
+input_dir="/lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Sweden_Metilene_random"
 outputname=Sweden_CHH_random_"$h1"_"$h2"_"${maxdist}"_"${mincpgs}"_"${mindiff}"
 
 # to run
@@ -791,7 +788,7 @@ wc -l ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph
 
 ###############################
 # Phenology
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output_random
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene_random
 mkdir Phenology_Metilene
 cd Phenology_Metilene
 cp /home/celphin/scratch/Dryas/MS_scripts/metilene*.sh .
@@ -804,7 +801,7 @@ tmux attach-session -t Phenology_DMRS
 #######################
 # Seedlings
 
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene
 mkdir Seedling_Metilene
 cd Seedling_Metilene
 cp /home/celphin/scratch/Dryas/MS_scripts/metilene*.sh .
@@ -812,7 +809,7 @@ cp /home/celphin/scratch/Dryas/MS_scripts/metilene*.sh .
 tmux new-session -s Seedling_Warming_DMRS
 tmux attach-session -t Seedling_Warming_DMRS
 
-cd /home/celphin/projects/def-rieseber/Dryas_shared_data/Dryas/MS_Metilene_Output/Seedling_Metilene
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/Seedling_Metilene
 
 ############################
 # Intersect Seedlings

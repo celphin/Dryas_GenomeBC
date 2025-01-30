@@ -19,7 +19,7 @@ cp Dryas_octopetala_H1.gff3 /lustre04/scratch/celphin/Dryas/GO_enrichment/
 cd ..
 
 # get merged data from metilene
-#cp home/celphin/scratch/Dryas/MS_Dryas_Merged_Data/original_data/Gene_DMR_RNA_GO_Merged_table.tsv /lustre04/scratch/celphin/Dryas/GO_enrichment/metilene
+cp home/celphin/scratch/Dryas/MS_Dryas_Merged_Data/original_data/Gene_DMR_RNA_GO_Merged_table.tsv /lustre04/scratch/celphin/Dryas/GO_enrichment/metilene
 
 # get merged data from methylkit
 cp /lustre04/scratch/celphin/Dryas/methylkit_merged_data/genes_RNA_MethylkitDMR_merged_data.tsv /lustre04/scratch/celphin/Dryas/GO_enrichment
@@ -53,76 +53,74 @@ DMR_DEG <- read.delim(paste0(path,"/genes_RNA_MethylkitDMR_merged_data.tsv"), he
 head(DMR_DEG)
 colnames(DMR_DEG)
 
- # [1] "Scaffold"    "Gene_Start"  "Gene_End"    "Gene"        "gene"
- # [6] "INTPRO"      "descrip1"    "descrip2"    "GOterm"      "logFC"
-# [11] "logCPM"      "LR"          "PValue"      "RNAsite"     "UpDown"
-# [16] "chr"         "start"       "end"         "site"        "context"
-# [21] "random"      "perdiff"     "program"     "strand"      "pvalue"
-# [26] "qvalue.x"    "meth.diff.x" "qvalue.y"    "meth.diff.y" "NumbCpG"
-# [31] "Mean1"       "Mean2"
+ # [1] "Scaffold"   "Gene_Start" "Gene_End"   "Gene"       "gene"
+ # [6] "INTPRO"     "descrip1"   "descrip2"   "GOterm"     "logFC"
+# [11] "logCPM"     "LR"         "PValue"     "RNAsite"    "UpDown"
+# [16] "chr"        "start"      "end"        "site"       "context"
+# [21] "random"     "perdiff"    "strand"     "pvalue"     "qvalue"
+# [26] "meth.diff"
 
 #------------------------
 #Get a list of the specific genes for each group 
 
 unique(DMR_DEG$site)
 
- # [1] NA         "Pheno"    "SE_HL"    "LAT_W_C"  "HL"       "ALAS_W_C"
- # [7] "Alex_W_C" "MEAD_W_C" "WILL_W_C" "FERT_W_C" "SVAL_W_C" "SE_W_C"
-# [13] "DRY_W_C"  "Total"    "Parent"   "CASS_W_C"
-
+ # [1] NA         "Pheno"    "HL"       "MEAD_W_C" "WILL_W_C" "FERT_W_C"
+ # [7] "ALAS_W_C" "DRY_W_C"  "SE_W_C"   "LAT_W_C"  "SE_HL"    "CASS_W_C"
+# [13] "SVAL_W_C"
 
 # "ALAS_W_C"
-DMR_Alaska_W_C <- DMR_DEG[which(DMR_DEG$site=="ALAS_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="non-overdisp"),]
-Alaska_W_C <- as.data.frame(cbind(DMR_Alaska_W_C$Gene, DMR_Alaska_W_C$qvalue.x))
+DMR_Alaska_W_C <- DMR_DEG[which(DMR_DEG$site=="ALAS_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+Alaska_W_C <- as.data.frame(cbind(DMR_Alaska_W_C$Gene, DMR_Alaska_W_C$qvalue))
 Alaska_W_C <- distinct(Alaska_W_C)
 write.table(Alaska_W_C, "Alaska_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #142
 
 # "LAT_W_C"
-DMR_Sweden_W_C <- DMR_DEG[which(DMR_DEG$site=="LAT_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="non-overdisp"),]
-Sweden_W_C <- as.data.frame(cbind(DMR_Sweden_W_C$Gene, DMR_Sweden_W_C$qvalue.x))
+DMR_Sweden_W_C <- DMR_DEG[which(DMR_DEG$site=="LAT_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+Sweden_W_C <- as.data.frame(cbind(DMR_Sweden_W_C$Gene, DMR_Sweden_W_C$qvalue))
 Sweden_W_C <- distinct(Sweden_W_C)
 write.table(Sweden_W_C, "Sweden_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 # 808
 
 # "CASS_W_C"
-DMR_Nunavut_W_C <- DMR_DEG[which(DMR_DEG$site=="CASS_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="non-overdisp"),]
-Nunavut_W_C <- as.data.frame(cbind(DMR_Nunavut_W_C$Gene, DMR_Nunavut_W_C$qvalue.x))
+DMR_Nunavut_W_C <- DMR_DEG[which(DMR_DEG$site=="CASS_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+Nunavut_W_C <- as.data.frame(cbind(DMR_Nunavut_W_C$Gene, DMR_Nunavut_W_C$qvalue))
 Nunavut_W_C <- distinct(Nunavut_W_C)
 write.table(Nunavut_W_C, "Nunavut_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #78
 
 # "SVAL_W_C"
-DMR_Svalbard_W_C <- DMR_DEG[which(DMR_DEG$site=="SVAL_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="non-overdisp"),]
-Svalbard_W_C <- as.data.frame(cbind(DMR_Svalbard_W_C$Gene, DMR_Svalbard_W_C$qvalue.x))
+DMR_Svalbard_W_C <- DMR_DEG[which(DMR_DEG$site=="SVAL_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+Svalbard_W_C <- as.data.frame(cbind(DMR_Svalbard_W_C$Gene, DMR_Svalbard_W_C$qvalue))
 Svalbard_W_C <- distinct(Svalbard_W_C)
 write.table(Svalbard_W_C, "Svalbard_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #103
 
 # "Pheno"
-DMR_Mat_Sen <- DMR_DEG[which(DMR_DEG$site=="Pheno" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="non-overdisp"),]
-Mat_Sen <- as.data.frame(cbind(DMR_Mat_Sen$Gene, DMR_Mat_Sen$qvalue.x))
+DMR_Mat_Sen <- DMR_DEG[which(DMR_DEG$site=="Pheno" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+Mat_Sen <- as.data.frame(cbind(DMR_Mat_Sen$Gene, DMR_Mat_Sen$qvalue))
 Mat_Sen <- distinct(Mat_Sen)
 write.table(Mat_Sen, "Mat_Sen_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 # 8584
 
 # "HL"
-DMR_Wild_Lat_L_H <- DMR_DEG[which(DMR_DEG$site=="HL" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="non-overdisp"),]
-Wild_Lat_L_H <- as.data.frame(cbind(DMR_Wild_Lat_L_H$Gene, DMR_Wild_Lat_L_H$qvalue.x))
+DMR_Wild_Lat_L_H <- DMR_DEG[which(DMR_DEG$site=="HL" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+Wild_Lat_L_H <- as.data.frame(cbind(DMR_Wild_Lat_L_H$Gene, DMR_Wild_Lat_L_H$qvalue))
 Wild_Lat_L_H <- distinct(Wild_Lat_L_H)
 write.table(Wild_Lat_L_H, "Wild_Lat_L_H_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #7621
 
 # "SE_W_C"
-DMR_SE_W_C <- DMR_DEG[which(DMR_DEG$site=="SE_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="non-overdisp"),]
-SE_W_C <- as.data.frame(cbind(DMR_SE_W_C$Gene, DMR_SE_W_C$qvalue.x))
+DMR_SE_W_C <- DMR_DEG[which(DMR_DEG$site=="SE_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+SE_W_C <- as.data.frame(cbind(DMR_SE_W_C$Gene, DMR_SE_W_C$qvalue))
 SE_W_C <- distinct(SE_W_C)
 write.table(SE_W_C, "SE_W_C_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #1434
 
 # "SE_HL"
-DMR_SE_L_H <- DMR_DEG[which(DMR_DEG$site=="SE_HL" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="non-overdisp"),]
-SE_L_H <- as.data.frame(cbind(DMR_SE_L_H$Gene, DMR_SE_L_H$qvalue.x))
+DMR_SE_L_H <- DMR_DEG[which(DMR_DEG$site=="SE_HL" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG"),]
+SE_L_H <- as.data.frame(cbind(DMR_SE_L_H$Gene, DMR_SE_L_H$qvalue))
 SE_L_H <- distinct(SE_L_H)
 write.table(SE_L_H, "SE_L_H_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 # 388
@@ -173,181 +171,59 @@ write.table(SE_RNA_gene , "Seedling_RNA_genes.txt", sep = "\t", quote = FALSE, r
 
 # "ALAS_W_C"
 DMR_Alaska_W_C <- DMR_DEG[which(DMR_DEG$site=="ALAS_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
-Alaska_W_C <- as.data.frame(cbind(DMR_Alaska_W_C$Gene, DMR_Alaska_W_C$qvalue.x))
+Alaska_W_C <- as.data.frame(cbind(DMR_Alaska_W_C$Gene, DMR_Alaska_W_C$qvalue))
 Alaska_W_C <- distinct(Alaska_W_C)
 write.table(Alaska_W_C, "Alaska_W_C_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #13
 
 # "LAT_W_C"
 DMR_Sweden_W_C <- DMR_DEG[which(DMR_DEG$site=="LAT_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
-Sweden_W_C <- as.data.frame(cbind(DMR_Sweden_W_C$Gene, DMR_Sweden_W_C$qvalue.x))
+Sweden_W_C <- as.data.frame(cbind(DMR_Sweden_W_C$Gene, DMR_Sweden_W_C$qvalue))
 Sweden_W_C <- distinct(Sweden_W_C)
 write.table(Sweden_W_C, "Sweden_W_C_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #0
 
 # "CASS_W_C"
 DMR_Nunavut_W_C <- DMR_DEG[which(DMR_DEG$site=="CASS_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
-Nunavut_W_C <- as.data.frame(cbind(DMR_Nunavut_W_C$Gene, DMR_Nunavut_W_C$qvalue.x))
+Nunavut_W_C <- as.data.frame(cbind(DMR_Nunavut_W_C$Gene, DMR_Nunavut_W_C$qvalue))
 Nunavut_W_C <- distinct(Nunavut_W_C)
 write.table(Nunavut_W_C, "Nunavut_W_C_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #0
 
 # "SVAL_W_C"
 DMR_Svalbard_W_C <- DMR_DEG[which(DMR_DEG$site=="SVAL_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
-Svalbard_W_C <- as.data.frame(cbind(DMR_Svalbard_W_C$Gene, DMR_Svalbard_W_C$qvalue.x))
+Svalbard_W_C <- as.data.frame(cbind(DMR_Svalbard_W_C$Gene, DMR_Svalbard_W_C$qvalue))
 Svalbard_W_C <- distinct(Svalbard_W_C)
 write.table(Svalbard_W_C, "Svalbard_W_C_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #123
 
 # "Pheno"
 DMR_Mat_Sen <- DMR_DEG[which(DMR_DEG$site=="Pheno" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
-Mat_Sen <- as.data.frame(cbind(DMR_Mat_Sen$Gene, DMR_Mat_Sen$qvalue.x))
+Mat_Sen <- as.data.frame(cbind(DMR_Mat_Sen$Gene, DMR_Mat_Sen$qvalue))
 Mat_Sen <- distinct(Mat_Sen)
 write.table(Mat_Sen, "Mat_Sen_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #0
 
 # "HL"
 DMR_Wild_Lat_L_H <- DMR_DEG[which(DMR_DEG$site=="HL" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
-Wild_Lat_L_H <- as.data.frame(cbind(DMR_Wild_Lat_L_H$Gene, DMR_Wild_Lat_L_H$qvalue.x))
+Wild_Lat_L_H <- as.data.frame(cbind(DMR_Wild_Lat_L_H$Gene, DMR_Wild_Lat_L_H$qvalue))
 Wild_Lat_L_H <- distinct(Wild_Lat_L_H)
 write.table(Wild_Lat_L_H, "Wild_Lat_L_H_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #0
 
 # "SE_W_C"
 DMR_SE_W_C <- DMR_DEG[which(DMR_DEG$site=="SE_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
-SE_W_C <- as.data.frame(cbind(DMR_SE_W_C$Gene, DMR_SE_W_C$qvalue.x))
+SE_W_C <- as.data.frame(cbind(DMR_SE_W_C$Gene, DMR_SE_W_C$qvalue))
 SE_W_C <- distinct(SE_W_C)
 write.table(SE_W_C, "SE_W_C_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #0
 
 # "SE_HL"
 DMR_SE_L_H <- DMR_DEG[which(DMR_DEG$site=="SE_HL" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="rand" & DMR_DEG$context=="CpG"),]
-SE_L_H <- as.data.frame(cbind(DMR_SE_L_H$Gene, DMR_SE_L_H$qvalue.x))
+SE_L_H <- as.data.frame(cbind(DMR_SE_L_H$Gene, DMR_SE_L_H$qvalue))
 SE_L_H <- distinct(SE_L_H)
 write.table(SE_L_H, "SE_L_H_randgenes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 #8
-
-#-----------------------------------
-# Extract for metilene
-
-# "ALAS_W_C"
-DMR_Alaska_W_C <- DMR_DEG[which(DMR_DEG$site=="ALAS_W_C" & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="metilene"),]
-Alaska_W_C <- as.data.frame(cbind(DMR_Alaska_W_C$Gene, DMR_Alaska_W_C$qvalue.y))
-Alaska_W_C <- distinct(Alaska_W_C)
-write.table(Alaska_W_C, "Alaska_W_C_metilene_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-
-
-# "LAT_W_C"
-DMR_Sweden_W_C <- DMR_DEG[which(DMR_DEG$site=="LAT_W_C" & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="metilene"),]
-Sweden_W_C <- as.data.frame(cbind(DMR_Sweden_W_C$Gene, DMR_Sweden_W_C$qvalue.y))
-Sweden_W_C <- distinct(Sweden_W_C)
-write.table(Sweden_W_C, "Sweden_W_C_metilene_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-# 808
-
-# "CASS_W_C"
-DMR_Nunavut_W_C <- DMR_DEG[which(DMR_DEG$site=="CASS_W_C" & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="metilene"),]
-Nunavut_W_C <- as.data.frame(cbind(DMR_Nunavut_W_C$Gene, DMR_Nunavut_W_C$qvalue.y))
-Nunavut_W_C <- distinct(Nunavut_W_C)
-write.table(Nunavut_W_C, "Nunavut_W_C_metilene_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-#78
-
-# "SVAL_W_C"
-DMR_Svalbard_W_C <- DMR_DEG[which(DMR_DEG$site=="SVAL_W_C" & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="metilene"),]
-Svalbard_W_C <- as.data.frame(cbind(DMR_Svalbard_W_C$Gene, DMR_Svalbard_W_C$qvalue.y))
-Svalbard_W_C <- distinct(Svalbard_W_C)
-write.table(Svalbard_W_C, "Svalbard_W_C_metilene_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-#103
-
-# "Pheno"
-DMR_Mat_Sen <- DMR_DEG[which(DMR_DEG$site=="Pheno" & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="metilene"),]
-Mat_Sen <- as.data.frame(cbind(DMR_Mat_Sen$Gene, DMR_Mat_Sen$qvalue.y))
-Mat_Sen <- distinct(Mat_Sen)
-write.table(Mat_Sen, "Mat_Sen_metilene_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-# 8584
-
-# "HL"
-DMR_Wild_Lat_L_H <- DMR_DEG[which(DMR_DEG$site=="HL" & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="metilene"),]
-Wild_Lat_L_H <- as.data.frame(cbind(DMR_Wild_Lat_L_H$Gene, DMR_Wild_Lat_L_H$qvalue.y))
-Wild_Lat_L_H <- distinct(Wild_Lat_L_H)
-write.table(Wild_Lat_L_H, "Wild_Lat_L_H_metilene_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-#7621
-
-# "SE_W_C"
-DMR_SE_W_C <- DMR_DEG[which(DMR_DEG$site=="SE_W_C" & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="metilene"),]
-SE_W_C <- as.data.frame(cbind(DMR_SE_W_C$Gene, DMR_SE_W_C$qvalue.y))
-SE_W_C <- distinct(SE_W_C)
-write.table(SE_W_C, "SE_W_C_metilene_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-#1434
-
-# "SE_HL"
-DMR_SE_L_H <- DMR_DEG[which(DMR_DEG$site=="SE_HL" & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="metilene"),]
-SE_L_H <- as.data.frame(cbind(DMR_SE_L_H$Gene, DMR_SE_L_H$qvalue.y))
-SE_L_H <- distinct(SE_L_H)
-write.table(SE_L_H, "SE_L_H_metilene_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-# 388
-
-
-#-----------------------------
-# Extract for overdispersion
-
-# "ALAS_W_C"
-DMR_Alaska_W_C <- DMR_DEG[which(DMR_DEG$site=="ALAS_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="overdisp"),]
-Alaska_W_C <- as.data.frame(cbind(DMR_Alaska_W_C$Gene, DMR_Alaska_W_C$qvalue.x))
-Alaska_W_C <- distinct(Alaska_W_C)
-write.table(Alaska_W_C, "Alaska_W_C_overdisp_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-#142
-
-# "LAT_W_C"
-DMR_Sweden_W_C <- DMR_DEG[which(DMR_DEG$site=="LAT_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="overdisp"),]
-Sweden_W_C <- as.data.frame(cbind(DMR_Sweden_W_C$Gene, DMR_Sweden_W_C$qvalue.x))
-Sweden_W_C <- distinct(Sweden_W_C)
-write.table(Sweden_W_C, "Sweden_W_C_overdisp_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-# 808
-
-# "CASS_W_C"
-DMR_Nunavut_W_C <- DMR_DEG[which(DMR_DEG$site=="CASS_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="overdisp"),]
-Nunavut_W_C <- as.data.frame(cbind(DMR_Nunavut_W_C$Gene, DMR_Nunavut_W_C$qvalue.x))
-Nunavut_W_C <- distinct(Nunavut_W_C)
-write.table(Nunavut_W_C, "Nunavut_W_C_overdisp_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-#78
-
-# "SVAL_W_C"
-DMR_Svalbard_W_C <- DMR_DEG[which(DMR_DEG$site=="SVAL_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="overdisp"),]
-Svalbard_W_C <- as.data.frame(cbind(DMR_Svalbard_W_C$Gene, DMR_Svalbard_W_C$qvalue.x))
-Svalbard_W_C <- distinct(Svalbard_W_C)
-write.table(Svalbard_W_C, "Svalbard_W_C_overdisp_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-#103
-
-# "Pheno"
-DMR_Mat_Sen <- DMR_DEG[which(DMR_DEG$site=="Pheno" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="overdisp"),]
-Mat_Sen <- as.data.frame(cbind(DMR_Mat_Sen$Gene, DMR_Mat_Sen$qvalue.x))
-Mat_Sen <- distinct(Mat_Sen)
-write.table(Mat_Sen, "Mat_Sen_overdisp_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-# 8584
-
-# "HL"
-DMR_Wild_Lat_L_H <- DMR_DEG[which(DMR_DEG$site=="HL" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="overdisp"),]
-Wild_Lat_L_H <- as.data.frame(cbind(DMR_Wild_Lat_L_H$Gene, DMR_Wild_Lat_L_H$qvalue.x))
-Wild_Lat_L_H <- distinct(Wild_Lat_L_H)
-write.table(Wild_Lat_L_H, "Wild_Lat_L_H_overdisp_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-#7621
-
-# "SE_W_C"
-DMR_SE_W_C <- DMR_DEG[which(DMR_DEG$site=="SE_W_C" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="overdisp"),]
-SE_W_C <- as.data.frame(cbind(DMR_SE_W_C$Gene, DMR_SE_W_C$qvalue.x))
-SE_W_C <- distinct(SE_W_C)
-write.table(SE_W_C, "SE_W_C_overdisp_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-#1434
-
-# "SE_HL"
-DMR_SE_L_H <- DMR_DEG[which(DMR_DEG$site=="SE_HL" & DMR_DEG$perdiff== 10 & DMR_DEG$random=="non-rand" & DMR_DEG$context=="CpG" & DMR_DEG$program=="overdisp"),]
-SE_L_H <- as.data.frame(cbind(DMR_SE_L_H$Gene, DMR_SE_L_H$qvalue.x))
-SE_L_H <- distinct(SE_L_H)
-write.table(SE_L_H, "SE_L_H_overdisp_genes.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-# 388
-
-
-
 
 ##############################
 # Get summary counts for number of genes in various categories
@@ -395,9 +271,9 @@ write.table(total_gene_list, "total_gene_list.txt", sep = "\t", quote = FALSE, r
 q()
 n
 
-#################################
+#--------------------------------
 # in bash
-# Prepare gene score files - for non-overdisp, random, RNA
+# Prepare gene score file 
 # https://erminej.msl.ubc.ca/help/input-files/gene-scores/
 
 cd /lustre04/scratch/celphin/Dryas/GO_enrichment
@@ -430,39 +306,6 @@ do sed -i 's/ /\t/g' "$taxon"_geneset; done
 
 # remove V1.1 in GO_gene_mappings.ermineJ.txt
 sed 's/V1\.1//g' GO_gene_mappings.ermineJ.txt > GO_gene_mappings1.ermineJ.txt
-
-################################
-# Prepare gene score files - for non-overdisp, random, RNA
-# https://erminej.msl.ubc.ca/help/input-files/gene-scores/
-
-cd /lustre04/scratch/celphin/Dryas/GO_enrichment
-
-# Alaska_W_C_overdisp Sweden_W_C_overdisp Nunavut_W_C_overdisp Svalbard_W_C_overdisp Mat_Sen_overdisp Wild_Lat_L_H_overdisp SE_W_C_overdisp SE_L_H_overdisp Alaska_W_C_metilene Sweden_W_C_metilene Nunavut_W_C_metilene Svalbard_W_C_metilene Mat_Sen_metilene Wild_Lat_L_H_metilene SE_W_C_metilene SE_L_H_metilene
-
-for taxon in Alaska_W_C_overdisp Sweden_W_C_overdisp Nunavut_W_C_overdisp \
-Svalbard_W_C_overdisp Mat_Sen_overdisp Wild_Lat_L_H_overdisp SE_W_C_overdisp \
-SE_L_H_overdisp Alaska_W_C_metilene Sweden_W_C_metilene Nunavut_W_C_metilene \
-Svalbard_W_C_metilene Mat_Sen_metilene Wild_Lat_L_H_metilene SE_W_C_metilene SE_L_H_metilene ; \
-do \
-echo "$taxon"
-cp Dryas_blank_geneset "$taxon"_geneset
-
-# Loop through the gene list for each taxon, extract the qvalue and replace 1 with the qvalue in the gene set file
-sort "$taxon"_genes.txt | \
-while read gene qvalue ; do \
-    # Replace 1 with the qvalue in the gene set file
-    sed -i "s/$gene 1/$gene $qvalue/g" "$taxon"_geneset ; \
-done ; done
-
-for taxon in Alaska_W_C_overdisp Sweden_W_C_overdisp Nunavut_W_C_overdisp \
-Svalbard_W_C_overdisp Mat_Sen_overdisp Wild_Lat_L_H_overdisp SE_W_C_overdisp \
-SE_L_H_overdisp Alaska_W_C_metilene Sweden_W_C_metilene Nunavut_W_C_metilene \
-Svalbard_W_C_metilene Mat_Sen_metilene Wild_Lat_L_H_metilene SE_W_C_metilene SE_L_H_metilene ; \
-do sed -i 's/ /\t/g' "$taxon"_geneset; done
-
-# remove V1.1 in GO_gene_mappings.ermineJ.txt
-sed 's/V1\.1//g' GO_gene_mappings.ermineJ.txt > GO_gene_mappings1.ermineJ.txt
-
 
 ############################################
 # get counts
@@ -531,7 +374,7 @@ wget https://release.geneontology.org/2024-04-24/ontology/go.obo
 #######################################################################################################################################
 
 tmux new-session -s GO1
-tmux attach-session -t GO1 #methwarm
+tmux attach-session -t GO1
 
 salloc -c1 --time 3:00:00 --mem 120000m --account def-henryg
 
@@ -586,6 +429,7 @@ cat Alaska_W_C_rand_geneset Sweden_W_C_rand_geneset Nunavut_W_C_rand_geneset Sva
 Mat_Sen_rand_geneset Wild_Lat_L_H_rand_geneset SE_W_C_rand_geneset SE_L_H_rand_geneset | sort -u > Total_random_geneset
 
 # remove duplicates and select the lowest value
+
 
 for taxon in Alaska_Sweden_W_C Nunavut_Svalbard_W_C Total_RNA Total_random ; \
 do \
@@ -667,27 +511,6 @@ $ERMINEJ_HOME/bin/ermineJ.sh \
 
 #Total_random
 # Finished with ORA computations: 117 elements passed your threshold.
-
-#---------------------------------
-# Run for metilene and overdisp data
-
-
-for taxon in Alaska_W_C_overdisp Sweden_W_C_overdisp Nunavut_W_C_overdisp \
-Svalbard_W_C_overdisp Mat_Sen_overdisp Wild_Lat_L_H_overdisp SE_W_C_overdisp \
-SE_L_H_overdisp Alaska_W_C_metilene Sweden_W_C_metilene Nunavut_W_C_metilene \
-Svalbard_W_C_metilene Mat_Sen_metilene Wild_Lat_L_H_metilene SE_W_C_metilene SE_L_H_metilene ; \
-do \
-echo $taxon 
-$ERMINEJ_HOME/bin/ermineJ.sh \
--a GO_gene_mappings1.ermineJ.txt \
--s "$taxon"_geneset \
--c /home/celphin/ermineJ.data/go.obo \
--n ORA -t 0.01 \
---genesOut -aspects BCM \
--o "$taxon".ermine.results -y 5 ; done
-
-
-
 
 
 ############################

@@ -45,6 +45,9 @@ cp /lustre04/scratch/celphin/Dryas/DMR_bedGraph_files/*.bedGraph .
 mkdir metilene_rand; cd metilene_rand
 cp /lustre04/scratch/celphin/Dryas/snpEff/Dryas_DMRs/*bedGraph .
 
+# Overdispersion
+cd /lustre04/scratch/celphin/Dryas_large_folders/intersections
+cp /lustre04/scratch/celphin/Dryas_large_folders/CpG/Wild_stranded_CpG_report/*_overdisp_DMRs.txt .
 
 #----------------------
 # make methylkit text output into bedGraph file
@@ -57,6 +60,13 @@ for file in *.txt; do
 done
 
 for file in Methylkit_Pheno_*_DMRs_CHH.txt; do
+    base_name=$(basename "$file" .txt)
+    awk '{print $1, $2, $3, $NF}' "$file" > "${base_name}.bedGraph"
+    sed -i 's/ /\t/g' "${base_name}.bedGraph"
+    sed -i 's/chr\tstart\tend\tmeth.diff/track type=bedGraph/g' "${base_name}.bedGraph"
+done
+
+for file in *_overdisp_DMRs.txt; do
     base_name=$(basename "$file" .txt)
     awk '{print $1, $2, $3, $NF}' "$file" > "${base_name}.bedGraph"
     sed -i 's/ /\t/g' "${base_name}.bedGraph"

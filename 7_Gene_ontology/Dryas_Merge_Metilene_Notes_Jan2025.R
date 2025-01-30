@@ -4,18 +4,18 @@
 ##############################
 #mkdir /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
 
-# Get Methylkit  DMRs
+# Get Methylkit overdisp DMRs
 cd /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
 cp /lustre04/scratch/celphin/Dryas_large_folders/intersections/*.txt /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
 cp /lustre04/scratch/celphin/Dryas_large_folders/intersections/txt/* /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
 
-# Get Methylkit  DMR genes
+# Get Methylkit overdisp DMR genes
 cd /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
 cp  /lustre04/scratch/celphin/Dryas/snpEff/methylkit/*.uniq_genes /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
 
-# get DEGs
-cp /lustre04/scratch/celphin/Dryas_large_folders/RNAseq_analysis/*.txt /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
-# want files: _DERs.txt
+# get metilene DMRs
+cp /lustre04/scratch/celphin/Dryas/DMR_bedGraph_files/*.bedGraph /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
+
 
 # annotation info
 cd /lustre04/scratch/celphin/Dryas/MS_Dryas_Merged_Data/original_data
@@ -26,15 +26,6 @@ cd /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
 cp /lustre04/scratch/celphin/Dryas/GO_enrichment/interproscan_dryas_full3.tsv .
 cp /home/celphin/scratch/Dryas/MS_Dryas_Merged_Data/original_data/interproscan_dryas_full.tsv .
 
-# get metilene genenames
-cp /lustre04/scratch/celphin/Dryas/DMR_bedGraph_files/*_metilene.uniq_genes /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
-
-# get metilene q-values
-cp -v /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/*/*70_5_4_0.9_qval.0.001.out /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
-
-# Get overdispersed - txt files and uniq_genes
-cp  /lustre04/scratch/celphin/Dryas/snpEff/methylkit/*.uniq_genes /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
-cp /lustre04/scratch/celphin/Dryas_large_folders/intersections/*_overdisp_DMRs.txt /lustre04/scratch/celphin/Dryas/methylkit_merged_data/
 
 ##################################################
 # Process Interproscan file
@@ -175,8 +166,7 @@ methylkitDMRs_list <- file_list[grep("Methylkit", file_list)]
 RNA_list <- file_list[grep("RNA", file_list)]
 
 methylkitDMRs_info_list <- methylkitDMRs_list[grep(".txt", methylkitDMRs_list)]
-metileneDMRs_info_list <- file_list[grep("70_5_4_0.9_qval.0.001.out", file_list)]
-methylkitDMRs_genenames_list <- file_list[grep(".uniq_genes", file_list)]
+methylkitDMRs_genenames_list <- methylkitDMRs_list[grep(".uniq_genes", methylkitDMRs_list)]
 
 RNA_info_list <- RNA_list[grep("_DERs.txt", RNA_list)]
 RNA_updown_list <- RNA_list[grep("updown", RNA_list)]
@@ -210,15 +200,14 @@ colnames(methylkitDMRs_info_combined_data)
 
 # Extract DMR site/origin info
 methylkitDMRs_info_combined_data$origin <- methylkitDMRs_info_combined_data$file_basename
-# methylkitDMRs_info_combined_data$origin <- sub("Rand_", "", methylkitDMRs_info_combined_data$origin)
-# methylkitDMRs_info_combined_data$origin <- sub("Methylkit_", "", methylkitDMRs_info_combined_data$origin)
-# methylkitDMRs_info_combined_data$origin <- sub("_DMRs.txt", "", methylkitDMRs_info_combined_data$origin)
+methylkitDMRs_info_combined_data$origin <- sub("Rand_", "", methylkitDMRs_info_combined_data$origin)
+methylkitDMRs_info_combined_data$origin <- sub("Methylkit_", "", methylkitDMRs_info_combined_data$origin)
+methylkitDMRs_info_combined_data$origin <- sub("_DMRs.txt", "", methylkitDMRs_info_combined_data$origin)
 
 methylkitDMRs_info_combined_data$site <- methylkitDMRs_info_combined_data$origin
 methylkitDMRs_info_combined_data$context <- methylkitDMRs_info_combined_data$origin
 methylkitDMRs_info_combined_data$random <- methylkitDMRs_info_combined_data$origin
 methylkitDMRs_info_combined_data$perdiff <- methylkitDMRs_info_combined_data$origin
-methylkitDMRs_info_combined_data$program <- methylkitDMRs_info_combined_data$origin
 
 # find sites
 methylkitDMRs_info_combined_data$site[grep("SE_W_C", methylkitDMRs_info_combined_data$origin)]<- "SE_W_C"
@@ -226,7 +215,6 @@ methylkitDMRs_info_combined_data$site[grep("Pheno", methylkitDMRs_info_combined_
 methylkitDMRs_info_combined_data$site[grep("HL", methylkitDMRs_info_combined_data$origin)]<- "HL"
 methylkitDMRs_info_combined_data$site[grep("SE_HL", methylkitDMRs_info_combined_data$origin)]<- "SE_HL"
 
-methylkitDMRs_info_combined_data$site[grep("Alex", methylkitDMRs_info_combined_data$origin)]<- "Alex_W_C"
 methylkitDMRs_info_combined_data$site[grep("MEAD", methylkitDMRs_info_combined_data$origin)]<- "MEAD_W_C"
 methylkitDMRs_info_combined_data$site[grep("WILL", methylkitDMRs_info_combined_data$origin)]<- "WILL_W_C"
 methylkitDMRs_info_combined_data$site[grep("DRY", methylkitDMRs_info_combined_data$origin)]<- "DRY_W_C"
@@ -250,93 +238,14 @@ methylkitDMRs_info_combined_data$random[grep("Rand", methylkitDMRs_info_combined
 methylkitDMRs_info_combined_data$perdiff[grep("10", methylkitDMRs_info_combined_data$origin)]<- "10"
 methylkitDMRs_info_combined_data$perdiff[grep("25", methylkitDMRs_info_combined_data$origin)]<- "25"
 
-# program
-methylkitDMRs_info_combined_data$program[grep("overdisp", methylkitDMRs_info_combined_data$origin)]<- "overdisp"
-methylkitDMRs_info_combined_data$program[-grep("overdisp", methylkitDMRs_info_combined_data$origin)]<- "non-overdisp"
-
 
 unique(as.factor(methylkitDMRs_info_combined_data$site))
 unique(as.factor(methylkitDMRs_info_combined_data$context))
 unique(as.factor(methylkitDMRs_info_combined_data$random))
 unique(as.factor(methylkitDMRs_info_combined_data$perdiff))
-unique(as.factor(methylkitDMRs_info_combined_data$program))
 
 methylkitDMRs_info_combined_data0 <- methylkitDMRs_info_combined_data
 methylkitDMRs_info_combined_data = subset(methylkitDMRs_info_combined_data0, select = -c(file_basename, origin) )
-
-#################################################
-# Read in metilene gene info
-
-# Read the data into a list of data frames, treating the first row as headers
-list_of_data <- lapply(metileneDMRs_info_list, function(file_path) {
-  read.table(file_path, header = FALSE)  # Read each file with header
-})
-
-# Extract basenames from the file paths
-file_basenames <- basename(metileneDMRs_info_list)
-
-# Add the file basename as a new column to each data frame in the list
-list_of_data_with_basename <- lapply(seq_along(list_of_data), function(i) {
-  data <- list_of_data[[i]]
-  data$file_basename <- file_basenames[i]  # Add the basename as a new column
-  return(data)
-})
-
-# Combine all data frames into one using rbind
-metileneDMRs_info_combined_data <- do.call(rbind, list_of_data_with_basename)
-
-head(metileneDMRs_info_combined_data)
-
-colnames(metileneDMRs_info_combined_data) <- c("chr", "start" , "end", "qvalue", 
-"meth.diff","NumbCpG" ,"Mean1", "Mean2", "file_basename")
-
-# Extract DMR site/origin info
-metileneDMRs_info_combined_data$origin <- metileneDMRs_info_combined_data$file_basename
-# metileneDMRs_info_combined_data$origin <- sub("Rand_", "", metileneDMRs_info_combined_data$origin)
-# metileneDMRs_info_combined_data$origin <- sub("Methylkit_", "", metileneDMRs_info_combined_data$origin)
-# metileneDMRs_info_combined_data$origin <- sub("_DMRs.txt", "", metileneDMRs_info_combined_data$origin)
-
-metileneDMRs_info_combined_data$site <- metileneDMRs_info_combined_data$origin
-metileneDMRs_info_combined_data$context <- metileneDMRs_info_combined_data$origin
-metileneDMRs_info_combined_data$random <- metileneDMRs_info_combined_data$origin
-metileneDMRs_info_combined_data$perdiff <- metileneDMRs_info_combined_data$origin
-metileneDMRs_info_combined_data$program <- metileneDMRs_info_combined_data$origin
-
-# find sites
-metileneDMRs_info_combined_data$site[grep("Nunavut_W_C", metileneDMRs_info_combined_data$origin)]<- "Alex_W_C"
-metileneDMRs_info_combined_data$site[grep("Sweden_W_C", metileneDMRs_info_combined_data$origin)]<- "LAT_W_C"
-metileneDMRs_info_combined_data$site[grep("Alaska_W_C", metileneDMRs_info_combined_data$origin)]<- "ALAS_W_C"
-metileneDMRs_info_combined_data$site[grep("Svalbard_W_C", metileneDMRs_info_combined_data$origin)]<- "SVAL_W_C"
-metileneDMRs_info_combined_data$site[grep("SE_L_H", metileneDMRs_info_combined_data$origin)]<- "SE_HL"
-metileneDMRs_info_combined_data$site[grep("Mat_Sen", metileneDMRs_info_combined_data$origin)]<- "Pheno"
-metileneDMRs_info_combined_data$site[grep("Wild_Lat_L_H", metileneDMRs_info_combined_data$origin)]<- "HL"
-metileneDMRs_info_combined_data$site[grep("Wild_W_C", metileneDMRs_info_combined_data$origin)]<- "Total"
-metileneDMRs_info_combined_data$site[grep("P_W_C", metileneDMRs_info_combined_data$origin)]<- "Parent"
-metileneDMRs_info_combined_data$site[grep("SE_W_C", metileneDMRs_info_combined_data$origin)]<- "SE_W_C"
-metileneDMRs_info_combined_data$site[grep("Wild_Species_DO_DI", metileneDMRs_info_combined_data$origin)]<- "DO_DI"
-
-# find contexts
-metileneDMRs_info_combined_data$context<- "CpG"
-
-# random
-metileneDMRs_info_combined_data$random<- "non-rand"
-
-# percent DMR diff
-metileneDMRs_info_combined_data$perdiff<- "metilene"
-
-# program
-metileneDMRs_info_combined_data$program<- "metilene"
-
-
-unique(as.factor(metileneDMRs_info_combined_data$site))
-unique(as.factor(metileneDMRs_info_combined_data$context))
-unique(as.factor(metileneDMRs_info_combined_data$random))
-unique(as.factor(metileneDMRs_info_combined_data$perdiff))
-unique(as.factor(metileneDMRs_info_combined_data$program))
-
-metileneDMRs_info_combined_data0 <- metileneDMRs_info_combined_data
-metileneDMRs_info_combined_data = subset(metileneDMRs_info_combined_data0, select = -c(file_basename, origin) )
-
 
 #####################################################################
 #Read in the methylkit DMR nearest gene names, add filename column, join for all data
@@ -368,17 +277,15 @@ head(methylkitDMRs_genenames_combined_data)
 #----------------------
 # Extract DMR site/origin info
 methylkitDMRs_genenames_combined_data$origin <- methylkitDMRs_genenames_combined_data$file_basename
-# methylkitDMRs_genenames_combined_data$origin <- sub("Rand_", "", methylkitDMRs_genenames_combined_data$origin)
-# methylkitDMRs_genenames_combined_data$origin <- sub("Methylkit_", "", methylkitDMRs_genenames_combined_data$origin)
-# methylkitDMRs_genenames_combined_data$origin <- sub("_DMRs.txt", "", methylkitDMRs_genenames_combined_data$origin)
-# methylkitDMRs_genenames_combined_data$origin <- sub(".bed.out_", "", methylkitDMRs_genenames_combined_data$origin)
-# methylkitDMRs_genenames_combined_data$origin <- sub(".uniq_genes", "", methylkitDMRs_genenames_combined_data$origin)
+methylkitDMRs_genenames_combined_data$origin <- sub("Rand_", "", methylkitDMRs_genenames_combined_data$origin)
+methylkitDMRs_genenames_combined_data$origin <- sub("Methylkit_", "", methylkitDMRs_genenames_combined_data$origin)
+methylkitDMRs_genenames_combined_data$origin <- sub("_DMRs.txt", "", methylkitDMRs_genenames_combined_data$origin)
+
 
 methylkitDMRs_genenames_combined_data$site <- methylkitDMRs_genenames_combined_data$origin
 methylkitDMRs_genenames_combined_data$context <- methylkitDMRs_genenames_combined_data$origin
 methylkitDMRs_genenames_combined_data$random <- methylkitDMRs_genenames_combined_data$origin
 methylkitDMRs_genenames_combined_data$perdiff <- methylkitDMRs_genenames_combined_data$origin
-methylkitDMRs_genenames_combined_data$program <- methylkitDMRs_genenames_combined_data$origin
 
 # find sites
 methylkitDMRs_genenames_combined_data$site[grep("SE_W_C", methylkitDMRs_genenames_combined_data$origin)]<- "SE_W_C"
@@ -386,17 +293,6 @@ methylkitDMRs_genenames_combined_data$site[grep("Pheno", methylkitDMRs_genenames
 methylkitDMRs_genenames_combined_data$site[grep("HL", methylkitDMRs_genenames_combined_data$origin)]<- "HL"
 methylkitDMRs_genenames_combined_data$site[grep("SE_HL", methylkitDMRs_genenames_combined_data$origin)]<- "SE_HL"
 
-methylkitDMRs_genenames_combined_data$site[grep("Nunavut_W_C", methylkitDMRs_genenames_combined_data$origin)]<- "Alex_W_C"
-methylkitDMRs_genenames_combined_data$site[grep("Sweden_W_C", methylkitDMRs_genenames_combined_data$origin)]<- "LAT_W_C"
-methylkitDMRs_genenames_combined_data$site[grep("Alaska_W_C", methylkitDMRs_genenames_combined_data$origin)]<- "ALAS_W_C"
-methylkitDMRs_genenames_combined_data$site[grep("Svalbard_W_C", methylkitDMRs_genenames_combined_data$origin)]<- "SVAL_W_C"
-methylkitDMRs_genenames_combined_data$site[grep("SE_L_H", methylkitDMRs_genenames_combined_data$origin)]<- "SE_HL"
-methylkitDMRs_genenames_combined_data$site[grep("Mat_Sen", methylkitDMRs_genenames_combined_data$origin)]<- "Pheno"
-methylkitDMRs_genenames_combined_data$site[grep("Wild_Lat_L_H", methylkitDMRs_genenames_combined_data$origin)]<- "HL"
-methylkitDMRs_genenames_combined_data$site[grep("Wild_W_C", methylkitDMRs_genenames_combined_data$origin)]<- "Total"
-methylkitDMRs_genenames_combined_data$site[grep("Parent_W_C", methylkitDMRs_genenames_combined_data$origin)]<- "Parent"
-
-methylkitDMRs_genenames_combined_data$site[grep("Alex", methylkitDMRs_genenames_combined_data$origin)]<- "Alex_W_C"
 methylkitDMRs_genenames_combined_data$site[grep("MEAD", methylkitDMRs_genenames_combined_data$origin)]<- "MEAD_W_C"
 methylkitDMRs_genenames_combined_data$site[grep("WILL", methylkitDMRs_genenames_combined_data$origin)]<- "WILL_W_C"
 methylkitDMRs_genenames_combined_data$site[grep("DRY", methylkitDMRs_genenames_combined_data$origin)]<- "DRY_W_C"
@@ -418,25 +314,16 @@ methylkitDMRs_genenames_combined_data$random[grep("Rand", methylkitDMRs_genename
 
 # percent DMR diff
 methylkitDMRs_genenames_combined_data$perdiff[grep("10", methylkitDMRs_genenames_combined_data$origin)]<- "10"
-methylkitDMRs_genenames_combined_data$perdiff[-grep("10", methylkitDMRs_genenames_combined_data$origin)]<- "metilene"
 methylkitDMRs_genenames_combined_data$perdiff[grep("25", methylkitDMRs_genenames_combined_data$origin)]<- "25"
-
-# program
-methylkitDMRs_genenames_combined_data$program[grep("overdisp", methylkitDMRs_genenames_combined_data$origin)]<- "overdisp"
-methylkitDMRs_genenames_combined_data$program[-grep("overdisp", methylkitDMRs_genenames_combined_data$origin)]<- "non-overdisp"
-methylkitDMRs_genenames_combined_data$program[grep("metilene", methylkitDMRs_genenames_combined_data$origin)]<- "metilene"
 
 
 unique(as.factor(methylkitDMRs_genenames_combined_data$site))
 unique(as.factor(methylkitDMRs_genenames_combined_data$context))
 unique(as.factor(methylkitDMRs_genenames_combined_data$random))
 unique(as.factor(methylkitDMRs_genenames_combined_data$perdiff))
-unique(as.factor(methylkitDMRs_genenames_combined_data$program))
 
 methylkitDMRs_genenames_combined_data0 <- methylkitDMRs_genenames_combined_data
 methylkitDMRs_genenames_combined_data = subset(methylkitDMRs_genenames_combined_data0, select = -c(file_basename, origin) )
-
-
 
 #####################################################################
 #Read in the DEG gene names, add filename column, join for all data
@@ -540,17 +427,8 @@ RNA_updown_combined_data = subset(RNA_updown_combined_data0, select = -c(file_ba
 #################################################################
 # join all by the gene names
 
-DMR_total_data1 <- left_join(methylkitDMRs_genenames_combined_data, methylkitDMRs_info_combined_data, by = join_by(chr, start, end, site, context, random, perdiff, program))
-head(DMR_total_data1)
-
-# Add metileneDMRs_info
-DMR_total_data2 <- left_join(methylkitDMRs_genenames_combined_data, metileneDMRs_info_combined_data, by = join_by(chr, start, end, site, context, random, perdiff, program))
-head(DMR_total_data2)
-
-DMR_total_data <- left_join(DMR_total_data1, DMR_total_data2, by = join_by(Gene, gene, chr, start, end, site, context, 
-random, perdiff, program))
+DMR_total_data <- left_join(methylkitDMRs_genenames_combined_data, methylkitDMRs_info_combined_data, by = join_by(chr, start, end, site, context, random, perdiff))
 head(DMR_total_data)
-
 
 #--------------------
 # join DEGs with up and down regulation by gene name
