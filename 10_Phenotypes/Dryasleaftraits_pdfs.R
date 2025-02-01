@@ -279,6 +279,16 @@ mean_Site_treatment_summary <- summarize(databySite,
 
 write.table(mean_Site_treatment_summary, "mean_Site_treatment_summary.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
 
+#--------------------------------
+# Group by low and High chambers and site
+
+databyChamber <- group_by(Total_data, by=Site, Treatment, Chamber)
+#summarize
+
+sum_chamber_summary <- summarize(databyChamber,
+                                   Percent_germ2019 = sum(Percent_germ, na.rm = TRUE),
+)
+
 #---------------------------------
 #ggplot
 
@@ -376,6 +386,56 @@ for (trait in traits) {
   # Close the pdf device
   dev.off()
 }
+
+#############################
+# Make plot of Germination in each growth chamber by site
+
+trait="Percent_germ"
+# Filter data to remove NAs and zeros from the trait
+Total_data_filtered <- Total_data %>%
+  filter(!is.na(.data[[trait]]) & .data[[trait]] != 0)
+
+# Convert the trait to numeric (if it's not already)
+Total_data_filtered[[trait]] <- as.numeric(as.character(Total_data_filtered[[trait]]))
+
+Total_data_filtered$Site_Chamber <- paste0(Total_data_filtered$Site_Alex, "_", Total_data_filtered$Chamber)
+# Generate the filename for the plot
+plot_filename <- paste0("./plots/Site_Chamber_", trait, ".pdf")
+
+# Save the plot to a pdf file
+pdf(plot_filename)
+
+# Create and save the plot
+print(
+  ggplot(data = Total_data_filtered, aes(x =Site_Chamber, y = .data[[trait]])) +
+    geom_boxplot() +
+    geom_point(size = 3) +
+    labs(x = "Site_Treatment", y = trait) +
+    theme_classic() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+)
+
+# Close the pdf device
+dev.off()
+
+plot_filename <- paste0("./plots/Chamber_", trait, ".pdf")
+
+# Save the plot to a pdf file
+pdf(plot_filename)
+
+# Create and save the plot
+print(
+  ggplot(data = Total_data_filtered, aes(x =Chamber, y = .data[[trait]])) +
+    geom_boxplot() +
+    geom_point(size = 3) +
+    labs(x = "Site_Treatment", y = trait) +
+    theme_classic() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+)
+
+# Close the pdf device
+dev.off()
+
 
 ####################################
 # check significance of total methylation in each context
