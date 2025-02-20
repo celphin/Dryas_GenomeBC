@@ -408,13 +408,12 @@ pdf(plot_filename)
 # Create and save the plot
 print(
   ggplot(data = Total_data_filtered, aes(x =Site_Chamber, y = .data[[trait]])) +
-    geom_boxplot() +
+    geom_boxplot(fill="green") +
     geom_point(size = 3) +
-    labs(x = "Site_Treatment", y = trait) +
+    labs(x = "Home site _ Growth chamber", y = "Percentage germination") +
     theme_classic() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 )
-
 # Close the pdf device
 dev.off()
 
@@ -435,6 +434,31 @@ print(
 
 # Close the pdf device
 dev.off()
+
+# Make png
+plot_filename <- paste0("./plots/Site_Chamber_", trait, ".png")
+png(plot_filename, width=1500, height=1200, res=300)
+print(
+  ggplot(data = Total_data_filtered, aes(x =Site_Chamber, y = .data[[trait]])) +
+    geom_boxplot(fill="green") +
+    geom_point(size = 3) +
+    labs(x = "Home site _ Growth chamber", y = "Percentage germination") +
+    theme_classic() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+)
+
+dev.off()
+
+
+# Convert the trait to numeric (if it's not already)
+Total_data_filtered[[trait]] <- as.numeric(as.character(Total_data_filtered[[trait]]))
+
+# Running the Kruskal-Wallis test without using .data[[trait]]
+kruskal_test_result <- kruskal.test(as.formula(paste(trait, "~ Chamber")), data = Total_data_filtered)
+
+# Viewing the results
+print(trait)
+print(kruskal_test_result)
 
 
 ####################################

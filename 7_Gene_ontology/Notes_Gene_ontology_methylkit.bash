@@ -714,6 +714,59 @@ mv *ermine.results ermine.results
 
 mkdir Revigio
 mv Revigio* Revigio
+#####################
+# look at all the data combined
+
+cd /lustre04/scratch/celphin/Dryas/GO_enrichment/ermine.results
+
+
+for file in *.ermine.results; do
+  tail -n +27 "$file" | awk -F'\t' -v fname="$file" '$6 > 0 {print $3 "\t" $2 "\t" fname "\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" $8 }'
+done | sort -t $'\t' -k1,1 > combined_sorted_file.txt
+
+awk -F'\t' '{print $1 "\t" $2}' combined_sorted_file.txt | sort | uniq -c | sort -n > value_counts.txt
+
+grep "trichome morphogenesis" combined_sorted_file.txt
+
+grep "response to cold" combined_sorted_file.txt
+
+grep "response to water" combined_sorted_file.txt
+
+grep "oxidoreductase activity" combined_sorted_file.txt
+
+grep "shoot system development" combined_sorted_file.txt
+
+grep "system development" combined_sorted_file.txt
+
+grep "defense response to other organism" combined_sorted_file.txt
+
+grep "light" combined_sorted_file.txt
+
+grep "positive regulation" combined_sorted_file.txt
+
+
+GO:0098542      defense response to other organism      Alaska_Sweden_W_C.ermine.results        100     100      4.000   0.80117054      1.000
+GO:0098542      defense response to other organism      Alaska_W_C.ermine.results               100     100      2.000    0.24291749      1.000
+GO:0098542      defense response to other organism      Alaska_W_C_metilene.ermine.results      100     100      9.000   0.01870974      1.000
+GO:0098542      defense response to other organism      Alaska_W_C_overdisp.ermine.results      93      93       22.000  0.36690591      1.000
+GO:0098542      defense response to other organism      Mat_Sen.ermine.results                  91      91      53.000      0.23333652      0.67203156
+GO:0098542      defense response to other organism      Mat_Sen_metilene.ermine.results          93      93     5.000    0.7328553       1.000
+GO:0098542      defense response to other organism      Nunavut_RNA.ermine.results             100     100      1.000    0.13145871      1.000
+GO:0098542      defense response to other organism      Nunavut_Svalbard_W_C.erm ine.results     100    100      1.000   0.64107842      1.000
+GO:0098542      defense response to other organism      SE_L_H.ermine.results                  100     100     2.000       0.73517512      1.000
+GO:0098542      defense response to other organism      SE_L_H_metilene.ermine.results         100     100    1.000    0.90646637      1.000
+GO:0098542      defense response to other organism      SE_W_C.ermine.results                 100     100     5.000       0.96810934      1.000
+GO:0098542      defense response to other organism      SE_W_C_metilene.ermine.results         100     100      5.000    0.4779764       1.000
+GO:0098542      defense response to other organism      Svalbard_W_C.ermine.results             100     100     1.000    0.5000204       1.000
+GO:0098542      defense response to other organism      Svalbard_W_C_metilene.ermine.results    100     100      1.000   0.81457363      1.000
+GO:0098542      defense response to other organism      Svalbard_W_C_overdisp.ermine.results    93      93       30.000  0.17914744      0.82941163
+GO:0098542      defense response to other organism      Sweden_W_C.ermine.results              100     100      3.000    0.91171961      1.000
+GO:0098542      defense response to other organism      Sweden_W_C_metilene.ermine.results      99     99       11.000  0.09357311      1.000
+GO:0098542      defense response to other organism      Sweden_W_C_overdisp.ermine.results      92     92       32.000  0.09128341      0.82021804
+GO:0098542      defense response to other organism      Wild_Lat_L_H.ermine.results            93      93       35.000   0.96103226      1.000
+GO:0098542      defense response to other organism      Wild_Lat_L_H_metilene.ermine.results    88     88       36.000  0.73912346      1.000
+
+
 
 ###################################
 # summarize with : http://revigo.irb.hr/

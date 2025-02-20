@@ -42,6 +42,10 @@ cp /lustre04/scratch/celphin/Dryas_large_folders/CHG_CHH/seedling_data/coverage/
 mkdir metilene; cd metilene
 cp /lustre04/scratch/celphin/Dryas/DMR_bedGraph_files/*.bedGraph .
 
+# random
+cd /lustre04/scratch/celphin/Dryas_large_folders/CpG/Metilene/MS_Wild_metilene_output_bedgraphs/Random_Site_bedgraphs
+cp *_random_W_C.bedGraph /lustre04/scratch/celphin/Dryas_large_folders/intersections
+
 mkdir metilene_rand; cd metilene_rand
 cp /lustre04/scratch/celphin/Dryas/snpEff/Dryas_DMRs/*bedGraph .
 
@@ -170,6 +174,167 @@ bedtools intersect -u -a Methylkit_ALAS_rand_W_C_10plowcovDMRs.bedGraph \
 # LAT
 bedtools intersect -u -a Methylkit_ALAS_rand_W_C_10plowcovDMRs.bedGraph \
 -b Methylkit_LAT_rand_W_C_10plowcovDMRs.bedGraph > intersect_ALAS_LAT_rand_W_C_10plowcovDMRs.bedGraph
+
+##################################
+# three sites and all
+
+# Methylkit10 overdispersion corrected
+
+#Bedtools intersect all 4
+module load StdEnv/2023 bedtools/2.31.0
+bedtools intersect -u -a Methylkit_CASS_W_C_10plowcovDMRs.bedGraph -b Methylkit_SVAL_W_C_10plowcovDMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_LAT_W_C_10plowcovDMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_ALAS_W_C_10plowcovDMRs.bedGraph > ALL_Sites_intersect_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Nunavut
+bedtools intersect -u -a Methylkit_SVAL_W_C_10plowcovDMRs.bedGraph -b Methylkit_LAT_W_C_10plowcovDMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_ALAS_W_C_10plowcovDMRs.bedGraph > SVAL_SWED_ALAS_Sites_intersect_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Svalbard
+bedtools intersect -u -a Methylkit_CASS_W_C_10plowcovDMRs.bedGraph -b Methylkit_LAT_W_C_10plowcovDMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_ALAS_W_C_10plowcovDMRs.bedGraph > ALEX_SWED_ALAS_Sites_intersect_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Sweden
+bedtools intersect -u -a Methylkit_CASS_W_C_10plowcovDMRs.bedGraph -b Methylkit_SVAL_W_C_10plowcovDMRs.bedGraph| bedtools intersect -u -a stdin -b Methylkit_ALAS_W_C_10plowcovDMRs.bedGraph > ALEX_SVAL_ALAS_Sites_intersect_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Alaska
+bedtools intersect -u -a Methylkit_CASS_W_C_10plowcovDMRs.bedGraph -b Methylkit_SVAL_W_C_10plowcovDMRs.bedGraph| bedtools intersect -u -a stdin -b Methylkit_LAT_W_C_10plowcovDMRs.bedGraph > ALEX_SVAL_SWED_Sites_intersect_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Nunavut - random
+bedtools intersect -u -a Methylkit_SVAL_rand_W_C_10plowcovDMRs.bedGraph -b Methylkit_LAT_rand_W_C_10plowcovDMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_ALAS_rand_W_C_10plowcovDMRs.bedGraph > SVAL_SWED_ALAS_Sites_intersect_rand_DMRs_Methylkit10.bedgraph
+
+# Counts 
+wc -l *DMRs_Methylkit10.bedgraph
+# 0 ALEX_SVAL_ALAS_Sites_intersect_DMRs_Methylkit10.bedgraph
+# 0 ALEX_SVAL_SWED_Sites_intersect_DMRs_Methylkit10.bedgraph
+# 0 ALEX_SWED_ALAS_Sites_intersect_DMRs_Methylkit10.bedgraph
+# 0 ALL_Sites_intersect_DMRs_Methylkit10.bedgraph
+# 0 SVAL_SWED_ALAS_Sites_intersect_DMRs_Methylkit10.bedgraph
+# 0 SVAL_SWED_ALAS_Sites_intersect_rand_DMRs_Methylkit10.bedgraph
+# 0 total
+
+# none 
+
+wc -l *10plowcovDMRs.bedGraph
+      # 7 Methylkit_ALAS_rand_W_C_10plowcovDMRs.bedGraph
+    # 159 Methylkit_ALAS_W_C_10plowcovDMRs.bedGraph
+     # 94 Methylkit_CASS_W_C_10plowcovDMRs.bedGraph
+      # 2 Methylkit_LAT_rand_W_C_10plowcovDMRs.bedGraph
+    # 965 Methylkit_LAT_W_C_10plowcovDMRs.bedGraph
+    # 129 Methylkit_SVAL_rand_W_C_10plowcovDMRs.bedGraph
+     # 93 Methylkit_SVAL_W_C_10plowcovDMRs.bedGraph
+
+
+#-------------------------
+# # Methylkit10 without overdispersion corrected
+
+#Bedtools intersect all 4
+module load StdEnv/2023 bedtools/2.31.0
+bedtools intersect -u -a Methylkit_Alex_W_C_10_overdisp_DMRs.bedGraph -b Methylkit_SVAL_W_C_10_overdisp_DMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_LAT_W_C_10_overdisp_DMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_ALAS_W_C_10_overdisp_DMRs.bedGraph > ALL_Sites_intersect_overdisp_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Nunavut
+bedtools intersect -u -a Methylkit_SVAL_W_C_10_overdisp_DMRs.bedGraph -b Methylkit_LAT_W_C_10_overdisp_DMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_ALAS_W_C_10_overdisp_DMRs.bedGraph > SVAL_SWED_ALAS_Sites_intersect_overdisp_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Svalbard
+bedtools intersect -u -a Methylkit_Alex_W_C_10_overdisp_DMRs.bedGraph -b Methylkit_LAT_W_C_10_overdisp_DMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_ALAS_W_C_10_overdisp_DMRs.bedGraph > ALEX_SWED_ALAS_Sites_intersect_overdisp_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Sweden
+bedtools intersect -u -a Methylkit_Alex_W_C_10_overdisp_DMRs.bedGraph -b Methylkit_SVAL_W_C_10_overdisp_DMRs.bedGraph| bedtools intersect -u -a stdin -b Methylkit_ALAS_W_C_10_overdisp_DMRs.bedGraph > ALEX_SVAL_ALAS_Sites_intersect_overdisp_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Alaska
+bedtools intersect -u -a Methylkit_Alex_W_C_10_overdisp_DMRs.bedGraph -b Methylkit_SVAL_W_C_10_overdisp_DMRs.bedGraph| bedtools intersect -u -a stdin -b Methylkit_LAT_W_C_10_overdisp_DMRs.bedGraph > ALEX_SVAL_SWED_Sites_intersect_overdisp_DMRs_Methylkit10.bedgraph
+
+#------------------------
+bedtools intersect -u -a Methylkit_Alex_rand_W_C_10_overdisp_DMRs.bedGraph -b Methylkit_SVAL_rand_W_C_10_overdisp_DMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_LAT_rand_W_C_10_overdisp_DMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_ALAS_rand_W_C_10_overdisp_DMRs.bedGraph > ALL_Sites_intersect_rand_overdisp_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Nunavut - random
+bedtools intersect -u -a Methylkit_SVAL_rand_W_C_10_overdisp_DMRs.bedGraph -b Methylkit_LAT_rand_W_C_10_overdisp_DMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_ALAS_rand_W_C_10_overdisp_DMRs.bedGraph > SVAL_SWED_ALAS_Sites_intersect_rand_overdisp_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Svalbard
+bedtools intersect -u -a Methylkit_Alex_rand_W_C_10_overdisp_DMRs.bedGraph -b Methylkit_LAT_rand_W_C_10_overdisp_DMRs.bedGraph | bedtools intersect -u -a stdin -b Methylkit_ALAS_rand_W_C_10_overdisp_DMRs.bedGraph > ALEX_SWED_ALAS_Sites_intersect_rand_overdisp_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Sweden
+bedtools intersect -u -a Methylkit_Alex_rand_W_C_10_overdisp_DMRs.bedGraph -b Methylkit_SVAL_rand_W_C_10_overdisp_DMRs.bedGraph| bedtools intersect -u -a stdin -b Methylkit_ALAS_rand_W_C_10_overdisp_DMRs.bedGraph > ALEX_SVAL_ALAS_Sites_intersect_rand_overdisp_DMRs_Methylkit10.bedgraph
+
+#Bedtools intersect all but Alaska
+bedtools intersect -u -a Methylkit_Alex_rand_W_C_10_overdisp_DMRs.bedGraph -b Methylkit_SVAL_rand_W_C_10_overdisp_DMRs.bedGraph| bedtools intersect -u -a stdin -b Methylkit_LAT_rand_W_C_10_overdisp_DMRs.bedGraph > ALEX_SVAL_SWED_Sites_intersect_rand_overdisp_DMRs_Methylkit10.bedgraph
+
+#------------------------
+# Counts 
+wc -l *_overdisp_DMRs_Methylkit10.bedgraph
+   # 29 ALEX_SVAL_ALAS_Sites_intersect_overdisp_DMRs_Methylkit10.bedgraph
+   # 32 ALEX_SVAL_ALAS_Sites_intersect_rand_overdisp_DMRs_Methylkit10.bedgraph
+   
+   # 30 ALEX_SVAL_SWED_Sites_intersect_overdisp_DMRs_Methylkit10.bedgraph
+   # 27 ALEX_SVAL_SWED_Sites_intersect_rand_overdisp_DMRs_Methylkit10.bedgraph
+   
+   # 32 ALEX_SWED_ALAS_Sites_intersect_overdisp_DMRs_Methylkit10.bedgraph
+   # 33 ALEX_SWED_ALAS_Sites_intersect_rand_overdisp_DMRs_Methylkit10.bedgraph
+   
+   # 10 ALL_Sites_intersect_overdisp_DMRs_Methylkit10.bedgraph
+   # 7 ALL_Sites_intersect_rand_overdisp_DMRs_Methylkit10.bedgraph
+
+  # 142 SVAL_SWED_ALAS_Sites_intersect_overdisp_DMRs_Methylkit10.bedgraph
+  # 106 SVAL_SWED_ALAS_Sites_intersect_rand_overdisp_DMRs_Methylkit10.bedgraph
+
+# no pattern
+
+wc -l *10_overdisp_DMRs.bedGraph
+   # 4582 Methylkit_ALAS_rand_W_C_10_overdisp_DMRs.bedGraph
+   # 5086 Methylkit_ALAS_W_C_10_overdisp_DMRs.bedGraph
+    # 783 Methylkit_Alex_rand_W_C_10_overdisp_DMRs.bedGraph
+    # 678 Methylkit_Alex_W_C_10_overdisp_DMRs.bedGraph
+   # 4328 Methylkit_LAT_rand_W_C_10_overdisp_DMRs.bedGraph
+   # 6944 Methylkit_LAT_W_C_10_overdisp_DMRs.bedGraph
+   # 6670 Methylkit_SVAL_rand_W_C_10_overdisp_DMRs.bedGraph
+   # 6714 Methylkit_SVAL_W_C_10_overdisp_DMRs.bedGraph
+  # 35785 total
+
+###############################
+# CHH
+
+#Bedtools intersect all 4
+module load StdEnv/2023 bedtools/2.31.0
+
+#Bedtools intersect all but Nunavut
+bedtools intersect -u -a Methylkit_SVAL_W_C_10_CHH_plowcovDMRs.bedGraph -b Methylkit_LAT_W_C_10_CHH_plowcovDMRs300.bedGraph | bedtools intersect -u -a stdin -b Methylkit_ALAS_W_C_10_CHH_plowcovDMRs.bedGraph > SVAL_SWED_ALAS_Sites_intersect_DMRs_Methylkit_CHH_10.bedgraph
+
+#----------------------------
+#Bedtools intersect all but Nunavut - random
+bedtools intersect -u -a Methylkit_SVAL_W_C_10_CHH_rand_plowcovDMRs.bedGraph -b Methylkit_LAT_W_C_10_CHH_rand_plowcovDMRs_300.bedGraph | bedtools intersect -u -a stdin -b Methylkit_ALAS_W_C_10_CHH_rand_plowcovDMRs.bedGraph > SVAL_SWED_ALAS_Sites_intersect_rand_DMRs_Methylkit_CHH_10.bedgraph
+
+wc -l *DMRs_Methylkit_CHH_10.bedgraph
+0 SVAL_SWED_ALAS_Sites_intersect_DMRs_Methylkit_CHH_10.bedgraph
+0 SVAL_SWED_ALAS_Sites_intersect_rand_DMRs_Methylkit_CHH_10.bedgraph
+0 total
+
+###################################
+# Methylkit and metilene overlap
+
+bedtools intersect -u -a Methylkit_ALAS_W_C_10plowcovDMRs.bedGraph -b Methylkit_ALAS_W_C_10_overdisp_DMRs.bedGraph | bedtools intersect -u -a stdin -b ./metilene/Alaska_W_C.bedGraph > intersect_ALAS_W_C_DMRs_metilene_methylkit_CG.bedgraph
+bedtools intersect -u -a Methylkit_SVAL_W_C_10plowcovDMRs.bedGraph -b Methylkit_SVAL_W_C_10_overdisp_DMRs.bedGraph | bedtools intersect -u -a stdin -b ./metilene/Svalbard_W_C.bedGraph > intersect_SVAL_W_C_DMRs_metilene_methylkit_CG.bedgraph
+bedtools intersect -u -a Methylkit_LAT_W_C_10plowcovDMRs.bedGraph -b Methylkit_LAT_W_C_10_overdisp_DMRs.bedGraph | bedtools intersect -u -a stdin -b ./metilene/Sweden_W_C.bedGraph > intersect_LAT_W_C_DMRs_metilene_methylkit_CG.bedgraph
+bedtools intersect -u -a Methylkit_CASS_W_C_10plowcovDMRs.bedGraph -b Methylkit_Alex_W_C_10_overdisp_DMRs.bedGraph | bedtools intersect -u -a stdin -b ./metilene/Nunavut_W_C.bedGraph > intersect_Alex_W_C_DMRs_metilene_methylkit_CG.bedgraph
+
+bedtools intersect -u -a Methylkit_ALAS_rand_W_C_10plowcovDMRs.bedGraph  -b Alaska_random_W_C.bedGraph > intersect_ALAS_W_C_DMRs_rand_metilene_methylkit_CG.bedgraph
+bedtools intersect -u -a Methylkit_SVAL_rand_W_C_10plowcovDMRs.bedGraph -b Svalbard_random_W_C.bedGraph > intersect_SVAL_W_C_DMRs_rand_metilene_methylkit_CG.bedgraph
+bedtools intersect -u -a Methylkit_LAT_rand_W_C_10plowcovDMRs.bedGraph  -b Sweden_random_W_C.bedGraph > intersect_LAT_W_C_DMRs_rand_metilene_methylkit_CG.bedgraph
+bedtools intersect -u -a Methylkit_CASS_rand_W_C_10plowcovDMRs.bedGraph -b Nunavut_random_W_C.bedGraph > intersect_Alex_W_C_DMRs_rand_metilene_methylkit_CG.bedgraph
+
+wc -l *DMRs_metilene_methylkit_CG.bedgraph
+   # 26 intersect_ALAS_W_C_DMRs_metilene_methylkit_CG.bedgraph
+    # 3 intersect_Alex_W_C_DMRs_metilene_methylkit_CG.bedgraph
+  # 206 intersect_LAT_W_C_DMRs_metilene_methylkit_CG.bedgraph
+    # 4 intersect_SVAL_W_C_DMRs_metilene_methylkit_CG.bedgraph
+
+wc -l *DMRs_rand_metilene_methylkit_CG.bedgraph
+  0 intersect_ALAS_W_C_DMRs_rand_metilene_methylkit_CG.bedgraph
+  0 intersect_Alex_W_C_DMRs_rand_metilene_methylkit_CG.bedgraph
+  0 intersect_LAT_W_C_DMRs_rand_metilene_methylkit_CG.bedgraph
+  3 intersect_SVAL_W_C_DMRs_rand_metilene_methylkit_CG.bedgraph
+
+
+wc -l *10plowcovDMRs.bedGraph
+    # 159 Methylkit_ALAS_W_C_10plowcovDMRs.bedGraph - 16%
+     # 94 Methylkit_CASS_W_C_10plowcovDMRs.bedGraph - 3%
+    # 965 Methylkit_LAT_W_C_10plowcovDMRs.bedGraph - 21%
+     # 93 Methylkit_SVAL_W_C_10plowcovDMRs.bedGraph - 3%
 
 
 ####################################
