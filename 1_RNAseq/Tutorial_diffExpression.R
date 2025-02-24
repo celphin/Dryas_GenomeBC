@@ -1,4 +1,5 @@
-
+# Copied from 
+# http://bch709.plantgenomicslab.org/DEG2/index.html#:~:text=DESeq%20and%20EdgeR%20are%20very%20similar%20and,the%20calculation%20of%20size%20/%20normalisation%20factors.
 
 # # DESeq and EdgeR are very similar and both assume that no genes are differentially expressed. 
 # DESeq uses a "geometric" normalisation strategy, whereas EdgeR is a weighted mean of log ratios-based
