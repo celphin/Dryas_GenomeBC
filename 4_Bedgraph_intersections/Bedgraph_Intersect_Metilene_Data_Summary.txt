@@ -1,0 +1,61 @@
+FileName                                      #DMRS     Proportion
+Alaska_W_C.bedGraph                           866
+Svalbard_W_C.bedGraph                         358
+Sweden_W_C.bedGraph                           1737
+Nunavut_W_C.bedGraph                          322
+Parent_W_C.bedGraph                           449
+	
+ALL_Sites_intersect_DMRs.bedgraph             4
+ALEX_SVAL_ALAS_Sites_intersect_DMRs.bedgraph  7
+ALEX_SVAL_SWED_Sites_intersect_DMRs.bedgraph  9
+ALEX_SWED_ALAS_Sites_intersect_DMRs.bedgraph  19
+SVAL_SWED_ALAS_Sites_intersect_DMRs.bedgraph  15
+
+SE_L_H.bedGraph                               426
+SE_W_C.bedGraph                               888
+intersect_SE_W_C_P_W_C.bedGraph               152
+intersect_SE_W_C_Wild_W_C.bedGraph            84
+	 
+total_subtract_SE_W_C_P_W_C.bedGraph          736   
+total_subtract_SE_W_C_SE_L_H.bedGraph         780
+
+Wild_W_C.bedGraph                             385
+Mat_Sen.bedGraph                              4989
+intersect_Wild_W_C_Mat_Sen.bedGraph           69
+total_subtract_W_C_Mat_Sen.bedGraph           316
+	 
+Wild_Lat_L_H.bedGraph                         14986 
+intersect_SE_L_H_Wild_L_H.bedGraph   	      338 
+intersect_SE_W_C_SE_L_H.bedGraph              108 
+
+total                                         28043 
+
+
+###################################################
+# Explore RNAseq data
+
+cd /home/celphin/scratch/Dryas/MS_Dryas_Merged_Data
+
+more  Gene_DMR_Total_Merged_table.tsv
+
+# remove duplicates
+sort -u Gene_DMR_Total_Merged_table.tsv | uniq > Gene_DMR_Total_Merged_table_uniq.tsv
+
+# grep for Wild_W_C
+grep "Wild_W_C" Gene_DMR_Total_Merged_table_uniq.tsv > Gene_DMR_Wild_W_C_uniq.tsv
+
+# count number
+
+wc -l Gene_DMR_Total_Merged_table.tsv
+wc -l Gene_DMR_Total_Merged_table_uniq.tsv
+
+wc -l Gene_DMR_Wild_W_C_uniq.tsv
+#573 Gene_DMR_Wild_W_C_uniq.tsv
+# some cases whwre multiple genes maybe?
+
+##############################
+# grab the unique DMRs 
+# columns 3,4,5, find unique and count
+
+awk 'BEGIN{FS="\t"}{print $3 "\t" $4 "\t" $5}' Gene_DMR_Wild_W_C_uniq.tsv | sort -u | uniq | wc -
+# 264 DMRs are near differentially expressed genes

@@ -1,0 +1,282 @@
+Unique Random ID,Species,Site,Community,Plot,C/W/G,Plant ID,Leaf collection DOY,Phenology,Collector
+1,D. integrifolia,Alexandra Fiord,MEAD,3,C,1R,224,Y,Cassandra
+2,D. integrifolia,Alexandra Fiord,CASS,11,C,553,224,Longterm,Cassandra
+3,D. integrifolia,Alexandra Fiord,CASS,4,W,6R,224,Y,Cassandra
+4,D. integrifolia,Alexandra Fiord,CASS,4,C,524,224,Longterm,Cassandra
+5,D. integrifolia,Alexandra Fiord,FERT,8,W,N1,224,N,Cassandra
+6,D. integrifolia,Alexandra Fiord,MEAD,8,W,4R,224,Y,Cassandra
+7,D. integrifolia,Alexandra Fiord,CASS,11,W,N18,224,N,Cassandra
+8,D. integrifolia,Alexandra Fiord,CASS,1,W,N1,224,N,Cassandra
+9,D. integrifolia,Alexandra Fiord,CASS,7,C,12R,224,Y,Cassandra
+10,D. integrifolia,Alexandra Fiord,WILL,8,C,435,224,Longterm,Cassandra
+11,D. integrifolia,Alexandra Fiord,FERT,24,W,N4,224,N,Cassandra
+12,D. integrifolia,Alexandra Fiord,DRY,2,C,N2,224,N,Cassandra
+13,D. integrifolia,Alexandra Fiord,WILL,4,W,417,224,Longterm,Cassandra
+14,D. integrifolia,Alexandra Fiord,CASS,6,C,8R,224,Y,Cassandra
+15,D. integrifolia,Alexandra Fiord,DRY,5,C,30,224,Y,Cassandra
+16,D. integrifolia,Alexandra Fiord,WILL,10,C,440,224,Longterm,Cassandra
+17,D. integrifolia,Alexandra Fiord,MIGR,21,W,10,225,N,Cassandra
+18,D. integrifolia,Alexandra Fiord,CASS,13,C,N20,224,N,Cassandra
+19,D. integrifolia,Alexandra Fiord,CASS,7,W,600,224,Longterm,Cassandra
+20,D. integrifolia,Alexandra Fiord,MIGR,19,C,7,225,N,Cassandra
+21,D. integrifolia,Alexandra Fiord,MIGR,6,W,6,225,N,Cassandra
+22,D. integrifolia,Alexandra Fiord,MEAD,6,C,468,224,Longterm,Cassandra
+23,D. integrifolia,Alexandra Fiord,WILL,8,W,431,224,Longterm,Cassandra
+24,D. integrifolia,Alexandra Fiord,CASS,7,C,N9,224,N,Cassandra
+25,D. integrifolia,Alexandra Fiord,WILL,9,C,452,224,Longterm,Cassandra
+26,D. integrifolia,Alexandra Fiord,WILL,5,W,420,224,Longterm,Cassandra
+27,D. integrifolia,Alexandra Fiord,CASS,14,W,587,224,Longterm,Cassandra
+28,D. integrifolia,Alexandra Fiord,CASS,4,W,519,224,Longterm,Cassandra
+29,D. integrifolia,Alexandra Fiord,CASS,15,C,N25,224,N,Cassandra
+30,D. integrifolia,Alexandra Fiord,MIGR,1,C,1,225,N,Cassandra
+31,D. integrifolia,Alexandra Fiord,WILL,5,C,422,224,Longterm,Cassandra
+32,D. integrifolia,Alexandra Fiord,MEAD,10,C,7R,224,Y,Cassandra
+33,D. integrifolia,Alexandra Fiord,MEAD,1,C,446,224,Longterm,Cassandra
+34,D. integrifolia,Alexandra Fiord,MIGR,1,W,2,225,N,Cassandra
+35,D. integrifolia,Alexandra Fiord,CASS,3,W,515,224,Longterm,Cassandra
+36,D. integrifolia,Alexandra Fiord,DRY,4,W,N6,224,N,Cassandra
+37,D. integrifolia,Alexandra Fiord,CASS,3,W,N5,224,N,Cassandra
+38,D. integrifolia,Alexandra Fiord,CASS,5,C,528,224,Longterm,Cassandra
+39,D. integrifolia,Alexandra Fiord,DRY,1,W,3,224,Y,Cassandra
+40,D. integrifolia,Alexandra Fiord,FERT,30,W,14F,224,Y,Cassandra
+41,D. integrifolia,Alexandra Fiord,DRY,10,C,60,224,Y,Cassandra
+42,D. integrifolia,Alexandra Fiord,WILL,2,W,408,224,Longterm,Cassandra
+43,D. integrifolia,Alexandra Fiord,CASS,9,C,541,224,Longterm,Cassandra
+44,D. integrifolia,Alexandra Fiord,CASS,17,C,N29,224,N,Cassandra
+45,D. integrifolia,Alexandra Fiord,WILL,3,W,3R,224,Y,Cassandra
+46,D. integrifolia,Alexandra Fiord,CASS,10,W,N16,224,N,Cassandra
+47,D. integrifolia,Alexandra Fiord,WILL,6,W,427,224,Longterm,Cassandra
+48,D. integrifolia,Alexandra Fiord,FERT,29,C,N6,224,N,Cassandra
+49,D. integrifolia,Alexandra Fiord,CASS,14,C,N22,224,N,Cassandra
+50,D. integrifolia,Alexandra Fiord,DRY,10,C,1R,224,Y,Cassandra
+51,D. integrifolia,Alexandra Fiord,CASS,6,W,N8,224,N,Cassandra
+52,D. integrifolia,Alexandra Fiord,DRY,2,C,10,224,Y,Cassandra
+53,D. integrifolia,Alexandra Fiord,CASS,14,W,585,224,Longterm,Cassandra
+54,D. integrifolia,Alexandra Fiord,CASS,8,C,535,224,Longterm,Cassandra
+55,D. integrifolia,Alexandra Fiord,CASS,9,C,N13,224,N,Cassandra
+56,D. integrifolia,Alexandra Fiord,CASS,1,W,1R,224,Y,Cassandra
+57,D. integrifolia,Alexandra Fiord,CASS,14,C,N23,224,N,Cassandra
+58,D. integrifolia,Alexandra Fiord,WILL,2,C,411,224,Longterm,Cassandra
+59,D. integrifolia,Alexandra Fiord,DRY,4,W,21,224,Y,Cassandra
+60,D. integrifolia,Alexandra Fiord,CASS,10,W,544,224,Longterm,Cassandra
+61,D. integrifolia,Alexandra Fiord,MIGR,4,W,4,225,N,Cassandra
+62,D. integrifolia,Alexandra Fiord,MIGR,24,W,12,225,N,Cassandra
+63,D. integrifolia,Alexandra Fiord,DRY,8,C,N13,224,N,Cassandra
+64,D. integrifolia,Alexandra Fiord,CASS,1,C,N2,224,N,Cassandra
+65,D. integrifolia,Alexandra Fiord,CASS,2,C,N4,224,N,Cassandra
+66,D. integrifolia,Alexandra Fiord,WILL,1,C,1R,224,Y,Cassandra
+67,D. integrifolia,Alexandra Fiord,WILL,1,W,403,224,Longterm,Cassandra
+68,D. integrifolia,Alexandra Fiord,CASS,4,C,5R,224,Y,Cassandra
+69,D. integrifolia,Alexandra Fiord,DRY,3,W,15,224,Y,Cassandra
+70,D. integrifolia,Alexandra Fiord,MEAD,2,W,450,224,Longterm,Cassandra
+71,D. integrifolia,Alexandra Fiord,FERT,39,C,20F,224,Y,Cassandra
+72,D. integrifolia,Alexandra Fiord,CASS,8,W,N11,224,N,Cassandra
+73,D. integrifolia,Alexandra Fiord,CASS,2,W,N3,224,N,Cassandra
+74,D. integrifolia,Alexandra Fiord,CASS,11,C,N17,224,N,Cassandra
+75,D. integrifolia,Alexandra Fiord,DRY,3,C,N4,224,N,Cassandra
+76,D. integrifolia,Alexandra Fiord,MEAD,2,C,451,224,Longterm,Cassandra
+77,D. integrifolia,Alexandra Fiord,WILL,6,C,5R,224,Y,Cassandra
+78,D. integrifolia,Alexandra Fiord,CASS,16,W,N28,224,N,Cassandra
+79,D. integrifolia,Alexandra Fiord,CASS,12,W,555,224,Longterm,Cassandra
+80,D. integrifolia,Alexandra Fiord,MIGR,24,C,11,225,N,Cassandra
+81,D. integrifolia,Alexandra Fiord,WILL,8,W,6R,224,Y,Cassandra
+82,D. integrifolia,Alexandra Fiord,DRY,4,C,23,224,Y,Cassandra
+83,D. integrifolia,Alexandra Fiord,DRY,6,C,N9,224,N,Cassandra
+84,D. integrifolia,Alexandra Fiord,WILL,10,W,437,224,Longterm,Cassandra
+85,D. integrifolia,Alexandra Fiord,MIGR,19,W,8,225,N,Cassandra
+86,D. integrifolia,Alexandra Fiord,DRY,1,W,1,224,Y,Cassandra
+87,D. integrifolia,Alexandra Fiord,DRY,6,C,N10,224,N,Cassandra
+88,D. integrifolia,Alexandra Fiord,WILL,6,C,429,224,Longterm,Cassandra
+89,D. integrifolia,Alexandra Fiord,CASS,2,C,4R,224,Y,Cassandra
+90,D. integrifolia,Alexandra Fiord,WILL,2,C,412,224,Longterm,Cassandra
+91,D. integrifolia,Alexandra Fiord,CASS,12,C,558,224,Longterm,Cassandra
+92,D. integrifolia,Alexandra Fiord,DRY,5,C,28,224,Y,Cassandra
+93,D. integrifolia,Alexandra Fiord,WILL,10,W,8R,224,Y,Cassandra
+94,D. integrifolia,Alexandra Fiord,WILL,1,W,401,224,Longterm,Cassandra
+95,D. integrifolia,Alexandra Fiord,MEAD,7,C,473,224,Longterm,Cassandra
+96,D. integrifolia,Alexandra Fiord,DRY,3,C,18,224,Y,Cassandra
+97,D. integrifolia,Alexandra Fiord,FERT,5,C,1F,224,Y,Cassandra
+98,D. integrifolia,Alexandra Fiord,CASS,18,W,24R,224,Y,Cassandra
+99,D. integrifolia,Alexandra Fiord,DRY,9,W,N15,224,N,Cassandra
+100,D. integrifolia,Alexandra Fiord,WILL,3,C,414,224,Longterm,Cassandra
+101,D. integrifolia,Alexandra Fiord,FERT,16,W,N3,224,N,Cassandra
+102,D. integrifolia,Alexandra Fiord,CASS,15,W,19R,224,Y,Cassandra
+103,D. integrifolia,Alexandra Fiord,DRY,5,W,N8,224,N,Cassandra
+104,D. integrifolia,Alexandra Fiord,FERT,7,C,4F,224,Y,Cassandra
+105,D. integrifolia,Alexandra Fiord,MIGR,6,C,5,225,N,Cassandra
+106,D. integrifolia,Alexandra Fiord,CASS,16,C,572,224,Longterm,Cassandra
+107,D. integrifolia,Alexandra Fiord,WILL,7,W,448,224,Longterm,Cassandra
+108,D. integrifolia,Alexandra Fiord,WILL,9,C,7R,224,Y,Cassandra
+109,D. integrifolia,Alexandra Fiord,DRY,1,C,6R,224,Y,Cassandra
+110,D. integrifolia,Alexandra Fiord,FERT,6,W,3F,224,Y,Cassandra
+111,D. integrifolia,Alexandra Fiord,FERT,22,W,12F,224,Y,Cassandra
+112,D. integrifolia,Alexandra Fiord,FERT,13,C,7F,224,Y,Cassandra
+113,D. integrifolia,Alexandra Fiord,CASS,1,C,506,224,Longterm,Cassandra
+114,D. integrifolia,Alexandra Fiord,DRY,7,W,N12,224,N,Cassandra
+115,D. integrifolia,Alexandra Fiord,DRY,8,C,47,224,Y,Cassandra
+116,D. integrifolia,Alexandra Fiord,MEAD,1,W,444,224,Longterm,Cassandra
+117,D. integrifolia,Alexandra Fiord,WILL,4,W,4R,224,Y,Cassandra
+118,D. integrifolia,Alexandra Fiord,CASS,8,C,534,224,Longterm,Cassandra
+119,D. integrifolia,Alexandra Fiord,CASS,2,W,2R,224,Y,Cassandra
+120,D. integrifolia,Alexandra Fiord,MIGR,21,C,9,225,N,Cassandra
+121,D. integrifolia,Alexandra Fiord,WILL,7,C,444,224,Longterm,Cassandra
+122,D. integrifolia,Alexandra Fiord,WILL,10,C,441,224,Longterm,Cassandra
+123,D. integrifolia,Alexandra Fiord,DRY,2,W,7,224,Y,Cassandra
+124,D. integrifolia,Alexandra Fiord,CASS,18,W,25R,224,Y,Cassandra
+125,D. integrifolia,Alexandra Fiord,WILL,7,C,445,224,Longterm,Cassandra
+126,D. integrifolia,Alexandra Fiord,FERT,14,W,6F,224,Y,Cassandra
+127,D. integrifolia,Alexandra Fiord,WILL,6,W,425,224,Longterm,Cassandra
+128,D. integrifolia,Alexandra Fiord,CASS,9,W,539,224,Longterm,Cassandra
+129,D. integrifolia,Alexandra Fiord,CASS,13,C,594,224,Longterm,Cassandra
+130,D. integrifolia,Alexandra Fiord,CASS,5,W,525,224,Longterm,Cassandra
+131,D. integrifolia,Alexandra Fiord,MEAD,3,W,455,224,Longterm,Cassandra
+132,D. integrifolia,Alexandra Fiord,WILL,8,C,436,224,Longterm,Cassandra
+133,D. integrifolia,Alexandra Fiord,FERT,40,W,N5,224,N,Cassandra
+134,D. integrifolia,Alexandra Fiord,MEAD,9,W,6R,224,Y,Cassandra
+135,D. integrifolia,Alexandra Fiord,CASS,18,C,N30,224,N,Cassandra
+136,D. integrifolia,Alexandra Fiord,CASS,6,W,9R,224,Y,Cassandra
+137,D. integrifolia,Alexandra Fiord,CASS,17,W,574,224,Longterm,Cassandra
+138,D. integrifolia,Alexandra Fiord,CASS,16,C,N27,224,N,Cassandra
+139,D. integrifolia,Alexandra Fiord,DRY,5,W,N7,224,N,Cassandra
+140,D. integrifolia,Alexandra Fiord,WILL,2,W,T2-3,224,Y,Cassandra
+141,D. integrifolia,Alexandra Fiord,DRY,6,W,N11,224,N,Cassandra
+142,D. integrifolia,Alexandra Fiord,MEAD,5,W,3R,224,Y,Cassandra
+143,D. integrifolia,Alexandra Fiord,CASS,13,W,17R,224,Y,Cassandra
+144,D. integrifolia,Alexandra Fiord,CASS,10,C,548,224,Longterm,Cassandra
+145,D. integrifolia,Alexandra Fiord,WILL,3,C,415,224,Longterm,Cassandra
+146,D. integrifolia,Alexandra Fiord,DRY,7,W,38,224,Y,Cassandra
+147,D. integrifolia,Alexandra Fiord,DRY,6,W,31,224,Y,Cassandra
+148,D. integrifolia,Alexandra Fiord,CASS,5,W,N6,224,N,Cassandra
+149,D. integrifolia,Alexandra Fiord,DRY,9,C,53,224,Y,Cassandra
+150,D. integrifolia,Alexandra Fiord,FERT,15,C,N2,224,N,Cassandra
+151,D. integrifolia,Alexandra Fiord,MIGR,4,C,3,225,N,Cassandra
+152,D. integrifolia,Alexandra Fiord,WILL,1,C,406,224,Longterm,Cassandra
+153,D. integrifolia,Alexandra Fiord,DRY,2,W,N3,224,N,Cassandra
+154,D. integrifolia,Alexandra Fiord,WILL,5,W,421,224,Longterm,Cassandra
+155,D. integrifolia,Alexandra Fiord,DRY,8,W,45,224,Y,Cassandra
+156,D. integrifolia,Alexandra Fiord,CASS,15,W,N26,224,N,Cassandra
+157,D. integrifolia,Alexandra Fiord,FERT,23,C,13F,224,Y,Cassandra
+158,D. integrifolia,Alexandra Fiord,CASS,16,W,20R,224,Y,Cassandra
+159,D. integrifolia,Alexandra Fiord,CASS,5,C,529,224,Longterm,Cassandra
+160,D. integrifolia,Alexandra Fiord,DRY,1,C,N1,224,N,Cassandra
+161,D. integrifolia,Alexandra Fiord,DRY,4,C,N5,224,N,Cassandra
+162,D. integrifolia,Alexandra Fiord,WILL,3,W,2R,224,Y,Cassandra
+163,D. integrifolia,Alexandra Fiord,MEAD,6,W,466,224,Longterm,Cassandra
+164,D. integrifolia,Alexandra Fiord,CASS,9,W,N14,224,N,Cassandra
+165,D. integrifolia,Alexandra Fiord,CASS,11,W,16R,224,Y,Cassandra
+166,D. integrifolia,Alexandra Fiord,CASS,6,C,N7,224,N,Cassandra
+167,D. integrifolia,Alexandra Fiord,CASS,15,C,N24,224,N,Cassandra
+168,D. integrifolia,Alexandra Fiord,DRY,9,C,N14,224,N,Cassandra
+169,D. integrifolia,Alexandra Fiord,CASS,17,W,22R,224,Y,Cassandra
+170,D. integrifolia,Alexandra Fiord,FERT,31,C,15F,224,Y,Cassandra
+171,D. integrifolia,Alexandra Fiord,DRY,8,W,43,224,Y,Cassandra
+172,D. integrifolia,Alexandra Fiord,DRY,3,W,13,224,Y,Cassandra
+173,D. integrifolia,Alexandra Fiord,MEAD,7,W,470,224,Longterm,Cassandra
+174,D. integrifolia,Alexandra Fiord,CASS,13,W,N21,224,N,Cassandra
+175,D. integrifolia,Alexandra Fiord,CASS,17,C,576,224,Longterm,Cassandra
+176,D. integrifolia,Alexandra Fiord,CASS,18,C,N31,224,N,Cassandra
+177,D. integrifolia,Alexandra Fiord,WILL,5,C,423,224,Longterm,Cassandra
+178,D. integrifolia,Alexandra Fiord,CASS,12,C,559,224,Longterm,Cassandra
+179,D. integrifolia,Alexandra Fiord,MEAD,8,C,5R,224,Y,Cassandra
+180,D. integrifolia,Alexandra Fiord,WILL,7,W,447,224,Longterm,Cassandra
+181,D. integrifolia,Alexandra Fiord,CASS,12,W,N19,224,N,Cassandra
+182,D. integrifolia,Alexandra Fiord,MEAD,4,W,2R,224,Y,Cassandra
+183,D. integrifolia,Alexandra Fiord,CASS,10,C,N15,224,N,Cassandra
+184,D. integrifolia,Alexandra Fiord,CASS,7,W,N10,224,N,Cassandra
+185,D. integrifolia,Alexandra Fiord,DRY,9,W,50,224,Y,Cassandra
+186,D. integrifolia,Alexandra Fiord,CASS,8,W,N12,224,N,Cassandra
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
