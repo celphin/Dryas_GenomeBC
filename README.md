@@ -2,16 +2,15 @@
  DNA methylation and RNAseq analyses
  
  ## 1_RNAseq - mRNA
-* TODO (update)
 * RSEM for mapping to transcriptome 
-* EdgeR for normalization and plotting heat maps
+* EdgeR for transcript count normalization, differential expression analyses and plotting heat maps
 
  ## 2_Methylseq
 * nf-core Methylseq for WGBS mapping and calling methylated C's 
 * Run on wild, phenology, and seedling data
  
- ## 3_Metilene
-* Metilene for detecting DMRs
+ ## 3_DMRs
+* Metilene and Methylkit for detecting DMRs
 * Run for detecting various Wild, Seedling, and Phenology DMRS
 * Scripts for preparing files for Metilene and running metilene
 
