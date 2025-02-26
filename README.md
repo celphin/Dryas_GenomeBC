@@ -28,10 +28,20 @@
 * Script for formatting file to run on interproscan
 * Notes on running interproscan on both Methylation and RNA data, and on comparing/combining the two
 
-## 7_Plots_Comparisons
+## 7_Gene_ontology
+* ErmineJ for GO term enrichment
+
+## 8_Plotting_Comparisons
 * Several scripts for plotting
 * General notes on heatmap plotting (RNA and methylation)
 * Notes on inheritence plotting
+
+## 9_SNP_calling
+* BS-SNP for SNP calling from bisulphite treated DNA
+* Basic popgen analyses
+
+## 10_Phenotypes
+* Comparing phenotypes and traits of the warmed and control plants
 
  ## Old_Files_Semi_Sorted - Temporary
 * Notes on original runs of certain anlyses + analyses not yet used/completed
