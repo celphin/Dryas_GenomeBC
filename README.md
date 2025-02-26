@@ -1,5 +1,5 @@
 # Dryas_GenomeBC
- DNA methylation and RNAseq analyses
+Differential DNA methylation and RNAseq analyses
  
  ## 1_RNAseq - mRNA
 * RSEM for mapping to transcriptome 
